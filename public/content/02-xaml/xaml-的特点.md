@@ -47,21 +47,21 @@ title: XAML 的特点
 > ```
 > XAML 少写了一半代码，而且界面结构和层级关系一目了然。
 
-**分辨率无关示例：**
-```xml
-<!-- WPF 使用 WPF 单位（1 unit = 1/96 inch），不是像素 -->
-<!-- 这段 XAML 在 96 DPI 和 144 DPI 屏幕上物理大小完全一致 -->
-<Border Width="96" Height="96" Background="DodgerBlue">
-    <TextBlock Text="1英寸 x 1英寸" 
-               HorizontalAlignment="Center"
-               VerticalAlignment="Center"/>
-</Border>
-```
-```csharp
-// 如果必须在代码里写，记住 WPF 的单位不是像素
-border.Width = 96;  // = 1 英寸，不是 96 像素
-border.Height = 96;
-```
+> **分辨率无关示例：**
+> ```xml
+> <!-- WPF 使用 WPF 单位（1 unit = 1/96 inch），不是像素 -->
+> <!-- 这段 XAML 在 96 DPI 和 144 DPI 屏幕上物理大小完全一致 -->
+> <Border Width="96" Height="96" Background="DodgerBlue">
+>     <TextBlock Text="1英寸 x 1英寸" 
+>                HorizontalAlignment="Center"
+>                VerticalAlignment="Center"/>
+> </Border>
+> ```
+> ```csharp
+> // 如果必须在代码里写，记住 WPF 的单位不是像素
+> border.Width = 96;  // = 1 英寸，不是 96 像素
+> border.Height = 96;
+> ```
 
 > [!scene] 适用场景
 > ✅ 所有 WPF 程序的 UI 定义——这是 XAML 被设计出来的唯一目的

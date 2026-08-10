@@ -24,173 +24,173 @@ title: WPF 核心类层次结构
 > - 四大分支：ContentControl（单内容）、ItemsControl（多内容）、Panel（布局）、Shape（图形）
 
 > [!example] 完整示例
-**完整继承链图：**
-```
-System.Object
- └─ System.Windows.Threading.DispatcherObject        ← 线程安全
-     └─ System.Windows.DependencyObject               ← 依赖属性
-         └─ System.Windows.Media.Visual               ← 渲染能力
-             └─ System.Windows.UIElement               ← 输入/焦点/事件
-                 └─ System.Windows.FrameworkElement    ← 布局/样式/绑定
-                     ├─ System.Windows.Controls.Control    ← 模板
-                     │   ├─ ContentControl                 ← 单内容
-                     │   │   ├─ Window
-                     │   │   ├─ Button
-                     │   │   ├─ Label
-                     │   │   ├─ CheckBox / RadioButton
-                     │   │   ├─ ToolTip
-                     │   │   ├─ UserControl
-                     │   │   └─ GroupItem
-                     │   │
-                     │   ├─ ItemsControl                   ← 多内容
-                     │   │   ├─ ListBox
-                     │   │   ├─ ComboBox
-                     │   │   ├─ TreeView
-                     │   │   ├─ ListView
-                     │   │   ├─ DataGrid
-                     │   │   ├─ TabControl
-                     │   │   ├─ Menu
-                     │   │   └─ StatusBar
-                     │   │
-                     │   ├─ TextBoxBase                    ← 文本输入
-                     │   │   ├─ TextBox
-                     │   │   └─ RichTextBox
-                     │   │
-                     │   ├─ RangeBase                      ← 范围控件
-                     │   │   ├─ Slider
-                     │   │   ├─ ProgressBar
-                     │   │   └─ ScrollBar
-                     │   │
-                     │   └─ HeaderedContentControl         ← 带标题的内容控件
-                     │       ├─ GroupBox
-                     │       └─ Expander
-                     │
-                     ├─ System.Windows.Controls.Panel      ← 布局容器
-                     │   ├─ StackPanel
-                     │   ├─ WrapPanel
-                     │   ├─ DockPanel
-                     │   ├─ Grid
-                     │   ├─ Canvas
-                     │   └─ UniformGrid
-                     │
-                     ├─ System.Windows.Shapes.Shape        ← 矢量图形
-                     │   ├─ Rectangle
-                     │   ├─ Ellipse
-                     │   ├─ Line
-                     │   ├─ Polygon
-                     │   ├─ Polyline
-                     │   └─ Path
-                     │
-                     ├─ System.Windows.Controls.Image      ← 图片
-                     ├─ System.Windows.Controls.Border     ← 边框
-                     ├─ System.Windows.Controls.Viewbox    ← 缩放容器
-                     └─ System.Windows.Controls.TextBlock  ← 文本显示
-```
-
-**每一层到底增加了什么？有代码有真相：**
-```xml
-<Window x:Class="WpfDemo.HierarchyDemo"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="类层次结构演示" Height="500" Width="700">
-    <ScrollViewer>
-        <StackPanel Margin="15">
-            <TextBlock Text="WPF 类层次结构 —— 每一层赋予的能力" 
-                       FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
-
-            <!-- FrameworkElement 层 → 拥有 Width/Height/Margin/HorizontalAlignment -->
-            <TextBlock Text="1. FrameworkElement 能力：布局" FontWeight="Bold" Margin="0,5"/>
-            <Button Width="200" Height="36" Content="这是 Button（可设宽高=FrameworkElement）"
-                    HorizontalAlignment="Left" Margin="0,0,0,10"/>
-            
-            <!-- Control 层 → 拥有 Template、Background、Foreground -->
-            <TextBlock Text="2. Control 能力：模板" FontWeight="Bold" Margin="0,5"/>
-            <Button Width="200" Height="36">
-                <Button.Template>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="Orange" CornerRadius="8" 
-                                BorderBrush="DarkOrange" BorderThickness="2">
-                            <ContentPresenter HorizontalAlignment="Center" 
-                                              VerticalAlignment="Center"/>
-                        </Border>
-                    </ControlTemplate>
-                </Button.Template>
-                自定义模板按钮
-            </Button>
-
-            <!-- ContentControl 分支 → 只能容纳一个子内容 -->
-            <TextBlock Text="3. ContentControl：单内容" FontWeight="Bold" Margin="0,15,0,5"/>
-            <Button Margin="0,5">
-                <StackPanel Orientation="Horizontal">
-                    <Ellipse Width="20" Height="20" Fill="Green" Margin="0,0,8,0"/>
-                    <TextBlock Text="虽然是复杂布局，但对 Button 来说只是一个 Content"/>
-                </StackPanel>
-            </Button>
-
-            <!-- ItemsControl 分支 → 可容纳集合 -->
-            <TextBlock Text="4. ItemsControl：多内容" FontWeight="Bold" Margin="0,15,0,5"/>
-            <ListBox Width="300" Height="120" Margin="0,5">
-                <ListBoxItem>Item 1：继承自 ItemsControl</ListBoxItem>
-                <ListBoxItem>Item 2：每条是一个 Item</ListBoxItem>
-                <ListBoxItem>Item 3：用 ItemsSource 绑定数据更常见</ListBoxItem>
-            </ListBox>
-
-            <!-- Shape 分支 → 非 Control，没有 Template -->
-            <TextBlock Text="5. Shape 分支：矢量图形（非 Control）" FontWeight="Bold" Margin="0,15,0,5"/>
-            <Canvas Height="80">
-                <Rectangle Canvas.Left="0" Width="80" Height="60" Fill="#4A90D9" RadiusX="8" RadiusY="8"/>
-                <Ellipse Canvas.Left="100" Width="60" Height="60" Fill="#D94A4A"/>
-                <Line Canvas.Left="180" X1="0" Y1="30" X2="80" Y2="30" 
-                      Stroke="#333" StrokeThickness="3"/>
-                <Polygon Canvas.Left="280" 
-                         Points="0,60 30,0 60,60" Fill="#4AD990"/>
-            </Canvas>
-        </StackPanel>
-    </ScrollViewer>
-</Window>
-```
-
-**按钮如何获得所有能力（链式继承）：**
-```csharp
-// Button 的继承链意味着它拥有每个层级提供的能力
-public class Button : ButtonBase
-{
-    // 自己的：ClickMode 等
-}
-public class ButtonBase : ContentControl  // ← 获得 Content 属性
-{
-    // 自己的：Click 事件
-}
-public class ContentControl : Control     // ← 获得 Template
-{
-    // 自己的：Content 属性（只容纳一个子元素）
-}
-public class Control : FrameworkElement   // ← 获得布局/样式/绑定
-{
-    // 自己的：Background、Foreground、Template
-}
-public class FrameworkElement : UIElement // ← 获得交互
-{
-    // 自己的：Width、Height、Margin、Style、DataContext、Resources
-}
-public class UIElement : Visual           // ← 获得渲染
-{
-    // 自己的：MouseDown、KeyDown、Focus、Clip、Opacity、IsHitTestVisible
-}
-public class Visual : DependencyObject    // ← 获得依赖属性系统
-{
-    // 自己的：渲染指令、命中测试
-}
-public class DependencyObject : DispatcherObject  // ← 获得线程模型
-{
-    // 自己的：SetValue、GetValue（依赖属性的核心）
-}
-public class DispatcherObject : Object    // ← .NET 根基
-{
-    // 自己的：Dispatcher（保证 UI 操作在 UI 线程执行）
-}
-```
-
+> **完整继承链图：**
+> ```
+> System.Object
+>  └─ System.Windows.Threading.DispatcherObject        ← 线程安全
+>      └─ System.Windows.DependencyObject               ← 依赖属性
+>          └─ System.Windows.Media.Visual               ← 渲染能力
+>              └─ System.Windows.UIElement               ← 输入/焦点/事件
+>                  └─ System.Windows.FrameworkElement    ← 布局/样式/绑定
+>                      ├─ System.Windows.Controls.Control    ← 模板
+>                      │   ├─ ContentControl                 ← 单内容
+>                      │   │   ├─ Window
+>                      │   │   ├─ Button
+>                      │   │   ├─ Label
+>                      │   │   ├─ CheckBox / RadioButton
+>                      │   │   ├─ ToolTip
+>                      │   │   ├─ UserControl
+>                      │   │   └─ GroupItem
+>                      │   │
+>                      │   ├─ ItemsControl                   ← 多内容
+>                      │   │   ├─ ListBox
+>                      │   │   ├─ ComboBox
+>                      │   │   ├─ TreeView
+>                      │   │   ├─ ListView
+>                      │   │   ├─ DataGrid
+>                      │   │   ├─ TabControl
+>                      │   │   ├─ Menu
+>                      │   │   └─ StatusBar
+>                      │   │
+>                      │   ├─ TextBoxBase                    ← 文本输入
+>                      │   │   ├─ TextBox
+>                      │   │   └─ RichTextBox
+>                      │   │
+>                      │   ├─ RangeBase                      ← 范围控件
+>                      │   │   ├─ Slider
+>                      │   │   ├─ ProgressBar
+>                      │   │   └─ ScrollBar
+>                      │   │
+>                      │   └─ HeaderedContentControl         ← 带标题的内容控件
+>                      │       ├─ GroupBox
+>                      │       └─ Expander
+>                      │
+>                      ├─ System.Windows.Controls.Panel      ← 布局容器
+>                      │   ├─ StackPanel
+>                      │   ├─ WrapPanel
+>                      │   ├─ DockPanel
+>                      │   ├─ Grid
+>                      │   ├─ Canvas
+>                      │   └─ UniformGrid
+>                      │
+>                      ├─ System.Windows.Shapes.Shape        ← 矢量图形
+>                      │   ├─ Rectangle
+>                      │   ├─ Ellipse
+>                      │   ├─ Line
+>                      │   ├─ Polygon
+>                      │   ├─ Polyline
+>                      │   └─ Path
+>                      │
+>                      ├─ System.Windows.Controls.Image      ← 图片
+>                      ├─ System.Windows.Controls.Border     ← 边框
+>                      ├─ System.Windows.Controls.Viewbox    ← 缩放容器
+>                      └─ System.Windows.Controls.TextBlock  ← 文本显示
+> ```
+> 
+> **每一层到底增加了什么？有代码有真相：**
+> ```xml
+> <Window x:Class="WpfDemo.HierarchyDemo"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="类层次结构演示" Height="500" Width="700">
+>     <ScrollViewer>
+>         <StackPanel Margin="15">
+>             <TextBlock Text="WPF 类层次结构 —— 每一层赋予的能力" 
+>                        FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
+> 
+>             <!-- FrameworkElement 层 → 拥有 Width/Height/Margin/HorizontalAlignment -->
+>             <TextBlock Text="1. FrameworkElement 能力：布局" FontWeight="Bold" Margin="0,5"/>
+>             <Button Width="200" Height="36" Content="这是 Button（可设宽高=FrameworkElement）"
+>                     HorizontalAlignment="Left" Margin="0,0,0,10"/>
+>             
+>             <!-- Control 层 → 拥有 Template、Background、Foreground -->
+>             <TextBlock Text="2. Control 能力：模板" FontWeight="Bold" Margin="0,5"/>
+>             <Button Width="200" Height="36">
+>                 <Button.Template>
+>                     <ControlTemplate TargetType="Button">
+>                         <Border Background="Orange" CornerRadius="8" 
+>                                 BorderBrush="DarkOrange" BorderThickness="2">
+>                             <ContentPresenter HorizontalAlignment="Center" 
+>                                               VerticalAlignment="Center"/>
+>                         </Border>
+>                     </ControlTemplate>
+>                 </Button.Template>
+>                 自定义模板按钮
+>             </Button>
+> 
+>             <!-- ContentControl 分支 → 只能容纳一个子内容 -->
+>             <TextBlock Text="3. ContentControl：单内容" FontWeight="Bold" Margin="0,15,0,5"/>
+>             <Button Margin="0,5">
+>                 <StackPanel Orientation="Horizontal">
+>                     <Ellipse Width="20" Height="20" Fill="Green" Margin="0,0,8,0"/>
+>                     <TextBlock Text="虽然是复杂布局，但对 Button 来说只是一个 Content"/>
+>                 </StackPanel>
+>             </Button>
+> 
+>             <!-- ItemsControl 分支 → 可容纳集合 -->
+>             <TextBlock Text="4. ItemsControl：多内容" FontWeight="Bold" Margin="0,15,0,5"/>
+>             <ListBox Width="300" Height="120" Margin="0,5">
+>                 <ListBoxItem>Item 1：继承自 ItemsControl</ListBoxItem>
+>                 <ListBoxItem>Item 2：每条是一个 Item</ListBoxItem>
+>                 <ListBoxItem>Item 3：用 ItemsSource 绑定数据更常见</ListBoxItem>
+>             </ListBox>
+> 
+>             <!-- Shape 分支 → 非 Control，没有 Template -->
+>             <TextBlock Text="5. Shape 分支：矢量图形（非 Control）" FontWeight="Bold" Margin="0,15,0,5"/>
+>             <Canvas Height="80">
+>                 <Rectangle Canvas.Left="0" Width="80" Height="60" Fill="#4A90D9" RadiusX="8" RadiusY="8"/>
+>                 <Ellipse Canvas.Left="100" Width="60" Height="60" Fill="#D94A4A"/>
+>                 <Line Canvas.Left="180" X1="0" Y1="30" X2="80" Y2="30" 
+>                       Stroke="#333" StrokeThickness="3"/>
+>                 <Polygon Canvas.Left="280" 
+>                          Points="0,60 30,0 60,60" Fill="#4AD990"/>
+>             </Canvas>
+>         </StackPanel>
+>     </ScrollViewer>
+> </Window>
+> ```
+> 
+> **按钮如何获得所有能力（链式继承）：**
+> ```csharp
+> // Button 的继承链意味着它拥有每个层级提供的能力
+> public class Button : ButtonBase
+> {
+>     // 自己的：ClickMode 等
+> }
+> public class ButtonBase : ContentControl  // ← 获得 Content 属性
+> {
+>     // 自己的：Click 事件
+> }
+> public class ContentControl : Control     // ← 获得 Template
+> {
+>     // 自己的：Content 属性（只容纳一个子元素）
+> }
+> public class Control : FrameworkElement   // ← 获得布局/样式/绑定
+> {
+>     // 自己的：Background、Foreground、Template
+> }
+> public class FrameworkElement : UIElement // ← 获得交互
+> {
+>     // 自己的：Width、Height、Margin、Style、DataContext、Resources
+> }
+> public class UIElement : Visual           // ← 获得渲染
+> {
+>     // 自己的：MouseDown、KeyDown、Focus、Clip、Opacity、IsHitTestVisible
+> }
+> public class Visual : DependencyObject    // ← 获得依赖属性系统
+> {
+>     // 自己的：渲染指令、命中测试
+> }
+> public class DependencyObject : DispatcherObject  // ← 获得线程模型
+> {
+>     // 自己的：SetValue、GetValue（依赖属性的核心）
+> }
+> public class DispatcherObject : Object    // ← .NET 根基
+> {
+>     // 自己的：Dispatcher（保证 UI 操作在 UI 线程执行）
+> }
+> ```
+> 
 > [!scene] 适用场景
 > ✅ 想换自定义控件模板：需要知道这个控件是 ContentControl 还是 ItemsControl，模板写法不同
 > ✅ 想知道控件有哪些可用属性：查看它继承链上每个父类提供的属性

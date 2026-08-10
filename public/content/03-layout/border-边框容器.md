@@ -7,59 +7,219 @@ parent: 3.8 辅助容器
 # Border 边框容器
 
 > [!plain] 白话理解
-> "Border 边框容器"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"Border 边框容器"是一个重要的知识点。布局是界面的骨架。一个好的布局能让控件自动适应窗口大小、多屏拼接等各种场景。掌握了它，你就能更好地构建工业级上位机应用程序。
+> Border 就像给控件**套了一个"相框"**——不仅能给内容加上边框线，还能加背景色、圆角、内边距。它是 WPF 里最轻量级、最常用的**装饰性容器**。如果你想让一个 TextBlock 显示在带圆角的深色卡片上，或者给一组设备参数加上统一的橙色边框，Border 就是那个"一包装就变好看"的东西。Border 只能包含一个子元素（和 ScrollViewer、Viewbox 一样），如果需要包多个，就在里面套一个 Panel（通常是 StackPanel 或 Grid）。
 
 > [!def] 官方定义
-> Border 边框容器是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> Border 是 WPF 中的一个装饰器控件（Decorator），继承自 Decorator 类，用于给单个子元素绘制边框、背景和圆角。它提供了 `BorderBrush`（边框画刷）、`BorderThickness`（边框厚度）、`Background`（背景画刷）、`CornerRadius`（圆角半径）、`Padding`（内边距）五个核心属性。Border 支持每个角独立设置圆角半径，以及每条边独立设置边框厚度。
 
 > [!origin] 由来背景
-> Border 边框容器的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：布局是界面的骨架。一个好的布局能让控件自动适应窗口大小、多屏拼接等各种场景。
+> 在 WinForms 时代，要给控件加边框或圆角非常麻烦——要么用 `Paint` 事件手绘，要么用第三方库。WPF 将边框/圆角做成了独立于任何控件的内置功能——`Border` 元素。这意味着任何内容都可以被"包一层 Border"来获得边框和圆角效果，不必修改原控件的代码。这种"装饰器模式"（Decorator Pattern）在 WPF 布局中非常普遍。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"Border 边框容器"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **只能包含一个子元素**：如果需要多个子元素，在 Border 内部放一个 Panel（如 StackPanel）
+> - **五个核心属性**：`BorderBrush`（边框颜色）、`BorderThickness`（粗细）、`Background`（内部填充色）、`CornerRadius`（圆角）、`Padding`（内边距）
+> - **圆角支持异形**：`CornerRadius="8,0,8,0"` 可以分别设置左上、右上、右下、左下四个角的半径，实现"半边圆角"效果
+> - **边框支持异形**：`BorderThickness="2,0,2,0"` 可以分别设置左、上、右、下边的粗细
+> - **Background 和 BorderBrush 都支持渐变**：可以用 `LinearGradientBrush`、`RadialGradientBrush` 等画刷
+> - **不是 Panel**：Border 继承自 `Decorator`，不是 `Panel`，因此不能直接放多个子元素
 
 > [!example] 完整示例
-> ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+>
+> 下面是一个上位机中典型的**设备信息卡片**：用 Border 实现卡片背景、圆角、边框效果。
+>
+> **MainWindow.xaml** — Border 卡片布局
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="设备监控主页" Height="450" Width="750"
+>         WindowStartupLocation="CenterScreen">
+>     
+>     <Grid Background="#0D1117">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>         </Grid.RowDefinitions>
+>         
+>         <!-- 标题栏 -->
+>         <Border Grid.Row="0" Background="#161B22" Padding="15,10"
+>                 BorderBrush="#2A4A6C" BorderThickness="0,0,0,1">
+>             <StackPanel Orientation="Horizontal">
+>                 <TextBlock Text="📊 设备监控主页"
+>                            Foreground="#FF6B35" FontSize="16"
+>                            FontWeight="Bold" VerticalAlignment="Center"/>
+>                 <TextBlock Text=" | 系统运行正常"
+>                            Foreground="#3FB950" FontSize="12"
+>                            VerticalAlignment="Center" Margin="12,0,0,0"/>
+>             </StackPanel>
+>         </Border>
+>         
+>         <!-- 卡片区域：用 WrapPanel 排列 -->
+>         <WrapPanel Grid.Row="1" Margin="15" ItemWidth="220"
+>                    ItemHeight="140">
+>             
+>             <!-- 卡片1：正常设备 -->
+>             <Border Width="210" Height="130" Margin="5"
+>                     Background="#161B22" CornerRadius="8"
+>                     BorderBrush="#3FB950" BorderThickness="1"
+>                     Padding="12">
+>                 <StackPanel>
+>                     <StackPanel Orientation="Horizontal">
+>                         <Ellipse Width="10" Height="10" Fill="#3FB950"
+>                                  VerticalAlignment="Center"/>
+>                         <TextBlock Text=" 电机 M-101"
+>                                    Foreground="White" FontSize="14"
+>                                    FontWeight="Bold"
+>                                    VerticalAlignment="Center"
+>                                    Margin="5,0,0,0"/>
+>                     </StackPanel>
+>                     <TextBlock Text="状态: 运行中"
+>                                Foreground="#3FB950" FontSize="12"
+>                                Margin="0,8,0,0"/>
+>                     <TextBlock Text="转速: 1480 rpm"
+>                                Foreground="#999" FontSize="12"
+>                                Margin="0,4,0,0"/>
+>                     <TextBlock Text="温度: 42°C"
+>                                Foreground="#999" FontSize="12"
+>                                Margin="0,4,0,0"/>
+>                 </StackPanel>
+>             </Border>
+>             
+>             <!-- 卡片2：报警设备 -->
+>             <Border Width="210" Height="130" Margin="5"
+>                     Background="#161B22" CornerRadius="8"
+>                     BorderBrush="#CC2222" BorderThickness="2"
+>                     Padding="12">
+>                 <StackPanel>
+>                     <StackPanel Orientation="Horizontal">
+>                         <Ellipse Width="10" Height="10" Fill="#CC2222"
+>                                  VerticalAlignment="Center"/>
+>                         <TextBlock Text=" 变频器 VFD-01"
+>                                    Foreground="White" FontSize="14"
+>                                    FontWeight="Bold"
+>                                    VerticalAlignment="Center"
+>                                    Margin="5,0,0,0"/>
+>                     </StackPanel>
+>                     <TextBlock Text="状态: 过载报警"
+>                                Foreground="#CC2222" FontSize="12"
+>                                Margin="0,8,0,0"/>
+>                     <TextBlock Text="电流: 48.5 A"
+>                                Foreground="#999" FontSize="12"
+>                                Margin="0,4,0,0"/>
+>                     <TextBlock Text="频率: 50 Hz"
+>                                Foreground="#999" FontSize="12"
+>                                Margin="0,4,0,0"/>
+>                 </StackPanel>
+>             </Border>
+>             
+>             <!-- 卡片3：待机设备 -->
+>             <Border Width="210" Height="130" Margin="5"
+>                     Background="#161B22" CornerRadius="8"
+>                     BorderBrush="#555" BorderThickness="1"
+>                     Padding="12">
+>                 <StackPanel>
+>                     <StackPanel Orientation="Horizontal">
+>                         <Ellipse Width="10" Height="10" Fill="#999"
+>                                  VerticalAlignment="Center"/>
+>                         <TextBlock Text=" PLC-CPU1"
+>                                    Foreground="White" FontSize="14"
+>                                    FontWeight="Bold"
+>                                    VerticalAlignment="Center"
+>                                    Margin="5,0,0,0"/>
+>                     </StackPanel>
+>                     <TextBlock Text="状态: 待机"
+>                                Foreground="#999" FontSize="12"
+>                                Margin="0,8,0,0"/>
+>                     <TextBlock Text="CPU 使用率: 12%"
+>                                Foreground="#999" FontSize="12"
+>                                Margin="0,4,0,0"/>
+>                     <TextBlock Text="内存: 256 MB"
+>                                Foreground="#999" FontSize="12"
+>                                Margin="0,4,0,0"/>
+>                 </StackPanel>
+>             </Border>
+>             
+>             <!-- 卡片4：不同圆角渐变边框 -->
+>             <Border Width="210" Height="130" Margin="5"
+>                     Background="#161B22" CornerRadius="16,4,16,4"
+>                     Padding="12">
+>                 <Border.BorderBrush>
+>                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+>                         <GradientStop Color="#FF6B35" Offset="0"/>
+>                         <GradientStop Color="#3FB950" Offset="1"/>
+>                     </LinearGradientBrush>
+>                 </Border.BorderBrush>
+>                 <Border.BorderThickness>1.5</Border.BorderThickness>
+>                 <StackPanel>
+>                     <TextBlock Text="传感器阵列"
+>                                Foreground="White" FontSize="14"
+>                                FontWeight="Bold"/>
+>                     <TextBlock Text="温度: 23.5°C"
+>                                Foreground="#999" FontSize="12"
+>                                Margin="0,8,0,0"/>
+>                     <TextBlock Text="湿度: 65%"
+>                                Foreground="#999" FontSize="12"
+>                                Margin="0,4,0,0"/>
+>                     <TextBlock Text="气压: 1013 hPa"
+>                                Foreground="#999" FontSize="12"
+>                                Margin="0,4,0,0"/>
+>                 </StackPanel>
+>             </Border>
+>         </WrapPanel>
+>     </Grid>
+> </Window>
 > ```
+>
+> **MainWindow.xaml.cs**
+> ```csharp
+> using System.Windows;
 > 
-
+> namespace HmiDemo;
+> 
+> public partial class MainWindow : Window
+> {
+>     public MainWindow()
+>     {
+>         InitializeComponent();
+>     }
+> }
+> ```
+>
+> 这个示例展示了 Border 在卡片式 UI 中的四个典型用法：
+> 1. **底部边框**：标题栏用 `BorderThickness="0,0,0,1"` 画一条分隔线
+> 2. **状态颜色边框**：绿色（正常）、红色（报警）、灰色（待机）
+> 3. **圆角卡片**：`CornerRadius="8"` 四个角统一圆角
+> 4. **渐变边框 + 异形圆角**：`CornerRadius="16,4,16,4"` 实现左上/右下大圆角
+>
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> - ✅ 卡片式 UI（设备信息卡、报警通知卡、参数配置卡）
+> - ✅ 给控件分组加框（用 Border 包住一组控件，加背景和边框）
+> - ✅ 底部/顶部/侧边分隔线（`BorderThickness="0,0,0,1"` 画一条细线）
+> - ✅ 圆角容器（Button、TextBox 等控件本身支持圆角，但 Border 更通用）
+> - ✅ 状态指示（绿色边框=正常、红色边框=报警、黄色边框=警告）
+> - ❌ 需要滚动的内容区——用 ScrollViewer 包在最外层
+> - ❌ 需要缩放的内容——用 Viewbox
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
-> 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
->
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> - **坑1：Border 内放多个子元素**。Border 的 Child 属性只能设一个，写多个子元素会报 XAML 解析错误。解决方案：在 Border 内套一个 Panel（`<StackPanel>`、`<Grid>`）。
+> - **坑2：CornerRadius 溢出**。如果 `CornerRadius` 值太大（比如 50），而 Border 只有 30×30，圆角会相互重叠导致渲染异常。解决方案：确保 `CornerRadius ≤ Min(Width, Height) / 2`。
+> - **坑3：Border 嵌套 Border 浪费层级**。新手容易写 `<Border><Border><TextBlock/></Border></Border>` 来分别设背景和边框。解决方案：一个 Border 就同时支持 `Background`、`BorderBrush`、`CornerRadius` 和 `Padding`，不需要嵌套。
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - 卡片式 UI 的边距统一用 `Padding` 而非子元素的 `Margin`——这样修改卡片内边距只需要改一个地方
+> - 状态颜色（绿/红/黄）可以通过 Binding 动态控制——把 `BorderBrush` 绑定到 ViewModel 的 Status 属性，用 `IValueConverter`（或 DataTrigger）转换颜色
+> - Border 作为装饰器，厚度建议 1-2px，不宜过粗（除非刻意强调）
+> - 上位机中的"分区线"需求，优先用 `Border`（宽为 1px、背景色为分隔色）而非 `Rectangle`，因为 Border 更轻量且可以附带 Padding
+> - 如果需要阴影效果，Border 本身不支持——可以查考 `DropShadowEffect`（BitmapEffect）或第三方控件库
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"Border 边框容器"实现一个上位机中的小功能模块
+> - **Lv.1 照猫画虎**：修改上面的示例，新增一张"设备离线"卡片——灰色半透明背景、灰色虚线边框（用 `StrokeDashArray` 样式模拟，或直接用浅灰 BorderBrush）
+> - **Lv.2 小试牛刀**：实现一个"参数配置面板"——用 Border 包装每一个参数行，背景交替（奇行深色、偶行浅色），参数名在左、参数值在右，用不同的 CornerRadius 区分第一行（顶部圆角）和最后一行（底部圆角）
+> - **Lv.3 融会贯通**：做一个"报警优先级的渐变卡片"——根据报警等级（1-4），边框从红色→橙色→黄色→蓝色渐变，且内部背景也有相应的淡色渐变
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"Border 边框容器"
-> - → 后续必学：掌握"Border 边框容器"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置：UniformGrid 均匀网格
+> - → 后续：ScrollViewer 滚动容器
+> - ⇄ 关联：Decorator 类 — Border、Viewbox、ScrollViewer 都继承自它
+> - ⇄ 关联：Button.Template — 自定义按钮模板时大量使用 Border 作为视觉元素
+> - 📖 官方文档：[Border Class (Microsoft Docs)](https://docs.microsoft.com/en-us/dotnet/api/system.windows.controls.border)

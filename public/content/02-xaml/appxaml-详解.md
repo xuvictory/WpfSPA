@@ -21,185 +21,185 @@ title: App.xaml 详解
 > - 每个 WPF 程序有且仅有一个 `Application` 实例（通常就是 `App` 类）
 
 > [!example] 完整示例
-**App.xaml —— 完整版配置：**
-```xml
-<Application x:Class="DeviceMonitor.App"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             
-             <!-- 【1. StartupUri】程序启动后打开哪个窗口 -->
-             StartupUri="Views/MainWindow.xaml"
-             
-             ShutdownMode="OnMainWindowClose">
-    
-    <Application.Resources>
-        <ResourceDictionary>
-            
-            <!-- ===== 全局颜色定义 ===== -->
-            <Color x:Key="PrimaryColor">#1976D2</Color>
-            <Color x:Key="DangerColor">#D32F2F</Color>
-            <Color x:Key="SuccessColor">#388E3C</Color>
-            <Color x:Key="WarningColor">#F57C00</Color>
-            
-            <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}"/>
-            <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource DangerColor}"/>
-            <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}"/>
-            <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource WarningColor}"/>
-            
-            <!-- ===== 全局字体 ===== -->
-            <FontFamily x:Key="AppFont">Microsoft YaHei UI</FontFamily>
-            <sys:Double x:Key="DefaultFontSize" 
-                        xmlns:sys="clr-namespace:System;assembly=mscorlib">14</sys:Double>
-            <sys:Double x:Key="TitleFontSize" 
-                        xmlns:sys="clr-namespace:System;assembly=mscorlib">20</sys:Double>
-            
-            <!-- ===== 全局控件样式 ===== -->
-            <Style x:Key="PrimaryButton" TargetType="Button">
-                <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
-                <Setter Property="Foreground" Value="White"/>
-                <Setter Property="FontSize" Value="{StaticResource DefaultFontSize}"/>
-                <Setter Property="Height" Value="36"/>
-                <Setter Property="MinWidth" Value="100"/>
-                <Setter Property="Padding" Value="16,0"/>
-                <Setter Property="BorderThickness" Value="0"/>
-                <Setter Property="Cursor" Value="Hand"/>
-                <Setter Property="Template">
-                    <Setter.Value>
-                        <ControlTemplate TargetType="Button">
-                            <Border Background="{TemplateBinding Background}"
-                                    CornerRadius="6" Padding="{TemplateBinding Padding}">
-                                <ContentPresenter HorizontalAlignment="Center" 
-                                                  VerticalAlignment="Center"/>
-                            </Border>
-                            <ControlTemplate.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Background" Value="#1565C0"/>
-                                </Trigger>
-                                <Trigger Property="IsPressed" Value="True">
-                                    <Setter Property="Background" Value="#0D47A1"/>
-                                </Trigger>
-                            </ControlTemplate.Triggers>
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
-            </Style>
-
-            <Style TargetType="TextBlock">
-                <Setter Property="FontFamily" Value="{StaticResource AppFont}"/>
-                <Setter Property="FontSize" Value="{StaticResource DefaultFontSize}"/>
-            </Style>
-            
-            <!-- ===== 【2. MergedDictionaries】合并外部资源字典 ===== -->
-            <!-- 把不同模块的资源拆分到独立文件中，在这里统一合并 -->
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="Resources/Colors.xaml"/>
-                <ResourceDictionary Source="Resources/ButtonStyles.xaml"/>
-                <ResourceDictionary Source="Resources/Converters.xaml"/>
-                <ResourceDictionary Source="Resources/DataTemplates.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
-            
-        </ResourceDictionary>
-    </Application.Resources>
-</Application>
-```
-
-**App.xaml.cs —— 应用程序生命周期：**
-```csharp
-using System.Windows;
-using System.Windows.Threading;
-
-namespace DeviceMonitor;
-
-public partial class App : Application
-{
-    protected override void OnStartup(StartupEventArgs e)
-    {
-        base.OnStartup(e);
-        
-        // 程序启动时的初始化工作
-        // —— 加载配置文件
-        // —— 初始化数据库连接
-        // —— 检查授权许可
-        // —— 解析命令行参数（e.Args）
-        
-        // 注册全局未处理异常捕获
-        DispatcherUnhandledException += App_DispatcherUnhandledException;
-        
-        // 可选：不通过 StartupUri，用代码手动打开窗口
-        // var mainWindow = new MainWindow();
-        // mainWindow.Show();
-    }
-
-    protected override void OnExit(ExitEventArgs e)
-    {
-        // 程序退出时的清理工作
-        // —— 保存用户设置
-        // —— 关闭数据库连接
-        // —— 释放非托管资源
-        
-        base.OnExit(e);
-    }
-
-    private void App_DispatcherUnhandledException(object sender, 
-        DispatcherUnhandledExceptionEventArgs e)
-    {
-        // 全局异常捕获——最后的"安全网"
-        MessageBox.Show($"发生未处理的异常：\n{e.Exception.Message}", 
-                        "程序错误", 
-                        MessageBoxButton.OK, 
-                        MessageBoxImage.Error);
-        
-        // 标记为已处理，阻止程序崩溃（生产环境慎用！）
-        e.Handled = true;
-    }
-}
-```
-
-**拆分后的资源字典示例（Resources/Colors.xaml）：**
-```xml
-<!-- Resources/Colors.xaml —— 集中管理所有颜色 -->
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    
-    <!-- 主题色 -->
-    <Color x:Key="PrimaryColor">#1976D2</Color>
-    <Color x:Key="PrimaryLightColor">#42A5F5</Color>
-    <Color x:Key="PrimaryDarkColor">#0D47A1</Color>
-    
-    <!-- 语义色 -->
-    <Color x:Key="ErrorColor">#D32F2F</Color>
-    <Color x:Key="InfoColor">#1976D2</Color>
-    <Color x:Key="SuccessColor">#388E3C</Color>
-    <Color x:Key="WarningColor">#F57C00</Color>
-    
-    <!-- 背景色 -->
-    <Color x:Key="CardBackground">#FFFFFF</Color>
-    <Color x:Key="PageBackground">#F5F5F5</Color>
-    <Color x:Key="BorderColor">#E0E0E0</Color>
-
-    <!-- 颜色 -> 画刷 转换 -->
-    <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}"/>
-    <SolidColorBrush x:Key="PrimaryLightBrush" Color="{StaticResource PrimaryLightColor}"/>
-    <SolidColorBrush x:Key="ErrorBrush" Color="{StaticResource ErrorColor}"/>
-    <SolidColorBrush x:Key="InfoBrush" Color="{StaticResource InfoColor}"/>
-    <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}"/>
-    <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource WarningColor}"/>
-    <SolidColorBrush x:Key="CardBackgroundBrush" Color="{StaticResource CardBackground}"/>
-    <SolidColorBrush x:Key="PageBackgroundBrush" Color="{StaticResource PageBackground}"/>
-
-</ResourceDictionary>
-```
-
-**App.xaml 结构速查表：**
-| 配置项 | 作用 | 必须？ |
-|--------|------|--------|
-| `x:Class` | 关联 App.xaml.cs | ✅ 必须 |
-| `StartupUri` | 启动窗口路径 | 推荐（也可以代码打开） |
-| `ShutdownMode` | 关机模式（OnMainWindowClose / OnLastWindowClose / OnExplicitShutdown） | 可选，默认 OnLastWindowClose |
-| `Application.Resources` | 全局资源 | 可选但强烈推荐 |
-| `MergedDictionaries` | 合并外部资源文件 | 可选，大型项目推荐 |
-| 应用程序事件 | Startup / Exit / DispatcherUnhandledException 等 | 按需使用 |
-
+> **App.xaml —— 完整版配置：**
+> ```xml
+> <Application x:Class="DeviceMonitor.App"
+>              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>              
+>              <!-- 【1. StartupUri】程序启动后打开哪个窗口 -->
+>              StartupUri="Views/MainWindow.xaml"
+>              
+>              ShutdownMode="OnMainWindowClose">
+>     
+>     <Application.Resources>
+>         <ResourceDictionary>
+>             
+>             <!-- ===== 全局颜色定义 ===== -->
+>             <Color x:Key="PrimaryColor">#1976D2</Color>
+>             <Color x:Key="DangerColor">#D32F2F</Color>
+>             <Color x:Key="SuccessColor">#388E3C</Color>
+>             <Color x:Key="WarningColor">#F57C00</Color>
+>             
+>             <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}"/>
+>             <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource DangerColor}"/>
+>             <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}"/>
+>             <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource WarningColor}"/>
+>             
+>             <!-- ===== 全局字体 ===== -->
+>             <FontFamily x:Key="AppFont">Microsoft YaHei UI</FontFamily>
+>             <sys:Double x:Key="DefaultFontSize" 
+>                         xmlns:sys="clr-namespace:System;assembly=mscorlib">14</sys:Double>
+>             <sys:Double x:Key="TitleFontSize" 
+>                         xmlns:sys="clr-namespace:System;assembly=mscorlib">20</sys:Double>
+>             
+>             <!-- ===== 全局控件样式 ===== -->
+>             <Style x:Key="PrimaryButton" TargetType="Button">
+>                 <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
+>                 <Setter Property="Foreground" Value="White"/>
+>                 <Setter Property="FontSize" Value="{StaticResource DefaultFontSize}"/>
+>                 <Setter Property="Height" Value="36"/>
+>                 <Setter Property="MinWidth" Value="100"/>
+>                 <Setter Property="Padding" Value="16,0"/>
+>                 <Setter Property="BorderThickness" Value="0"/>
+>                 <Setter Property="Cursor" Value="Hand"/>
+>                 <Setter Property="Template">
+>                     <Setter.Value>
+>                         <ControlTemplate TargetType="Button">
+>                             <Border Background="{TemplateBinding Background}"
+>                                     CornerRadius="6" Padding="{TemplateBinding Padding}">
+>                                 <ContentPresenter HorizontalAlignment="Center" 
+>                                                   VerticalAlignment="Center"/>
+>                             </Border>
+>                             <ControlTemplate.Triggers>
+>                                 <Trigger Property="IsMouseOver" Value="True">
+>                                     <Setter Property="Background" Value="#1565C0"/>
+>                                 </Trigger>
+>                                 <Trigger Property="IsPressed" Value="True">
+>                                     <Setter Property="Background" Value="#0D47A1"/>
+>                                 </Trigger>
+>                             </ControlTemplate.Triggers>
+>                         </ControlTemplate>
+>                     </Setter.Value>
+>                 </Setter>
+>             </Style>
+> 
+>             <Style TargetType="TextBlock">
+>                 <Setter Property="FontFamily" Value="{StaticResource AppFont}"/>
+>                 <Setter Property="FontSize" Value="{StaticResource DefaultFontSize}"/>
+>             </Style>
+>             
+>             <!-- ===== 【2. MergedDictionaries】合并外部资源字典 ===== -->
+>             <!-- 把不同模块的资源拆分到独立文件中，在这里统一合并 -->
+>             <ResourceDictionary.MergedDictionaries>
+>                 <ResourceDictionary Source="Resources/Colors.xaml"/>
+>                 <ResourceDictionary Source="Resources/ButtonStyles.xaml"/>
+>                 <ResourceDictionary Source="Resources/Converters.xaml"/>
+>                 <ResourceDictionary Source="Resources/DataTemplates.xaml"/>
+>             </ResourceDictionary.MergedDictionaries>
+>             
+>         </ResourceDictionary>
+>     </Application.Resources>
+> </Application>
+> ```
+> 
+> **App.xaml.cs —— 应用程序生命周期：**
+> ```csharp
+> using System.Windows;
+> using System.Windows.Threading;
+> 
+> namespace DeviceMonitor;
+> 
+> public partial class App : Application
+> {
+>     protected override void OnStartup(StartupEventArgs e)
+>     {
+>         base.OnStartup(e);
+>         
+>         // 程序启动时的初始化工作
+>         // —— 加载配置文件
+>         // —— 初始化数据库连接
+>         // —— 检查授权许可
+>         // —— 解析命令行参数（e.Args）
+>         
+>         // 注册全局未处理异常捕获
+>         DispatcherUnhandledException += App_DispatcherUnhandledException;
+>         
+>         // 可选：不通过 StartupUri，用代码手动打开窗口
+>         // var mainWindow = new MainWindow();
+>         // mainWindow.Show();
+>     }
+> 
+>     protected override void OnExit(ExitEventArgs e)
+>     {
+>         // 程序退出时的清理工作
+>         // —— 保存用户设置
+>         // —— 关闭数据库连接
+>         // —— 释放非托管资源
+>         
+>         base.OnExit(e);
+>     }
+> 
+>     private void App_DispatcherUnhandledException(object sender, 
+>         DispatcherUnhandledExceptionEventArgs e)
+>     {
+>         // 全局异常捕获——最后的"安全网"
+>         MessageBox.Show($"发生未处理的异常：\n{e.Exception.Message}", 
+>                         "程序错误", 
+>                         MessageBoxButton.OK, 
+>                         MessageBoxImage.Error);
+>         
+>         // 标记为已处理，阻止程序崩溃（生产环境慎用！）
+>         e.Handled = true;
+>     }
+> }
+> ```
+> 
+> **拆分后的资源字典示例（Resources/Colors.xaml）：**
+> ```xml
+> <!-- Resources/Colors.xaml —— 集中管理所有颜色 -->
+> <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+>     
+>     <!-- 主题色 -->
+>     <Color x:Key="PrimaryColor">#1976D2</Color>
+>     <Color x:Key="PrimaryLightColor">#42A5F5</Color>
+>     <Color x:Key="PrimaryDarkColor">#0D47A1</Color>
+>     
+>     <!-- 语义色 -->
+>     <Color x:Key="ErrorColor">#D32F2F</Color>
+>     <Color x:Key="InfoColor">#1976D2</Color>
+>     <Color x:Key="SuccessColor">#388E3C</Color>
+>     <Color x:Key="WarningColor">#F57C00</Color>
+>     
+>     <!-- 背景色 -->
+>     <Color x:Key="CardBackground">#FFFFFF</Color>
+>     <Color x:Key="PageBackground">#F5F5F5</Color>
+>     <Color x:Key="BorderColor">#E0E0E0</Color>
+> 
+>     <!-- 颜色 -> 画刷 转换 -->
+>     <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}"/>
+>     <SolidColorBrush x:Key="PrimaryLightBrush" Color="{StaticResource PrimaryLightColor}"/>
+>     <SolidColorBrush x:Key="ErrorBrush" Color="{StaticResource ErrorColor}"/>
+>     <SolidColorBrush x:Key="InfoBrush" Color="{StaticResource InfoColor}"/>
+>     <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}"/>
+>     <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource WarningColor}"/>
+>     <SolidColorBrush x:Key="CardBackgroundBrush" Color="{StaticResource CardBackground}"/>
+>     <SolidColorBrush x:Key="PageBackgroundBrush" Color="{StaticResource PageBackground}"/>
+> 
+> </ResourceDictionary>
+> ```
+> 
+> **App.xaml 结构速查表：**
+> | 配置项 | 作用 | 必须？ |
+> |--------|------|--------|
+> | `x:Class` | 关联 App.xaml.cs | ✅ 必须 |
+> | `StartupUri` | 启动窗口路径 | 推荐（也可以代码打开） |
+> | `ShutdownMode` | 关机模式（OnMainWindowClose / OnLastWindowClose / OnExplicitShutdown） | 可选，默认 OnLastWindowClose |
+> | `Application.Resources` | 全局资源 | 可选但强烈推荐 |
+> | `MergedDictionaries` | 合并外部资源文件 | 可选，大型项目推荐 |
+> | 应用程序事件 | Startup / Exit / DispatcherUnhandledException 等 | 按需使用 |
+> 
 > [!scene] 适用场景
 > ✅ 定义全程序统一的颜色、字体、样式——一次定义，到处复用
 > ✅ 大型项目资源模块化管理——每个功能模块有自己的资源字典，App.xaml 统一合并

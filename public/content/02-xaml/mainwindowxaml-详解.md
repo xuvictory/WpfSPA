@@ -22,299 +22,299 @@ title: MainWindow.xaml 详解
 > - 一个程序可以有多个 Window，但习惯上主窗口叫 `MainWindow`
 
 > [!example] 完整示例
-**一个设备监控系统的主窗口，涵盖常用控件的完整写法：**
-
-**MainWindow.xaml：**
-```xml
-<Window x:Class="DeviceMonitor.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        
-        <!-- 窗口自身属性 -->
-        Title="设备监控系统 v2.0"
-        Height="600" Width="900"
-        MinHeight="400" MinWidth="600"
-        WindowStartupLocation="CenterScreen"
-        WindowState="Normal"
-        ResizeMode="CanResizeWithGrip"
-        Icon="/Resources/app.ico">
-
-    <!-- Window 的内容：一个 Grid 布局面板 -->
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>    <!-- 顶栏 -->
-            <RowDefinition Height="*"/>        <!-- 主内容区 -->
-            <RowDefinition Height="Auto"/>    <!-- 底栏 -->
-        </Grid.RowDefinitions>
-
-        <!-- ========== 顶栏 ========== -->
-        <Border Grid.Row="0" Background="{StaticResource PrimaryBrush}" 
-                Padding="16,12">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                
-                <TextBlock Grid.Column="0" Text="🏭 设备监控系统"
-                           FontSize="20" FontWeight="Bold"
-                           Foreground="White" VerticalAlignment="Center"/>
-                
-                <StackPanel Grid.Column="2" Orientation="Horizontal">
-                    <Button Content="刷新" Style="{StaticResource PrimaryButton}"
-                            Width="80" Height="32" Margin="0,0,8,0"
-                            Click="BtnRefresh_Click"/>
-                    <Button Content="设置" Style="{StaticResource PrimaryButton}"
-                            Width="80" Height="32"
-                            Click="BtnSettings_Click"/>
-                </StackPanel>
-            </Grid>
-        </Border>
-
-        <!-- ========== 主内容区（左右分栏） ========== -->
-        <Grid Grid.Row="1" Margin="10">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="250"/>   <!-- 左侧：设备列表 -->
-                <ColumnDefinition Width="5"/>     <!-- 分隔 -->
-                <ColumnDefinition Width="*"/>     <!-- 右侧：详情区 -->
-            </Grid.ColumnDefinitions>
-
-            <!-- 左侧：设备列表 -->
-            <Border Grid.Column="0" Background="White"
-                    BorderBrush="{StaticResource BorderBrush}" 
-                    BorderThickness="1" CornerRadius="6">
-                <DockPanel>
-                    <TextBlock DockPanel.Dock="Top" 
-                               Text="设备列表" FontWeight="Bold"
-                               Margin="12,10,0,8"/>
-                    <ListBox x:Name="lbDevices" 
-                             Margin="0,0,0,12"
-                             SelectionChanged="LbDevices_SelectionChanged"
-                             BorderThickness="0">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <Border Padding="10,8" Margin="8,0"
-                                        CornerRadius="4">
-                                    <StackPanel>
-                                        <TextBlock Text="{Binding Name}" 
-                                                   FontWeight="SemiBold" FontSize="14"/>
-                                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                                            <Ellipse Width="8" Height="8" Margin="0,0,6,0">
-                                                <Ellipse.Style>
-                                                    <Style TargetType="Ellipse">
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding Status}" Value="运行中">
-                                                                <Setter Property="Fill" Value="#4CAF50"/>
-                                                            </DataTrigger>
-                                                            <DataTrigger Binding="{Binding Status}" Value="待机">
-                                                                <Setter Property="Fill" Value="#FF9800"/>
-                                                            </DataTrigger>
-                                                            <DataTrigger Binding="{Binding Status}" Value="故障">
-                                                                <Setter Property="Fill" Value="#F44336"/>
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </Ellipse.Style>
-                                            </Ellipse>
-                                            <TextBlock Text="{Binding Status}" 
-                                                       FontSize="12" Foreground="#666"/>
-                                        </StackPanel>
-                                    </StackPanel>
-                                </Border>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
-                </DockPanel>
-            </Border>
-
-            <!-- 分隔线 -->
-            <GridSplitter Grid.Column="1" Width="5" 
-                          HorizontalAlignment="Stretch"
-                          Background="Transparent"/>
-
-            <!-- 右侧：设备详情 -->
-            <Border Grid.Column="2" Background="White"
-                    BorderBrush="{StaticResource BorderBrush}"
-                    BorderThickness="1" CornerRadius="6">
-                <Grid Margin="16">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
-
-                    <TextBlock Grid.Row="0" 
-                               Text="设备详情" FontWeight="Bold"
-                               FontSize="16" Margin="0,0,0,16"/>
-
-                    <!-- 详情面板 -->
-                    <StackPanel Grid.Row="1">
-                        <TextBlock Text="设备名称" Foreground="#888" FontSize="12"/>
-                        <TextBox x:Name="txtDeviceName" Text="——" 
-                                 Margin="0,4,0,12" IsReadOnly="True"/>
-
-                        <TextBlock Text="当前状态" Foreground="#888" FontSize="12"/>
-                        <TextBlock x:Name="txtStatus" Text="——" 
-                                   FontSize="16" FontWeight="SemiBold"
-                                   Margin="0,4,0,12"/>
-
-                        <TextBlock Text="运行时长" Foreground="#888" FontSize="12"/>
-                        <TextBlock x:Name="txtRuntime" Text="——"
-                                   Margin="0,4,0,12"/>
-
-                        <TextBlock Text="最近报警" Foreground="#888" FontSize="12"/>
-                        <TextBlock x:Name="txtAlarm" Text="——" 
-                                   Foreground="#D32F2F" Margin="0,4,0,0"/>
-                    </StackPanel>
-
-                    <!-- 操作按钮 -->
-                    <StackPanel Grid.Row="3" Orientation="Horizontal" 
-                                Margin="0,20,0,0">
-                        <Button Content="▶ 启动" Width="100" Height="36"
-                                Click="BtnStartDevice_Click" Margin="0,0,10,0">
-                            <Button.Style>
-                                <Style TargetType="Button" 
-                                       BasedOn="{StaticResource PrimaryButton}">
-                                    <Setter Property="Background" 
-                                            Value="{StaticResource SuccessBrush}"/>
-                                </Style>
-                            </Button.Style>
-                        </Button>
-                        <Button Content="⏹ 停止" Width="100" Height="36"
-                                Click="BtnStopDevice_Click" Margin="0,0,10,0">
-                            <Button.Style>
-                                <Style TargetType="Button"
-                                       BasedOn="{StaticResource PrimaryButton}">
-                                    <Setter Property="Background" 
-                                            Value="{StaticResource DangerBrush}"/>
-                                </Style>
-                            </Button.Style>
-                        </Button>
-                        <Button Content="🔧 维护" Width="100" Height="36"
-                                Click="BtnMaintain_Click">
-                            <Button.Style>
-                                <Style TargetType="Button"
-                                       BasedOn="{StaticResource PrimaryButton}">
-                                    <Setter Property="Background" 
-                                            Value="{StaticResource WarningBrush}"/>
-                                </Style>
-                            </Button.Style>
-                        </Button>
-                    </StackPanel>
-                </Grid>
-            </Border>
-        </Grid>
-
-        <!-- ========== 底栏（状态栏） ========== -->
-        <Border Grid.Row="2" Background="#FAFAFA" 
-                BorderBrush="#E0E0E0" BorderThickness="0,1,0,0"
-                Padding="12,6">
-            <DockPanel>
-                <TextBlock DockPanel.Dock="Left" 
-                           x:Name="txtStatusBar"
-                           Text="就绪" Foreground="#888" FontSize="12"/>
-                <TextBlock DockPanel.Dock="Right" 
-                           x:Name="txtClock"
-                           Text="" Foreground="#888" FontSize="12"
-                           HorizontalAlignment="Right"/>
-            </DockPanel>
-        </Border>
-    </Grid>
-</Window>
-```
-
-**MainWindow.xaml.cs —— 后台代码：**
-```csharp
-using System.Windows;
-using System.Windows.Controls;
-
-namespace DeviceMonitor;
-
-public partial class MainWindow : Window
-{
-    public MainWindow()
-    {
-        InitializeComponent();
-        LoadDeviceList();
-        StartClock();
-    }
-
-    private void LoadDeviceList()
-    {
-        // 模拟加载设备数据
-        lbDevices.ItemsSource = new[]
-        {
-            new { Name = "CNC机床-A1", Status = "运行中" },
-            new { Name = "机械臂-B2", Status = "待机" },
-            new { Name = "传送带-C3", Status = "运行中" },
-            new { Name = "AGV小车-D4", Status = "故障" },
-            new { Name = "注塑机-E5", Status = "待机" },
-        };
-    }
-
-    private void LbDevices_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (lbDevices.SelectedItem is not { } selected) return;
-        
-        dynamic device = selected;
-        txtDeviceName.Text = device.Name;
-        txtStatus.Text = device.Status;
-        txtRuntime.Text = device.Status == "待机" ? "0 小时" : "8 小时 32 分";
-        txtAlarm.Text = device.Status == "故障" ? "电机过热 (2026-08-10 09:15)" : "无";
-    }
-
-    private void BtnRefresh_Click(object sender, RoutedEventArgs e)
-    {
-        LoadDeviceList();
-        txtStatusBar.Text = $"刷新完成 —— {DateTime.Now:HH:mm:ss}";
-    }
-
-    private void BtnSettings_Click(object sender, RoutedEventArgs e)
-    {
-        MessageBox.Show("打开设置窗口……", "设置", 
-                        MessageBoxButton.OK, MessageBoxImage.Information);
-    }
-
-    private void BtnStartDevice_Click(object sender, RoutedEventArgs e)
-    {
-        txtStatusBar.Text = $"设备 {txtDeviceName.Text} 启动指令已发送";
-    }
-
-    private void BtnStopDevice_Click(object sender, RoutedEventArgs e)
-    {
-        txtStatusBar.Text = $"设备 {txtDeviceName.Text} 停止指令已发送";
-    }
-
-    private void BtnMaintain_Click(object sender, RoutedEventArgs e)
-    {
-        txtStatusBar.Text = $"设备 {txtDeviceName.Text} 维护工单已创建";
-    }
-
-    private void StartClock()
-    {
-        var timer = new System.Windows.Threading.DispatcherTimer
-        {
-            Interval = TimeSpan.FromSeconds(1)
-        };
-        timer.Tick += (s, e) => txtClock.Text = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-        timer.Start();
-    }
-}
-```
-
-**MainWindow.xaml 结构速查表：**
-| 区域 | 作用 | 关键 XAML |
-|------|------|-----------|
-| Window 属性 | 窗口外观和行为 | `Title`、`Height`、`Width`、`WindowState`、`ResizeMode` |
-| 命名空间声明 | 识别标签对应的类 | `xmlns`、`xmlns:x`、自定义 `xmlns:xxx` |
-| 根布局 | 划分窗口区域 | `<Grid>` + `RowDefinitions` / `ColumnDefinitions` |
-| 控件写法 | Button、TextBox、ListBox、TextBlock 等 | 元素语法 + 属性语法 + 事件语法 |
-| 数据绑定 | 列表绑定、状态绑定 | `ItemsSource`、`DataTemplate`、`DataTrigger` |
-| 事件关联 | 交互响应 | `Click="..."`、`SelectionChanged="..."` |
-
+> **一个设备监控系统的主窗口，涵盖常用控件的完整写法：**
+> 
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="DeviceMonitor.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         
+>         <!-- 窗口自身属性 -->
+>         Title="设备监控系统 v2.0"
+>         Height="600" Width="900"
+>         MinHeight="400" MinWidth="600"
+>         WindowStartupLocation="CenterScreen"
+>         WindowState="Normal"
+>         ResizeMode="CanResizeWithGrip"
+>         Icon="/Resources/app.ico">
+> 
+>     <!-- Window 的内容：一个 Grid 布局面板 -->
+>     <Grid>
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>    <!-- 顶栏 -->
+>             <RowDefinition Height="*"/>        <!-- 主内容区 -->
+>             <RowDefinition Height="Auto"/>    <!-- 底栏 -->
+>         </Grid.RowDefinitions>
+> 
+>         <!-- ========== 顶栏 ========== -->
+>         <Border Grid.Row="0" Background="{StaticResource PrimaryBrush}" 
+>                 Padding="16,12">
+>             <Grid>
+>                 <Grid.ColumnDefinitions>
+>                     <ColumnDefinition Width="Auto"/>
+>                     <ColumnDefinition Width="*"/>
+>                     <ColumnDefinition Width="Auto"/>
+>                 </Grid.ColumnDefinitions>
+>                 
+>                 <TextBlock Grid.Column="0" Text="🏭 设备监控系统"
+>                            FontSize="20" FontWeight="Bold"
+>                            Foreground="White" VerticalAlignment="Center"/>
+>                 
+>                 <StackPanel Grid.Column="2" Orientation="Horizontal">
+>                     <Button Content="刷新" Style="{StaticResource PrimaryButton}"
+>                             Width="80" Height="32" Margin="0,0,8,0"
+>                             Click="BtnRefresh_Click"/>
+>                     <Button Content="设置" Style="{StaticResource PrimaryButton}"
+>                             Width="80" Height="32"
+>                             Click="BtnSettings_Click"/>
+>                 </StackPanel>
+>             </Grid>
+>         </Border>
+> 
+>         <!-- ========== 主内容区（左右分栏） ========== -->
+>         <Grid Grid.Row="1" Margin="10">
+>             <Grid.ColumnDefinitions>
+>                 <ColumnDefinition Width="250"/>   <!-- 左侧：设备列表 -->
+>                 <ColumnDefinition Width="5"/>     <!-- 分隔 -->
+>                 <ColumnDefinition Width="*"/>     <!-- 右侧：详情区 -->
+>             </Grid.ColumnDefinitions>
+> 
+>             <!-- 左侧：设备列表 -->
+>             <Border Grid.Column="0" Background="White"
+>                     BorderBrush="{StaticResource BorderBrush}" 
+>                     BorderThickness="1" CornerRadius="6">
+>                 <DockPanel>
+>                     <TextBlock DockPanel.Dock="Top" 
+>                                Text="设备列表" FontWeight="Bold"
+>                                Margin="12,10,0,8"/>
+>                     <ListBox x:Name="lbDevices" 
+>                              Margin="0,0,0,12"
+>                              SelectionChanged="LbDevices_SelectionChanged"
+>                              BorderThickness="0">
+>                         <ListBox.ItemTemplate>
+>                             <DataTemplate>
+>                                 <Border Padding="10,8" Margin="8,0"
+>                                         CornerRadius="4">
+>                                     <StackPanel>
+>                                         <TextBlock Text="{Binding Name}" 
+>                                                    FontWeight="SemiBold" FontSize="14"/>
+>                                         <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+>                                             <Ellipse Width="8" Height="8" Margin="0,0,6,0">
+>                                                 <Ellipse.Style>
+>                                                     <Style TargetType="Ellipse">
+>                                                         <Style.Triggers>
+>                                                             <DataTrigger Binding="{Binding Status}" Value="运行中">
+>                                                                 <Setter Property="Fill" Value="#4CAF50"/>
+>                                                             </DataTrigger>
+>                                                             <DataTrigger Binding="{Binding Status}" Value="待机">
+>                                                                 <Setter Property="Fill" Value="#FF9800"/>
+>                                                             </DataTrigger>
+>                                                             <DataTrigger Binding="{Binding Status}" Value="故障">
+>                                                                 <Setter Property="Fill" Value="#F44336"/>
+>                                                             </DataTrigger>
+>                                                         </Style.Triggers>
+>                                                     </Style>
+>                                                 </Ellipse.Style>
+>                                             </Ellipse>
+>                                             <TextBlock Text="{Binding Status}" 
+>                                                        FontSize="12" Foreground="#666"/>
+>                                         </StackPanel>
+>                                     </StackPanel>
+>                                 </Border>
+>                             </DataTemplate>
+>                         </ListBox.ItemTemplate>
+>                     </ListBox>
+>                 </DockPanel>
+>             </Border>
+> 
+>             <!-- 分隔线 -->
+>             <GridSplitter Grid.Column="1" Width="5" 
+>                           HorizontalAlignment="Stretch"
+>                           Background="Transparent"/>
+> 
+>             <!-- 右侧：设备详情 -->
+>             <Border Grid.Column="2" Background="White"
+>                     BorderBrush="{StaticResource BorderBrush}"
+>                     BorderThickness="1" CornerRadius="6">
+>                 <Grid Margin="16">
+>                     <Grid.RowDefinitions>
+>                         <RowDefinition Height="Auto"/>
+>                         <RowDefinition Height="Auto"/>
+>                         <RowDefinition Height="Auto"/>
+>                         <RowDefinition Height="Auto"/>
+>                         <RowDefinition Height="*"/>
+>                     </Grid.RowDefinitions>
+> 
+>                     <TextBlock Grid.Row="0" 
+>                                Text="设备详情" FontWeight="Bold"
+>                                FontSize="16" Margin="0,0,0,16"/>
+> 
+>                     <!-- 详情面板 -->
+>                     <StackPanel Grid.Row="1">
+>                         <TextBlock Text="设备名称" Foreground="#888" FontSize="12"/>
+>                         <TextBox x:Name="txtDeviceName" Text="——" 
+>                                  Margin="0,4,0,12" IsReadOnly="True"/>
+> 
+>                         <TextBlock Text="当前状态" Foreground="#888" FontSize="12"/>
+>                         <TextBlock x:Name="txtStatus" Text="——" 
+>                                    FontSize="16" FontWeight="SemiBold"
+>                                    Margin="0,4,0,12"/>
+> 
+>                         <TextBlock Text="运行时长" Foreground="#888" FontSize="12"/>
+>                         <TextBlock x:Name="txtRuntime" Text="——"
+>                                    Margin="0,4,0,12"/>
+> 
+>                         <TextBlock Text="最近报警" Foreground="#888" FontSize="12"/>
+>                         <TextBlock x:Name="txtAlarm" Text="——" 
+>                                    Foreground="#D32F2F" Margin="0,4,0,0"/>
+>                     </StackPanel>
+> 
+>                     <!-- 操作按钮 -->
+>                     <StackPanel Grid.Row="3" Orientation="Horizontal" 
+>                                 Margin="0,20,0,0">
+>                         <Button Content="▶ 启动" Width="100" Height="36"
+>                                 Click="BtnStartDevice_Click" Margin="0,0,10,0">
+>                             <Button.Style>
+>                                 <Style TargetType="Button" 
+>                                        BasedOn="{StaticResource PrimaryButton}">
+>                                     <Setter Property="Background" 
+>                                             Value="{StaticResource SuccessBrush}"/>
+>                                 </Style>
+>                             </Button.Style>
+>                         </Button>
+>                         <Button Content="⏹ 停止" Width="100" Height="36"
+>                                 Click="BtnStopDevice_Click" Margin="0,0,10,0">
+>                             <Button.Style>
+>                                 <Style TargetType="Button"
+>                                        BasedOn="{StaticResource PrimaryButton}">
+>                                     <Setter Property="Background" 
+>                                             Value="{StaticResource DangerBrush}"/>
+>                                 </Style>
+>                             </Button.Style>
+>                         </Button>
+>                         <Button Content="🔧 维护" Width="100" Height="36"
+>                                 Click="BtnMaintain_Click">
+>                             <Button.Style>
+>                                 <Style TargetType="Button"
+>                                        BasedOn="{StaticResource PrimaryButton}">
+>                                     <Setter Property="Background" 
+>                                             Value="{StaticResource WarningBrush}"/>
+>                                 </Style>
+>                             </Button.Style>
+>                         </Button>
+>                     </StackPanel>
+>                 </Grid>
+>             </Border>
+>         </Grid>
+> 
+>         <!-- ========== 底栏（状态栏） ========== -->
+>         <Border Grid.Row="2" Background="#FAFAFA" 
+>                 BorderBrush="#E0E0E0" BorderThickness="0,1,0,0"
+>                 Padding="12,6">
+>             <DockPanel>
+>                 <TextBlock DockPanel.Dock="Left" 
+>                            x:Name="txtStatusBar"
+>                            Text="就绪" Foreground="#888" FontSize="12"/>
+>                 <TextBlock DockPanel.Dock="Right" 
+>                            x:Name="txtClock"
+>                            Text="" Foreground="#888" FontSize="12"
+>                            HorizontalAlignment="Right"/>
+>             </DockPanel>
+>         </Border>
+>     </Grid>
+> </Window>
+> ```
+> 
+> **MainWindow.xaml.cs —— 后台代码：**
+> ```csharp
+> using System.Windows;
+> using System.Windows.Controls;
+> 
+> namespace DeviceMonitor;
+> 
+> public partial class MainWindow : Window
+> {
+>     public MainWindow()
+>     {
+>         InitializeComponent();
+>         LoadDeviceList();
+>         StartClock();
+>     }
+> 
+>     private void LoadDeviceList()
+>     {
+>         // 模拟加载设备数据
+>         lbDevices.ItemsSource = new[]
+>         {
+>             new { Name = "CNC机床-A1", Status = "运行中" },
+>             new { Name = "机械臂-B2", Status = "待机" },
+>             new { Name = "传送带-C3", Status = "运行中" },
+>             new { Name = "AGV小车-D4", Status = "故障" },
+>             new { Name = "注塑机-E5", Status = "待机" },
+>         };
+>     }
+> 
+>     private void LbDevices_SelectionChanged(object sender, SelectionChangedEventArgs e)
+>     {
+>         if (lbDevices.SelectedItem is not { } selected) return;
+>         
+>         dynamic device = selected;
+>         txtDeviceName.Text = device.Name;
+>         txtStatus.Text = device.Status;
+>         txtRuntime.Text = device.Status == "待机" ? "0 小时" : "8 小时 32 分";
+>         txtAlarm.Text = device.Status == "故障" ? "电机过热 (2026-08-10 09:15)" : "无";
+>     }
+> 
+>     private void BtnRefresh_Click(object sender, RoutedEventArgs e)
+>     {
+>         LoadDeviceList();
+>         txtStatusBar.Text = $"刷新完成 —— {DateTime.Now:HH:mm:ss}";
+>     }
+> 
+>     private void BtnSettings_Click(object sender, RoutedEventArgs e)
+>     {
+>         MessageBox.Show("打开设置窗口……", "设置", 
+>                         MessageBoxButton.OK, MessageBoxImage.Information);
+>     }
+> 
+>     private void BtnStartDevice_Click(object sender, RoutedEventArgs e)
+>     {
+>         txtStatusBar.Text = $"设备 {txtDeviceName.Text} 启动指令已发送";
+>     }
+> 
+>     private void BtnStopDevice_Click(object sender, RoutedEventArgs e)
+>     {
+>         txtStatusBar.Text = $"设备 {txtDeviceName.Text} 停止指令已发送";
+>     }
+> 
+>     private void BtnMaintain_Click(object sender, RoutedEventArgs e)
+>     {
+>         txtStatusBar.Text = $"设备 {txtDeviceName.Text} 维护工单已创建";
+>     }
+> 
+>     private void StartClock()
+>     {
+>         var timer = new System.Windows.Threading.DispatcherTimer
+>         {
+>             Interval = TimeSpan.FromSeconds(1)
+>         };
+>         timer.Tick += (s, e) => txtClock.Text = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+>         timer.Start();
+>     }
+> }
+> ```
+> 
+> **MainWindow.xaml 结构速查表：**
+> | 区域 | 作用 | 关键 XAML |
+> |------|------|-----------|
+> | Window 属性 | 窗口外观和行为 | `Title`、`Height`、`Width`、`WindowState`、`ResizeMode` |
+> | 命名空间声明 | 识别标签对应的类 | `xmlns`、`xmlns:x`、自定义 `xmlns:xxx` |
+> | 根布局 | 划分窗口区域 | `<Grid>` + `RowDefinitions` / `ColumnDefinitions` |
+> | 控件写法 | Button、TextBox、ListBox、TextBlock 等 | 元素语法 + 属性语法 + 事件语法 |
+> | 数据绑定 | 列表绑定、状态绑定 | `ItemsSource`、`DataTemplate`、`DataTrigger` |
+> | 事件关联 | 交互响应 | `Click="..."`、`SelectionChanged="..."` |
+> 
 > [!scene] 适用场景
 > ✅ 所有 WPF 程序的主界面——这就是 MainWindow 被设计出来的唯一目的
 > ✅ 作为学习各类控件写法的"练习场"——从简单布局到复杂数据绑定，MainWindow 是试验田

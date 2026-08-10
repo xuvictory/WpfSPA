@@ -23,123 +23,123 @@ title: XAML 语法规则
 > - 编译器严格检查：属性名写错 → 编译失败；类型不匹配 → 编译失败
 
 > [!example] 完整示例
-下面用一个完整的例子，把六种语法全部展示出来：
-
-```xml
-<Window x:Class="WpfDemo.SyntaxDemo"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="XAML 六种语法演示" Height="500" Width="700">
-    
-    <!-- 【1. 元素语法】每个标签就是一个 new 对象 -->
-    <StackPanel Margin="10">
-        <!-- 等价于：new StackPanel { Margin = new Thickness(10) } -->
-
-        <!-- 【2. 属性语法】标签上的属性 = 对象的属性赋值 -->
-        <!-- FontSize="20", Foreground="Navy" → 设置简单类型属性 -->
-        <TextBlock Text="XAML 六种语法演示" 
-                   FontSize="20" FontWeight="Bold"
-                   Foreground="Navy" Margin="0,0,0,10"/>
-
-        <!-- 【3. 属性元素语法】用 类型.属性名 嵌套标签赋复杂对象 -->
-        <!-- 当属性的值不是简单字符串、而是另一个对象时使用 -->
-        <Border Margin="0,5" CornerRadius="5">
-            <Border.Background>
-                <!-- ↑ 属性元素语法：<类型.属性名> 格式 -->
-                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                    <GradientStop Color="#667eea" Offset="0"/>
-                    <GradientStop Color="#764ba2" Offset="1"/>
-                </LinearGradientBrush>
-            </Border.Background>
-            <TextBlock Text="渐变背景的Border" 
-                       Foreground="White" Padding="15"
-                       FontSize="16"/>
-        </Border>
-
-        <!-- 【4. 内容语法】控件标签间的"夹心内容" -->
-        <!-- Button 的 Content 属性是内容属性，标签间的文本直接赋值给它 -->
-        <Button Width="200" Height="40" Margin="0,10"
-                Background="#1890ff" Foreground="White" FontSize="15">
-            <!-- ↓ 这就是内容语法——直接写文本，不写 Content="..." -->
-            点击我！（内容语法）
-        </Button>
-
-        <!-- 内容语法也可以放复杂的子元素 -->
-        <Button Width="200" Height="50" Margin="0,5">
-            <Button.Content>
-                <StackPanel Orientation="Horizontal">
-                    <Rectangle Width="16" Height="16" Fill="Green" Margin="0,0,8,0"/>
-                    <TextBlock Text="带图标的按钮" VerticalAlignment="Center"/>
-                </StackPanel>
-            </Button.Content>
-        </Button>
-
-        <!-- 【5. 集合语法】集合属性里直接写子元素，自动调 Add() -->
-        <!-- StackPanel.Children 是集合属性 -->
-        <StackPanel Margin="0,15,0,0">
-            <StackPanel.Children>
-                <!-- ↓ 子元素不需要 <Children> 标签包裹，直接放 -->
-                <TextBlock Text="集合语法示例：直接写多个子元素" 
-                           FontWeight="Bold" Margin="0,0,0,5"/>
-                <CheckBox Content="选项 A"/>
-                <CheckBox Content="选项 B" IsChecked="True"/>
-                <CheckBox Content="选项 C"/>
-            </StackPanel.Children>
-        </StackPanel>
-
-        <!-- 【6. 事件特性语法】事件名="处理方法名" -->
-        <Button Content="点击触发事件" Width="200" Height="36"
-                Margin="0,15,0,0"
-                Click="Button_Click"
-                MouseEnter="Button_MouseEnter"
-                MouseLeave="Button_MouseLeave"/>
-        
-        <!-- 结果展示标签 -->
-        <TextBlock x:Name="txtResult" Margin="0,10,0,0" 
-                   FontSize="14" Foreground="#555"/>
-    </StackPanel>
-</Window>
-```
-
-**对应的后台代码（SyntaxDemo.xaml.cs）：**
-```csharp
-namespace WpfDemo;
-
-public partial class SyntaxDemo : Window
-{
-    public SyntaxDemo()
-    {
-        InitializeComponent();
-    }
-
-    // 事件特性语法关联的处理方法
-    private void Button_Click(object sender, RoutedEventArgs e)
-    {
-        txtResult.Text = $"按钮被点击了！时间：{DateTime.Now:HH:mm:ss}";
-    }
-
-    private void Button_MouseEnter(object sender, MouseEventArgs e)
-    {
-        txtResult.Text = "鼠标移入按钮区域";
-    }
-
-    private void Button_MouseLeave(object sender, MouseEventArgs e)
-    {
-        txtResult.Text = "鼠标移出按钮区域";
-    }
-}
-```
-
-**六种语法速查表：**
-| 语法类型 | XAML 写法 | 等价 C# | 何时用 |
-|----------|-----------|---------|--------|
-| 元素语法 | `<Button/>` | `new Button()` | 创建任何对象 |
-| 属性语法 | `Content="确定"` | `btn.Content = "确定"` | 赋简单值 |
-| 属性元素语法 | `<Button.Background>...` | `btn.Background = new Brush()` | 赋复杂对象 |
-| 内容语法 | `<Button>文本</Button>` | `btn.Content = "文本"` | 控件夹心内容 |
-| 集合语法 | 直接写子元素 | `panel.Children.Add()` | 集合类属性 |
-| 事件特性语法 | `Click="Handler"` | `btn.Click += Handler` | 关联事件 |
-
+> 下面用一个完整的例子，把六种语法全部展示出来：
+> 
+> ```xml
+> <Window x:Class="WpfDemo.SyntaxDemo"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="XAML 六种语法演示" Height="500" Width="700">
+>     
+>     <!-- 【1. 元素语法】每个标签就是一个 new 对象 -->
+>     <StackPanel Margin="10">
+>         <!-- 等价于：new StackPanel { Margin = new Thickness(10) } -->
+> 
+>         <!-- 【2. 属性语法】标签上的属性 = 对象的属性赋值 -->
+>         <!-- FontSize="20", Foreground="Navy" → 设置简单类型属性 -->
+>         <TextBlock Text="XAML 六种语法演示" 
+>                    FontSize="20" FontWeight="Bold"
+>                    Foreground="Navy" Margin="0,0,0,10"/>
+> 
+>         <!-- 【3. 属性元素语法】用 类型.属性名 嵌套标签赋复杂对象 -->
+>         <!-- 当属性的值不是简单字符串、而是另一个对象时使用 -->
+>         <Border Margin="0,5" CornerRadius="5">
+>             <Border.Background>
+>                 <!-- ↑ 属性元素语法：<类型.属性名> 格式 -->
+>                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+>                     <GradientStop Color="#667eea" Offset="0"/>
+>                     <GradientStop Color="#764ba2" Offset="1"/>
+>                 </LinearGradientBrush>
+>             </Border.Background>
+>             <TextBlock Text="渐变背景的Border" 
+>                        Foreground="White" Padding="15"
+>                        FontSize="16"/>
+>         </Border>
+> 
+>         <!-- 【4. 内容语法】控件标签间的"夹心内容" -->
+>         <!-- Button 的 Content 属性是内容属性，标签间的文本直接赋值给它 -->
+>         <Button Width="200" Height="40" Margin="0,10"
+>                 Background="#1890ff" Foreground="White" FontSize="15">
+>             <!-- ↓ 这就是内容语法——直接写文本，不写 Content="..." -->
+>             点击我！（内容语法）
+>         </Button>
+> 
+>         <!-- 内容语法也可以放复杂的子元素 -->
+>         <Button Width="200" Height="50" Margin="0,5">
+>             <Button.Content>
+>                 <StackPanel Orientation="Horizontal">
+>                     <Rectangle Width="16" Height="16" Fill="Green" Margin="0,0,8,0"/>
+>                     <TextBlock Text="带图标的按钮" VerticalAlignment="Center"/>
+>                 </StackPanel>
+>             </Button.Content>
+>         </Button>
+> 
+>         <!-- 【5. 集合语法】集合属性里直接写子元素，自动调 Add() -->
+>         <!-- StackPanel.Children 是集合属性 -->
+>         <StackPanel Margin="0,15,0,0">
+>             <StackPanel.Children>
+>                 <!-- ↓ 子元素不需要 <Children> 标签包裹，直接放 -->
+>                 <TextBlock Text="集合语法示例：直接写多个子元素" 
+>                            FontWeight="Bold" Margin="0,0,0,5"/>
+>                 <CheckBox Content="选项 A"/>
+>                 <CheckBox Content="选项 B" IsChecked="True"/>
+>                 <CheckBox Content="选项 C"/>
+>             </StackPanel.Children>
+>         </StackPanel>
+> 
+>         <!-- 【6. 事件特性语法】事件名="处理方法名" -->
+>         <Button Content="点击触发事件" Width="200" Height="36"
+>                 Margin="0,15,0,0"
+>                 Click="Button_Click"
+>                 MouseEnter="Button_MouseEnter"
+>                 MouseLeave="Button_MouseLeave"/>
+>         
+>         <!-- 结果展示标签 -->
+>         <TextBlock x:Name="txtResult" Margin="0,10,0,0" 
+>                    FontSize="14" Foreground="#555"/>
+>     </StackPanel>
+> </Window>
+> ```
+> 
+> **对应的后台代码（SyntaxDemo.xaml.cs）：**
+> ```csharp
+> namespace WpfDemo;
+> 
+> public partial class SyntaxDemo : Window
+> {
+>     public SyntaxDemo()
+>     {
+>         InitializeComponent();
+>     }
+> 
+>     // 事件特性语法关联的处理方法
+>     private void Button_Click(object sender, RoutedEventArgs e)
+>     {
+>         txtResult.Text = $"按钮被点击了！时间：{DateTime.Now:HH:mm:ss}";
+>     }
+> 
+>     private void Button_MouseEnter(object sender, MouseEventArgs e)
+>     {
+>         txtResult.Text = "鼠标移入按钮区域";
+>     }
+> 
+>     private void Button_MouseLeave(object sender, MouseEventArgs e)
+>     {
+>         txtResult.Text = "鼠标移出按钮区域";
+>     }
+> }
+> ```
+> 
+> **六种语法速查表：**
+> | 语法类型 | XAML 写法 | 等价 C# | 何时用 |
+> |----------|-----------|---------|--------|
+> | 元素语法 | `<Button/>` | `new Button()` | 创建任何对象 |
+> | 属性语法 | `Content="确定"` | `btn.Content = "确定"` | 赋简单值 |
+> | 属性元素语法 | `<Button.Background>...` | `btn.Background = new Brush()` | 赋复杂对象 |
+> | 内容语法 | `<Button>文本</Button>` | `btn.Content = "文本"` | 控件夹心内容 |
+> | 集合语法 | 直接写子元素 | `panel.Children.Add()` | 集合类属性 |
+> | 事件特性语法 | `Click="Handler"` | `btn.Click += Handler` | 关联事件 |
+> 
 > [!scene] 适用场景
 > ✅ **元素语法**：所有 XAML 代码的基础，无时无刻都在用
 > ✅ **属性语法**：90% 的属性赋值场景都用它，简单直接

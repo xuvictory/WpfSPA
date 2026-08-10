@@ -23,167 +23,167 @@ title: x: 命名空间
 > - `x:Array`：在 XAML 资源中构建一个数组
 
 > [!example] 完整示例
-**七种 x: 指令全景演示：**
-
-**App.xaml（演示 x:Key 和 x:Array）：**
-```xml
-<Application x:Class="WpfDemo.App"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:sys="clr-namespace:System;assembly=mscorlib"
-             StartupUri="XNamespaceDemo.xaml">
-    <Application.Resources>
-        
-        <!-- 【x:Key】给资源贴标签，后面通过 {StaticResource} 引用 -->
-        <SolidColorBrush x:Key="PrimaryBrush" Color="#1976D2"/>
-        <SolidColorBrush x:Key="DangerBrush" Color="#D32F2F"/>
-        <Style x:Key="CardBorderStyle" TargetType="Border">
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="BorderBrush" Value="#E0E0E0"/>
-            <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="Padding" Value="12"/>
-            <Setter Property="Margin" Value="5"/>
-        </Style>
-
-        <!-- 【x:Array】在资源里构建一个数组（需要指定元素类型） -->
-        <x:Array x:Key="WeekDays" Type="sys:String">
-            <sys:String>周一</sys:String>
-            <sys:String>周二</sys:String>
-            <sys:String>周三</sys:String>
-            <sys:String>周四</sys:String>
-            <sys:String>周五</sys:String>
-        </x:Array>
-
-        <!-- 【x:Type】存储类型引用，可用于 DataTemplate 的 DataType -->
-        <x:Type x:Key="StringType" TypeName="sys:String"/>
-
-    </Application.Resources>
-</Application>
-```
-
-**MainWindow.xaml（演示 x:Class、x:Name、x:Static、x:Null）：**
-```xml
-<!-- 【x:Class】把 XAML 编译结果合并到 WpfDemo.XNamespaceDemo 类 -->
-<Window x:Class="WpfDemo.XNamespaceDemo"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:sys="clr-namespace:System;assembly=mscorlib"
-        Title="x: 命名空间全部演示" Height="550" Width="650">
-    
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="15">
-
-            <!-- ==== x:Name：给元素起名，C# 代码中直接引用 ==== -->
-            <TextBlock Text="1. x:Name 演示" FontWeight="Bold" 
-                       FontSize="16" Foreground="{StaticResource PrimaryBrush}"/>
-            <!-- x:Name 给了标识符 txtNameDemo -->
-            <TextBlock x:Name="txtNameDemo" 
-                       Text="这个 TextBlock 的初始文字" Margin="5"/>
-            <Button Content="点击修改上面文字（C# 代码通过 x:Name 引用）" 
-                    Click="BtnChangeText_Click" Margin="5"/>
-
-            <Separator Margin="0,10"/>
-
-            <!-- ==== x:Key：引用 App.xaml 中的资源 ==== -->
-            <TextBlock Text="2. x:Key 演示" FontWeight="Bold" 
-                       FontSize="16" Foreground="{StaticResource PrimaryBrush}"/>
-            <!-- 通过 {StaticResource Key名} 引用 x:Key 标记的资源 -->
-            <Border Style="{StaticResource CardBorderStyle}">
-                <StackPanel>
-                    <TextBlock Text="这个边框样式来自 App.xaml 的 x:Key='CardBorderStyle'" 
-                               TextWrapping="Wrap"/>
-                    <Button Content="危险按钮" 
-                            Background="{StaticResource DangerBrush}"
-                            Foreground="White" Width="120" Margin="0,5,0,0"/>
-                </StackPanel>
-            </Border>
-
-            <Separator Margin="0,10"/>
-
-            <!-- ==== x:Static：引用静态成员 ==== -->
-            <TextBlock Text="3. x:Static 演示" FontWeight="Bold" 
-                       FontSize="16" Foreground="{StaticResource PrimaryBrush}"/>
-            <!-- 引用 System.Environment.NewLine -->
-            <TextBlock Margin="5">
-                <TextBlock.Text>
-                    <Binding Source="{x:Static sys:Environment.NewLine}"/>
-                </TextBlock.Text>
-            </TextBlock>
-            <!-- 引用自定义静态属性 -->
-            <TextBlock x:Name="txtStatic" 
-                       Text="待显示静态值..." Margin="5"/>
-            <Button Content="显示静态属性值" Click="BtnShowStatic_Click" 
-                    Width="150" Margin="5"/>
-
-            <Separator Margin="0,10"/>
-
-            <!-- ==== x:Type：类型引用 ==== -->
-            <TextBlock Text="4. x:Type 演示" FontWeight="Bold" 
-                       FontSize="16" Foreground="{StaticResource PrimaryBrush}"/>
-
-            <Separator Margin="0,10"/>
-
-            <!-- ==== x:Null：空值引用 ==== -->
-            <TextBlock Text="5. x:Null 演示" FontWeight="Bold" 
-                       FontSize="16" Foreground="{StaticResource PrimaryBrush}"/>
-            <!-- x:Null 相当于 null，可以清空属性值 -->
-            <Button x:Name="btnNullDemo" Content="有Tooltip的按钮"
-                    ToolTip="这是一个提示" Width="150" Margin="5"/>
-            <TextBlock x:Name="txtNullResult" Margin="5">
-                <TextBlock.Text>
-                    <Binding ElementName="btnNullDemo" Path="ToolTip"/>
-                </TextBlock.Text>
-            </TextBlock>
-
-        </StackPanel>
-    </ScrollViewer>
-</Window>
-```
-
-**对应的后台代码（XNamespaceDemo.xaml.cs）：**
-```csharp
-using System.Windows;
-using System.Windows.Controls;
-
-namespace WpfDemo;
-
-public partial class XNamespaceDemo : Window
-{
-    // 【x:Static 演示】静态属性
-    public static string AppVersion => "v2.1.0-beta";
-    public static string Author => "WPF 学习小组";
-
-    public XNamespaceDemo()
-    {
-        InitializeComponent();
-    }
-
-    // x:Name 演示——通过 x:Name 直接引用控件
-    private void BtnChangeText_Click(object sender, RoutedEventArgs e)
-    {
-        txtNameDemo.Text = $"通过 x:Name 修改成功！{DateTime.Now:HH:mm:ss}";
-    }
-
-    // x:Static 演示
-    private void BtnShowStatic_Click(object sender, RoutedEventArgs e)
-    {
-        // 在 C# 里引用静态属性很简单，但在 XAML 里需要 x:Static
-        txtStatic.Text = $"版本：{AppVersion} | 作者：{Author}";
-    }
-}
-```
-
-**x: 指令速查表：**
-| 指令 | 用途 | 示例 |
-|------|------|------|
-| `x:Class` | Code-Behind 关联 | `x:Class="WpfApp.MainWindow"` |
-| `x:Name` | 元素标识符 | `x:Name="txtTitle"` |
-| `x:Key` | 资源字典键 | `x:Key="PrimaryBrush"` |
-| `x:Static` | 引用静态成员 | `{x:Static sys:Math.PI}` |
-| `x:Type` | 类型引用 | `{x:Type Button}` |
-| `x:Null` | 空值 | `{x:Null}` |
-| `x:Array` | 构建数组 | `<x:Array Type="sys:String">` |
-
+> **七种 x: 指令全景演示：**
+> 
+> **App.xaml（演示 x:Key 和 x:Array）：**
+> ```xml
+> <Application x:Class="WpfDemo.App"
+>              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>              xmlns:sys="clr-namespace:System;assembly=mscorlib"
+>              StartupUri="XNamespaceDemo.xaml">
+>     <Application.Resources>
+>         
+>         <!-- 【x:Key】给资源贴标签，后面通过 {StaticResource} 引用 -->
+>         <SolidColorBrush x:Key="PrimaryBrush" Color="#1976D2"/>
+>         <SolidColorBrush x:Key="DangerBrush" Color="#D32F2F"/>
+>         <Style x:Key="CardBorderStyle" TargetType="Border">
+>             <Setter Property="BorderThickness" Value="1"/>
+>             <Setter Property="BorderBrush" Value="#E0E0E0"/>
+>             <Setter Property="CornerRadius" Value="8"/>
+>             <Setter Property="Padding" Value="12"/>
+>             <Setter Property="Margin" Value="5"/>
+>         </Style>
+> 
+>         <!-- 【x:Array】在资源里构建一个数组（需要指定元素类型） -->
+>         <x:Array x:Key="WeekDays" Type="sys:String">
+>             <sys:String>周一</sys:String>
+>             <sys:String>周二</sys:String>
+>             <sys:String>周三</sys:String>
+>             <sys:String>周四</sys:String>
+>             <sys:String>周五</sys:String>
+>         </x:Array>
+> 
+>         <!-- 【x:Type】存储类型引用，可用于 DataTemplate 的 DataType -->
+>         <x:Type x:Key="StringType" TypeName="sys:String"/>
+> 
+>     </Application.Resources>
+> </Application>
+> ```
+> 
+> **MainWindow.xaml（演示 x:Class、x:Name、x:Static、x:Null）：**
+> ```xml
+> <!-- 【x:Class】把 XAML 编译结果合并到 WpfDemo.XNamespaceDemo 类 -->
+> <Window x:Class="WpfDemo.XNamespaceDemo"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         xmlns:sys="clr-namespace:System;assembly=mscorlib"
+>         Title="x: 命名空间全部演示" Height="550" Width="650">
+>     
+>     <ScrollViewer VerticalScrollBarVisibility="Auto">
+>         <StackPanel Margin="15">
+> 
+>             <!-- ==== x:Name：给元素起名，C# 代码中直接引用 ==== -->
+>             <TextBlock Text="1. x:Name 演示" FontWeight="Bold" 
+>                        FontSize="16" Foreground="{StaticResource PrimaryBrush}"/>
+>             <!-- x:Name 给了标识符 txtNameDemo -->
+>             <TextBlock x:Name="txtNameDemo" 
+>                        Text="这个 TextBlock 的初始文字" Margin="5"/>
+>             <Button Content="点击修改上面文字（C# 代码通过 x:Name 引用）" 
+>                     Click="BtnChangeText_Click" Margin="5"/>
+> 
+>             <Separator Margin="0,10"/>
+> 
+>             <!-- ==== x:Key：引用 App.xaml 中的资源 ==== -->
+>             <TextBlock Text="2. x:Key 演示" FontWeight="Bold" 
+>                        FontSize="16" Foreground="{StaticResource PrimaryBrush}"/>
+>             <!-- 通过 {StaticResource Key名} 引用 x:Key 标记的资源 -->
+>             <Border Style="{StaticResource CardBorderStyle}">
+>                 <StackPanel>
+>                     <TextBlock Text="这个边框样式来自 App.xaml 的 x:Key='CardBorderStyle'" 
+>                                TextWrapping="Wrap"/>
+>                     <Button Content="危险按钮" 
+>                             Background="{StaticResource DangerBrush}"
+>                             Foreground="White" Width="120" Margin="0,5,0,0"/>
+>                 </StackPanel>
+>             </Border>
+> 
+>             <Separator Margin="0,10"/>
+> 
+>             <!-- ==== x:Static：引用静态成员 ==== -->
+>             <TextBlock Text="3. x:Static 演示" FontWeight="Bold" 
+>                        FontSize="16" Foreground="{StaticResource PrimaryBrush}"/>
+>             <!-- 引用 System.Environment.NewLine -->
+>             <TextBlock Margin="5">
+>                 <TextBlock.Text>
+>                     <Binding Source="{x:Static sys:Environment.NewLine}"/>
+>                 </TextBlock.Text>
+>             </TextBlock>
+>             <!-- 引用自定义静态属性 -->
+>             <TextBlock x:Name="txtStatic" 
+>                        Text="待显示静态值..." Margin="5"/>
+>             <Button Content="显示静态属性值" Click="BtnShowStatic_Click" 
+>                     Width="150" Margin="5"/>
+> 
+>             <Separator Margin="0,10"/>
+> 
+>             <!-- ==== x:Type：类型引用 ==== -->
+>             <TextBlock Text="4. x:Type 演示" FontWeight="Bold" 
+>                        FontSize="16" Foreground="{StaticResource PrimaryBrush}"/>
+> 
+>             <Separator Margin="0,10"/>
+> 
+>             <!-- ==== x:Null：空值引用 ==== -->
+>             <TextBlock Text="5. x:Null 演示" FontWeight="Bold" 
+>                        FontSize="16" Foreground="{StaticResource PrimaryBrush}"/>
+>             <!-- x:Null 相当于 null，可以清空属性值 -->
+>             <Button x:Name="btnNullDemo" Content="有Tooltip的按钮"
+>                     ToolTip="这是一个提示" Width="150" Margin="5"/>
+>             <TextBlock x:Name="txtNullResult" Margin="5">
+>                 <TextBlock.Text>
+>                     <Binding ElementName="btnNullDemo" Path="ToolTip"/>
+>                 </TextBlock.Text>
+>             </TextBlock>
+> 
+>         </StackPanel>
+>     </ScrollViewer>
+> </Window>
+> ```
+> 
+> **对应的后台代码（XNamespaceDemo.xaml.cs）：**
+> ```csharp
+> using System.Windows;
+> using System.Windows.Controls;
+> 
+> namespace WpfDemo;
+> 
+> public partial class XNamespaceDemo : Window
+> {
+>     // 【x:Static 演示】静态属性
+>     public static string AppVersion => "v2.1.0-beta";
+>     public static string Author => "WPF 学习小组";
+> 
+>     public XNamespaceDemo()
+>     {
+>         InitializeComponent();
+>     }
+> 
+>     // x:Name 演示——通过 x:Name 直接引用控件
+>     private void BtnChangeText_Click(object sender, RoutedEventArgs e)
+>     {
+>         txtNameDemo.Text = $"通过 x:Name 修改成功！{DateTime.Now:HH:mm:ss}";
+>     }
+> 
+>     // x:Static 演示
+>     private void BtnShowStatic_Click(object sender, RoutedEventArgs e)
+>     {
+>         // 在 C# 里引用静态属性很简单，但在 XAML 里需要 x:Static
+>         txtStatic.Text = $"版本：{AppVersion} | 作者：{Author}";
+>     }
+> }
+> ```
+> 
+> **x: 指令速查表：**
+> | 指令 | 用途 | 示例 |
+> |------|------|------|
+> | `x:Class` | Code-Behind 关联 | `x:Class="WpfApp.MainWindow"` |
+> | `x:Name` | 元素标识符 | `x:Name="txtTitle"` |
+> | `x:Key` | 资源字典键 | `x:Key="PrimaryBrush"` |
+> | `x:Static` | 引用静态成员 | `{x:Static sys:Math.PI}` |
+> | `x:Type` | 类型引用 | `{x:Type Button}` |
+> | `x:Null` | 空值 | `{x:Null}` |
+> | `x:Array` | 构建数组 | `<x:Array Type="sys:String">` |
+> 
 > [!scene] 适用场景
 > ✅ `x:Class`：每个 XAML 页/窗口/用户控件的根元素都**必须**有
 > ✅ `x:Name`：任何需要在后台代码中引用的控件都必须命名

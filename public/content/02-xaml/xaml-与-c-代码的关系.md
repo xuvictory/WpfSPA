@@ -21,86 +21,86 @@ title: XAML 与 C# 代码的关系
 > - **同一个东西两种写法**：99% 的 XAML 都能用 C# 等价实现，反过来也一样，但各有擅长领域
 
 > [!example] 完整示例
-**XAML 界面定义（MainWindow.xaml）：**
-```xml
-<Window x:Class="WpfApp.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="设备监控系统" Height="400" Width="600">
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
-
-        <!-- 状态栏 -->
-        <Border Grid.Row="0" Background="#F0F0F0" Padding="10">
-            <TextBlock x:Name="txtStatus" Text="状态：待机中" FontSize="14"/>
-        </Border>
-
-        <!-- 设备列表 -->
-        <ListBox x:Name="lbDevices" Grid.Row="1" Margin="10"/>
-
-        <!-- 操作按钮区 -->
-        <StackPanel Grid.Row="2" Orientation="Horizontal" 
-                    HorizontalAlignment="Center" Margin="0,0,0,10">
-            <Button x:Name="btnStart" Width="100" Height="36"
-                    Content="启动" Margin="5" Click="BtnStart_Click"/>
-            <Button x:Name="btnStop" Width="100" Height="36"
-                    Content="停止" Margin="5" Click="BtnStop_Click"/>
-        </StackPanel>
-    </Grid>
-</Window>
-```
-
-**后台 C# 代码（MainWindow.xaml.cs）：**
-```csharp
-namespace WpfApp;
-
-public partial class MainWindow : Window
-{
-    public MainWindow()
-    {
-        InitializeComponent();  // ← 编译器生成的，把 XAML 变成对象
-        
-        // 到这里，txtStatus、lbDevices、btnStart、btnStop 都已经好了
-        LoadDevices();
-    }
-
-    private void LoadDevices()
-    {
-        // XAML 里定义的 lbDevices，这里直接用！
-        lbDevices.ItemsSource = new[] { "CNC机床-01", "机械臂-A3", "传送带-B2" };
-        txtStatus.Text = "状态：已加载 3 台设备";
-    }
-
-    private void BtnStart_Click(object sender, RoutedEventArgs e)
-    {
-        txtStatus.Text = "状态：运行中 🟢";
-        // 这里写启动设备的业务逻辑……
-    }
-
-    private void BtnStop_Click(object sender, RoutedEventArgs e)
-    {
-        txtStatus.Text = "状态：已停止 🔴";
-        // 这里写停止设备的业务逻辑……
-    }
-}
-```
-
-**XAML 适合做的事：**
-| 任务 | 用 XAML | 用 C# |
-|------|---------|-------|
-| 定义控件布局和层级 | ✅ 最佳 | ❌ 太啰嗦 |
-| 设置颜色/字体/样式 | ✅ 最佳 | ❌ 可但冗长 |
-| 定义数据模板 | ✅ 最佳 | ❌ 代码量巨大 |
-| 写动画/Storyboard | ✅ 直观 | ❌ 非常痛苦 |
-| 复杂业务逻辑判断 | ❌ 做不到 | ✅ 唯一选择 |
-| 数据库查询/API调用 | ❌ 做不到 | ✅ 唯一选择 |
-| 动态增删控件 | ❌ 不灵活 | ✅ 最佳 |
-| 状态机流转控制 | ❌ 做不到 | ✅ 唯一选择 |
-
+> **XAML 界面定义（MainWindow.xaml）：**
+> ```xml
+> <Window x:Class="WpfApp.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="设备监控系统" Height="400" Width="600">
+>     <Grid>
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+> 
+>         <!-- 状态栏 -->
+>         <Border Grid.Row="0" Background="#F0F0F0" Padding="10">
+>             <TextBlock x:Name="txtStatus" Text="状态：待机中" FontSize="14"/>
+>         </Border>
+> 
+>         <!-- 设备列表 -->
+>         <ListBox x:Name="lbDevices" Grid.Row="1" Margin="10"/>
+> 
+>         <!-- 操作按钮区 -->
+>         <StackPanel Grid.Row="2" Orientation="Horizontal" 
+>                     HorizontalAlignment="Center" Margin="0,0,0,10">
+>             <Button x:Name="btnStart" Width="100" Height="36"
+>                     Content="启动" Margin="5" Click="BtnStart_Click"/>
+>             <Button x:Name="btnStop" Width="100" Height="36"
+>                     Content="停止" Margin="5" Click="BtnStop_Click"/>
+>         </StackPanel>
+>     </Grid>
+> </Window>
+> ```
+> 
+> **后台 C# 代码（MainWindow.xaml.cs）：**
+> ```csharp
+> namespace WpfApp;
+> 
+> public partial class MainWindow : Window
+> {
+>     public MainWindow()
+>     {
+>         InitializeComponent();  // ← 编译器生成的，把 XAML 变成对象
+>         
+>         // 到这里，txtStatus、lbDevices、btnStart、btnStop 都已经好了
+>         LoadDevices();
+>     }
+> 
+>     private void LoadDevices()
+>     {
+>         // XAML 里定义的 lbDevices，这里直接用！
+>         lbDevices.ItemsSource = new[] { "CNC机床-01", "机械臂-A3", "传送带-B2" };
+>         txtStatus.Text = "状态：已加载 3 台设备";
+>     }
+> 
+>     private void BtnStart_Click(object sender, RoutedEventArgs e)
+>     {
+>         txtStatus.Text = "状态：运行中 🟢";
+>         // 这里写启动设备的业务逻辑……
+>     }
+> 
+>     private void BtnStop_Click(object sender, RoutedEventArgs e)
+>     {
+>         txtStatus.Text = "状态：已停止 🔴";
+>         // 这里写停止设备的业务逻辑……
+>     }
+> }
+> ```
+> 
+> **XAML 适合做的事：**
+> | 任务 | 用 XAML | 用 C# |
+> |------|---------|-------|
+> | 定义控件布局和层级 | ✅ 最佳 | ❌ 太啰嗦 |
+> | 设置颜色/字体/样式 | ✅ 最佳 | ❌ 可但冗长 |
+> | 定义数据模板 | ✅ 最佳 | ❌ 代码量巨大 |
+> | 写动画/Storyboard | ✅ 直观 | ❌ 非常痛苦 |
+> | 复杂业务逻辑判断 | ❌ 做不到 | ✅ 唯一选择 |
+> | 数据库查询/API调用 | ❌ 做不到 | ✅ 唯一选择 |
+> | 动态增删控件 | ❌ 不灵活 | ✅ 最佳 |
+> | 状态机流转控制 | ❌ 做不到 | ✅ 唯一选择 |
+> 
 > [!scene] 适用场景
 > ✅ 固定布局 + 事件驱动：界面结构不会大变，但交互逻辑丰富 → XAML 画界面 + C# 写事件
 > ✅ MVVM 架构：XAML 纯绑定 + C# ViewModel 管理数据和命令
