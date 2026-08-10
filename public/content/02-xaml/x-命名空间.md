@@ -1,65 +1,219 @@
 ---
 title: x: 命名空间
-section: 02-xaml
-parent: 2.2 XAML 命名空间
 ---
 
 # x: 命名空间
 
 > [!plain] 白话理解
-> "x: 命名空间"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"x: 命名空间"是一个重要的知识点。XAML 是 WPF 的灵魂语言。掌握 XAML，你才能自由地设计出专业的工业级界面。掌握了它，你就能更好地构建工业级上位机应用程序。
+> 默认命名空间管的是"界面上的东西"（Button、Grid、TextBlock……），而 `x:` 命名空间管的是 **"XAML 语言本身的东西"** ——可以把它理解成 XAML 语言的 **"工具箱"**。比如你想给一个按钮起名字让 C# 代码能找到它（`x:Name`），或者给一个资源贴个标签方便引用（`x:Key`），这些都不是某个控件的属性，而是 XAML 这门"语言"提供的通用能力。
 
 > [!def] 官方定义
-> x: 命名空间是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> `x:` 命名空间由 `xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"` 声明，是 XAML 语言的"内置"命名空间。它提供了一组与具体 UI 框架无关的 XAML 语言特性，包括命名元素（`x:Name`）、资源键标识（`x:Key`）、类型引用（`x:Class`）、静态成员引用（`x:Static`）、类型引用指令（`x:Type`）、空值表示（`x:Null`）和数组构造（`x:Array`）。这些指令在任何实现了 XAML 规范的框架中都有效（WPF、Silverlight、UWP、MAUI）。
 
 > [!origin] 由来背景
-> x: 命名空间的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：XAML 是 WPF 的灵魂语言。掌握 XAML，你才能自由地设计出专业的工业级界面。
+> XAML 在设计之初就被定位为一个**跨框架的通用声明式语言**，而不是 WPF 专属。所以微软把"语言层面的功能"和"WPF 框架层面的功能"分开：语言功能放在 `x:` 命名空间中，框架功能放在默认命名空间中。这样，如果一个新框架（比如后来的 Silverlight、UWP、MAUI）想用 XAML，它只需要实现自己的"默认命名空间"，而 `x:` 命名空间的功能可以直接复用。这种设计降低了框架迁移的学习成本。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"x: 命名空间"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - `x:Class`：将 XAML 文件编译出的代码合并到指定类（Code-Behind 关联）
+> - `x:Name`：给元素赋予编程标识符，后台代码通过该名称引用它
+> - `x:Key`：为资源字典中的资源提供唯一键名
+> - `x:Static`：引用 .NET 类型中的静态字段/属性/常量
+> - `x:Type`：在 XAML 中表示一个 CLR 类型（`typeof(T)` 的 XAML 等价物）
+> - `x:Null`：表示空引用 `null`
+> - `x:Array`：在 XAML 资源中构建一个数组
 
 > [!example] 完整示例
-> ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
-> ```
-> 
+**七种 x: 指令全景演示：**
+
+**App.xaml（演示 x:Key 和 x:Array）：**
+```xml
+<Application x:Class="WpfDemo.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             StartupUri="XNamespaceDemo.xaml">
+    <Application.Resources>
+        
+        <!-- 【x:Key】给资源贴标签，后面通过 {StaticResource} 引用 -->
+        <SolidColorBrush x:Key="PrimaryBrush" Color="#1976D2"/>
+        <SolidColorBrush x:Key="DangerBrush" Color="#D32F2F"/>
+        <Style x:Key="CardBorderStyle" TargetType="Border">
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#E0E0E0"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="12"/>
+            <Setter Property="Margin" Value="5"/>
+        </Style>
+
+        <!-- 【x:Array】在资源里构建一个数组（需要指定元素类型） -->
+        <x:Array x:Key="WeekDays" Type="sys:String">
+            <sys:String>周一</sys:String>
+            <sys:String>周二</sys:String>
+            <sys:String>周三</sys:String>
+            <sys:String>周四</sys:String>
+            <sys:String>周五</sys:String>
+        </x:Array>
+
+        <!-- 【x:Type】存储类型引用，可用于 DataTemplate 的 DataType -->
+        <x:Type x:Key="StringType" TypeName="sys:String"/>
+
+    </Application.Resources>
+</Application>
+```
+
+**MainWindow.xaml（演示 x:Class、x:Name、x:Static、x:Null）：**
+```xml
+<!-- 【x:Class】把 XAML 编译结果合并到 WpfDemo.XNamespaceDemo 类 -->
+<Window x:Class="WpfDemo.XNamespaceDemo"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        Title="x: 命名空间全部演示" Height="550" Width="650">
+    
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="15">
+
+            <!-- ==== x:Name：给元素起名，C# 代码中直接引用 ==== -->
+            <TextBlock Text="1. x:Name 演示" FontWeight="Bold" 
+                       FontSize="16" Foreground="{StaticResource PrimaryBrush}"/>
+            <!-- x:Name 给了标识符 txtNameDemo -->
+            <TextBlock x:Name="txtNameDemo" 
+                       Text="这个 TextBlock 的初始文字" Margin="5"/>
+            <Button Content="点击修改上面文字（C# 代码通过 x:Name 引用）" 
+                    Click="BtnChangeText_Click" Margin="5"/>
+
+            <Separator Margin="0,10"/>
+
+            <!-- ==== x:Key：引用 App.xaml 中的资源 ==== -->
+            <TextBlock Text="2. x:Key 演示" FontWeight="Bold" 
+                       FontSize="16" Foreground="{StaticResource PrimaryBrush}"/>
+            <!-- 通过 {StaticResource Key名} 引用 x:Key 标记的资源 -->
+            <Border Style="{StaticResource CardBorderStyle}">
+                <StackPanel>
+                    <TextBlock Text="这个边框样式来自 App.xaml 的 x:Key='CardBorderStyle'" 
+                               TextWrapping="Wrap"/>
+                    <Button Content="危险按钮" 
+                            Background="{StaticResource DangerBrush}"
+                            Foreground="White" Width="120" Margin="0,5,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <Separator Margin="0,10"/>
+
+            <!-- ==== x:Static：引用静态成员 ==== -->
+            <TextBlock Text="3. x:Static 演示" FontWeight="Bold" 
+                       FontSize="16" Foreground="{StaticResource PrimaryBrush}"/>
+            <!-- 引用 System.Environment.NewLine -->
+            <TextBlock Margin="5">
+                <TextBlock.Text>
+                    <Binding Source="{x:Static sys:Environment.NewLine}"/>
+                </TextBlock.Text>
+            </TextBlock>
+            <!-- 引用自定义静态属性 -->
+            <TextBlock x:Name="txtStatic" 
+                       Text="待显示静态值..." Margin="5"/>
+            <Button Content="显示静态属性值" Click="BtnShowStatic_Click" 
+                    Width="150" Margin="5"/>
+
+            <Separator Margin="0,10"/>
+
+            <!-- ==== x:Type：类型引用 ==== -->
+            <TextBlock Text="4. x:Type 演示" FontWeight="Bold" 
+                       FontSize="16" Foreground="{StaticResource PrimaryBrush}"/>
+
+            <Separator Margin="0,10"/>
+
+            <!-- ==== x:Null：空值引用 ==== -->
+            <TextBlock Text="5. x:Null 演示" FontWeight="Bold" 
+                       FontSize="16" Foreground="{StaticResource PrimaryBrush}"/>
+            <!-- x:Null 相当于 null，可以清空属性值 -->
+            <Button x:Name="btnNullDemo" Content="有Tooltip的按钮"
+                    ToolTip="这是一个提示" Width="150" Margin="5"/>
+            <TextBlock x:Name="txtNullResult" Margin="5">
+                <TextBlock.Text>
+                    <Binding ElementName="btnNullDemo" Path="ToolTip"/>
+                </TextBlock.Text>
+            </TextBlock>
+
+        </StackPanel>
+    </ScrollViewer>
+</Window>
+```
+
+**对应的后台代码（XNamespaceDemo.xaml.cs）：**
+```csharp
+using System.Windows;
+using System.Windows.Controls;
+
+namespace WpfDemo;
+
+public partial class XNamespaceDemo : Window
+{
+    // 【x:Static 演示】静态属性
+    public static string AppVersion => "v2.1.0-beta";
+    public static string Author => "WPF 学习小组";
+
+    public XNamespaceDemo()
+    {
+        InitializeComponent();
+    }
+
+    // x:Name 演示——通过 x:Name 直接引用控件
+    private void BtnChangeText_Click(object sender, RoutedEventArgs e)
+    {
+        txtNameDemo.Text = $"通过 x:Name 修改成功！{DateTime.Now:HH:mm:ss}";
+    }
+
+    // x:Static 演示
+    private void BtnShowStatic_Click(object sender, RoutedEventArgs e)
+    {
+        // 在 C# 里引用静态属性很简单，但在 XAML 里需要 x:Static
+        txtStatic.Text = $"版本：{AppVersion} | 作者：{Author}";
+    }
+}
+```
+
+**x: 指令速查表：**
+| 指令 | 用途 | 示例 |
+|------|------|------|
+| `x:Class` | Code-Behind 关联 | `x:Class="WpfApp.MainWindow"` |
+| `x:Name` | 元素标识符 | `x:Name="txtTitle"` |
+| `x:Key` | 资源字典键 | `x:Key="PrimaryBrush"` |
+| `x:Static` | 引用静态成员 | `{x:Static sys:Math.PI}` |
+| `x:Type` | 类型引用 | `{x:Type Button}` |
+| `x:Null` | 空值 | `{x:Null}` |
+| `x:Array` | 构建数组 | `<x:Array Type="sys:String">` |
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ `x:Class`：每个 XAML 页/窗口/用户控件的根元素都**必须**有
+> ✅ `x:Name`：任何需要在后台代码中引用的控件都必须命名
+> ✅ `x:Key`：Style、Brush、DataTemplate 等任何放资源字典里的资源**必须**有 Key
+> ✅ `x:Static`：需要引用 `FontWeights.Bold`、`Colors.Red` 等内置常量时
+> ✅ `x:Null`：需要清空某个属性（如 `ToolTip`）或表示空值时
+> ✅ `x:Type`：DataTemplate 的 DataType 属性、或 ComboBox 的类型绑定场景
+> ✅ `x:Array`：在 XAML 资源中定义静态数组数据（替代代码中的写死数组）
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
-> 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 1：**`x:Key` 和 `x:Name` 搞混** → 在资源字典中两者可以同时存在，但 `x:Name` 生成的字段只能被 Code-Behind 引用；建议资源字典只用 `x:Key`。
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 2：**`x:Static` 引用非 public 成员** → 只能用 `public` 的静态字段/属性/常量，`private` 或 `internal` 的无法在 XAML 中引用。
+>
+> 坑 3：**`x:Array` 的类型必须是可实例化的类** → `Type="sys:String"` 可以（String 有构造函数），`Type="sys:Int32"` 也可以，但不能用抽象类或接口。
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - `x:Name` 命名规则：控件类型缩写 + 功能描述，如 `txtUserName`、`btnSubmit`、`lbDeviceList`
+> - 资源字典中统一使用 `x:Key` 而非 `x:Name`，保持风格一致
+> - `x:Static` 用于引用系统常量（`FontWeights`、`Colors`、`Brushes`），不要滥用它代替数据绑定
+> - 善用 `x:Array` 在 XAML 中定义静态选项数据（如 ComboBox 的固定选项），避免为了几个固定选项写代码
+> - `x:Class` 的类名要和 `.xaml.cs` 中的完全一致，大小写敏感
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"x: 命名空间"实现一个上位机中的小功能模块
+> **Lv.1 照猫画虎**：在 App.xaml 里用 `x:Key` 定义两个颜色资源，在窗口中使用它们
+> **Lv.2 小试牛刀**：用 `x:Array` 在资源里定义一个部门列表数组，绑定到 ComboBox 的 ItemsSource
+> **Lv.3 融会贯通**：综合使用全部 7 种 x: 指令，做一个"WPF 主题切换"小工具：在 App.xaml 用 `x:Key` 定义 Light/Dark 两套颜色资源，用 `x:Static` 引用系统颜色常量
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"x: 命名空间"
-> - → 后续必学：掌握"x: 命名空间"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：默认命名空间、XAML 语法规则
+> - → 后续必学：自定义命名空间引入、资源字典详解
+> - ⇄ 关联概念：标记扩展语法（Markup Extension）、StaticResource vs DynamicResource
+> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/xaml/xaml-namespaces-and-namespace-mapping/
