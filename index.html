@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WPF上位机开发学习平台</title>
+  <meta name="description" content="从C#基础到工业级WPF上位机实战，500+知识点系统化学习平台" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles/theme.css" />
+  <link rel="stylesheet" href="/styles/layout.css" />
+  <link rel="stylesheet" href="/styles/markdown.css" />
+  <link rel="stylesheet" href="/styles/components.css" />
+</head>
+<body>
+  <!-- 顶栏 -->
+  <header class="topbar" id="topbar">
+    <div class="topbar-inner">
+      <button class="hamburger" id="hamburger" aria-label="切换侧边菜单" title="菜单">
+        <span></span><span></span><span></span>
+      </button>
+      <a href="#/" class="brand" aria-label="回到首页">
+        <svg class="brand-icon" viewBox="0 0 32 32" fill="none">
+          <rect x="2" y="6" width="28" height="20" rx="2" stroke="currentColor" stroke-width="2" />
+          <path d="M10 14l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          <line x1="18" y1="20" x2="24" y2="20" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          <circle cx="10" cy="8" r="2" fill="#f59e0b" />
+          <circle cx="22" cy="8" r="2" fill="#10b981" />
+        </svg>
+        <span class="brand-text">WPF上位机学习</span>
+      </a>
+      <div class="search-wrapper" id="searchWrapper">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8" />
+          <path d="M21 21l-4.35-4.35" />
+        </svg>
+        <input type="text" id="searchInput" class="search-input" placeholder="搜索知识点... (Ctrl+K)" autocomplete="off" />
+        <kbd class="search-hint">Ctrl+K</kbd>
+      </div>
+      <a href="mailto:425723759@qq.com" class="author-area" title="联系作者：小乾">
+        <div class="author-avatar">小</div>
+        <div class="author-info">
+          <span class="author-name">小乾</span>
+          <span class="author-email">425723759@qq.com</span>
+        </div>
+      </a>
+    </div>
+  </header>
+
+  <!-- 搜索浮层 -->
+  <div class="search-overlay" id="searchOverlay">
+    <div class="search-panel" id="searchPanel">
+      <div class="search-panel-header">
+        <span class="search-panel-title">搜索结果</span>
+        <span class="search-result-count" id="searchResultCount"></span>
+      </div>
+      <div class="search-panel-body" id="searchResults"></div>
+      <div class="search-panel-footer">
+        <kbd>↑↓</kbd> 选择 &nbsp; <kbd>Enter</kbd> 跳转 &nbsp; <kbd>Esc</kbd> 关闭
+      </div>
+    </div>
+  </div>
+
+  <!-- 主体 -->
+  <div class="app-layout" id="appLayout">
+    <!-- 侧边栏 -->
+    <aside class="sidebar" id="sidebar">
+      <nav class="sidebar-nav" id="sidebarNav">
+        <div class="sidebar-skeleton">
+          <div class="skeleton-block" style="height:24px;width:70%"></div>
+          <div class="skeleton-block" style="height:16px;width:90%"></div>
+          <div class="skeleton-block" style="height:16px;width:85%"></div>
+          <div class="skeleton-block" style="height:16px;width:80%"></div>
+          <div class="skeleton-block" style="height:24px;width:60%"></div>
+          <div class="skeleton-block" style="height:16px;width:90%"></div>
+          <div class="skeleton-block" style="height:16px;width:75%"></div>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- 遮罩 -->
+    <div class="sidebar-mask" id="sidebarMask"></div>
+
+    <!-- 主内容 -->
+    <main class="main" id="main">
+      <div class="content-wrapper" id="contentWrapper">
+        <!-- 欢迎页 -->
+        <div class="welcome-hero" id="welcomeHero">
+          <div class="welcome-badge">WPF上位机 · 系统化学习平台</div>
+          <h1 class="welcome-title">
+            从零开始，<br />打造你的<span class="gradient-text">上位机开发能力</span>
+          </h1>
+          <p class="welcome-desc">
+            涵盖 C# 基础、XAML、MVVM、串口通信、数据采集、工业级实战项目<br />
+            16 大模块 · 500+ 知识点 · 十段式深度教学
+          </p>
+          <a href="#/chapter/00-prelude/visual-studio-2022-安装与配置" class="welcome-cta">
+            从第一章开始
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+          </a>
+          <div class="welcome-features">
+            <div class="welcome-feature">
+              <span class="feature-icon">🎯</span>
+              <span>白话解读 + 官方定义</span>
+            </div>
+            <div class="welcome-feature">
+              <span class="feature-icon">💻</span>
+              <span>完整示例 + 上手练习</span>
+            </div>
+            <div class="welcome-feature">
+              <span class="feature-icon">🏆</span>
+              <span>踩坑指南 + 最佳实践</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 骨架屏 -->
+        <div class="article-skeleton" id="articleSkeleton" style="display:none">
+          <div class="skeleton-block skeleton-title"></div>
+          <div class="skeleton-block skeleton-meta"></div>
+          <div class="skeleton-block skeleton-text"></div>
+          <div class="skeleton-block skeleton-text short"></div>
+          <div class="skeleton-block skeleton-text"></div>
+          <div class="skeleton-block skeleton-code"></div>
+          <div class="skeleton-block skeleton-text short"></div>
+          <div class="skeleton-block skeleton-text"></div>
+        </div>
+
+        <!-- 内容区 -->
+        <article class="article" id="articleContent" style="display:none"></article>
+
+        <!-- 测验区 -->
+        <div class="quiz-section" id="quizSection"></div>
+      </div>
+
+      <!-- 回到顶部 -->
+      <button class="back-to-top" id="backToTop" aria-label="回到顶部" title="回到顶部">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 15l-6-6-6 6" />
+        </svg>
+      </button>
+    </main>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

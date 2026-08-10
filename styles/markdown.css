@@ -1,0 +1,475 @@
+/* ============================================================
+   WPF上位机学习平台 - Markdown 正文样式
+   10 种 Callout 卡片 + 代码块 + 表格等
+   ============================================================ */
+
+/* --- 文章容器 --- */
+.article {
+  line-height: 1.8;
+  color: var(--text-primary);
+}
+
+/* --- 标题 --- */
+.article h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+}
+
+.article h2 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 40px 0 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.article h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin: 28px 0 12px;
+}
+
+.article h3::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: var(--accent);
+  border-radius: 50%;
+  margin-right: 8px;
+  vertical-align: middle;
+  position: relative;
+  top: -1px;
+}
+
+/* --- 段落 --- */
+.article p {
+  margin-bottom: 16px;
+  color: var(--text-secondary);
+}
+
+/* --- 链接 --- */
+.article a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(245, 158, 11, 0.3);
+}
+
+.article a:hover {
+  text-decoration-color: var(--accent);
+}
+
+/* --- 代码 --- */
+/* 行内代码 */
+.article code:not(pre code) {
+  padding: 2px 7px;
+  background: var(--bg-code);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.85em;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  word-break: break-word;
+}
+
+/* 代码块 */
+.article .code-block-wrapper {
+  margin: 18px 0;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--bg-code);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.25);
+}
+
+.code-block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.32) 0%, rgba(0, 0, 0, 0.18) 100%);
+  border-bottom: 1px solid var(--border);
+}
+
+.code-lang {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-family: var(--font-mono);
+}
+
+.code-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-light);
+  border-radius: 5px;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: all 0.2s;
+}
+
+.code-copy-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: rgba(245, 158, 11, 0.08);
+}
+
+.code-copy-btn.copied {
+  color: var(--green);
+  border-color: var(--green);
+}
+
+.article pre {
+  margin: 0;
+  padding: 18px 20px;
+  overflow-x: auto;
+  background: var(--bg-code);
+  font-size: 0.875rem;
+  line-height: 1.65;
+}
+
+.article pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--text-primary);
+  font-size: inherit;
+}
+
+/* --- 引用块 --- */
+.article blockquote {
+  margin: 16px 0;
+  padding: 16px 20px;
+  border-left: 4px solid var(--border-light);
+  background: var(--bg-elevated);
+  border-radius: 0 8px 8px 0;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+/* --- 表格 --- */
+.article table {
+  width: 100%;
+  margin: 20px 0;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  overflow: hidden;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.article thead {
+  background: var(--bg-elevated);
+}
+
+.article th {
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border);
+  font-size: 0.85rem;
+}
+
+.article td {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+
+.article tr:last-child td {
+  border-bottom: none;
+}
+
+.article tbody tr:hover {
+  background: rgba(245, 158, 11, 0.03);
+}
+
+/* --- 列表 --- */
+.article ul, .article ol {
+  margin: 12px 0;
+  padding-left: 24px;
+  color: var(--text-secondary);
+}
+
+.article li {
+  margin-bottom: 6px;
+}
+
+.article li::marker {
+  color: var(--accent);
+}
+
+/* --- 分割线 --- */
+.article hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 32px 0;
+}
+
+/* --- 图片 --- */
+.article img {
+  max-width: 100%;
+  border-radius: 8px;
+  margin: 16px 0;
+}
+
+/* --- details/summary --- */
+.article details {
+  margin: 16px 0;
+  padding: 12px 16px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.article summary {
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--accent);
+  padding: 4px 0;
+}
+
+/* --- kbd --- */
+.article kbd {
+  display: inline-block;
+  padding: 2px 6px;
+  font-size: 0.8em;
+  background: var(--bg-code);
+  border: 1px solid var(--border-light);
+  border-radius: 4px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+/* ============================================================
+   10 种 Callout 卡片
+   ============================================================ */
+
+.callout {
+  margin: 24px 0;
+  padding: 16px 20px 18px;
+  border-radius: 10px;
+  border-left: 4px solid;
+  background: var(--bg-elevated);
+  position: relative;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.callout-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+.callout-header::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.18;
+  margin-left: 4px;
+}
+
+.callout-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  line-height: 1;
+  background: rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.callout-body {
+  color: var(--text-secondary);
+  line-height: 1.75;
+  font-size: 0.94rem;
+}
+
+.callout-body p {
+  margin: 0;
+}
+
+.callout-body p + p {
+  margin-top: 10px;
+}
+
+.callout-body ul, .callout-body ol {
+  margin: 6px 0;
+  padding-left: 22px;
+}
+
+.callout-body li {
+  margin-bottom: 4px;
+}
+
+.callout-body li + li {
+  margin-top: 4px;
+}
+
+.callout-body code {
+  background: rgba(0,0,0,0.25);
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 0.85em;
+}
+
+.callout-body pre {
+  margin: 10px 0;
+}
+
+.callout-body .code-block-wrapper {
+  margin: 14px 0;
+}
+
+.callout-body .code-block-wrapper .code-block-header {
+  background: var(--bg-code);
+  border-color: var(--border);
+}
+
+.callout-body .code-block-wrapper pre {
+  background: var(--bg-code);
+}
+
+/* callout 内加粗文字 */
+.callout-body strong {
+  color: var(--text-primary);
+}
+
+.callout-body > :last-child {
+  margin-bottom: 0;
+}
+
+/* ① 白话理解 - 绿色 */
+.callout-plain {
+  border-left-color: var(--green);
+  background: linear-gradient(135deg, var(--green-soft) 0%, var(--bg-elevated) 60%);
+}
+.callout-plain .callout-header { color: var(--green); }
+.callout-plain .callout-icon { background: rgba(16, 185, 129, 0.18); }
+
+/* ② 官方定义 - 蓝色 */
+.callout-def {
+  border-left-color: var(--blue);
+  background: linear-gradient(135deg, var(--blue-soft) 0%, var(--bg-elevated) 60%);
+}
+.callout-def .callout-header { color: var(--blue); }
+.callout-def .callout-icon { background: rgba(59, 130, 246, 0.18); }
+
+/* ③ 由来背景 - 紫色 */
+.callout-origin {
+  border-left-color: var(--purple);
+  background: linear-gradient(135deg, var(--purple-soft) 0%, var(--bg-elevated) 60%);
+}
+.callout-origin .callout-header { color: var(--purple); }
+.callout-origin .callout-icon { background: rgba(139, 92, 246, 0.18); }
+
+/* ④ 核心要点 - 青色 */
+.callout-essentials {
+  border-left-color: var(--cyan);
+  background: linear-gradient(135deg, var(--cyan-soft) 0%, var(--bg-elevated) 60%);
+}
+.callout-essentials .callout-header { color: var(--cyan); }
+.callout-essentials .callout-icon { background: rgba(34, 211, 238, 0.18); }
+
+/* ⑤ 完整示例 - 翠绿色（醒目突出） */
+.callout-example {
+  border-left-color: #14b8a6;
+  background: linear-gradient(160deg,
+    rgba(20, 184, 166, 0.12) 0%,
+    rgba(20, 184, 166, 0.04) 30%,
+    var(--bg-elevated) 100%);
+  box-shadow:
+    0 2px 8px rgba(20, 184, 166, 0.08),
+    0 0 0 0.5px rgba(20, 184, 166, 0.2);
+  border-radius: 12px;
+  border-left: 4px solid #14b8a6;
+}
+.callout-example .callout-header {
+  color: #5eead4;
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: 0.04em;
+}
+.callout-example .callout-icon {
+  background: rgba(20, 184, 166, 0.22);
+  color: #5eead4;
+  box-shadow: 0 0 12px rgba(20, 184, 166, 0.25);
+}
+
+/* Callout 内 h5/h6 小标题 */
+.callout-heading {
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin: 14px 0 6px 0;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+.callout-heading:first-child {
+  margin-top: 0;
+}
+
+/* ⑥ 适用场景 - 橙色 */
+.callout-scene {
+  border-left-color: var(--accent);
+  background: linear-gradient(135deg, var(--accent-soft) 0%, var(--bg-elevated) 60%);
+}
+.callout-scene .callout-header { color: var(--accent); }
+.callout-scene .callout-icon { background: rgba(245, 158, 11, 0.18); }
+
+/* ⑦ 常见踩坑 - 红色 */
+.callout-pitfall {
+  border-left-color: var(--red);
+  background: linear-gradient(135deg, var(--red-soft) 0%, var(--bg-elevated) 60%);
+}
+.callout-pitfall .callout-header { color: var(--red); }
+.callout-pitfall .callout-icon { background: rgba(239, 68, 68, 0.18); }
+
+/* ⑧ 最佳实践 - 金色 */
+.callout-best {
+  border-left-color: var(--gold);
+  background: linear-gradient(135deg, var(--gold-soft) 0%, var(--bg-elevated) 60%);
+}
+.callout-best .callout-header { color: var(--gold); }
+.callout-best .callout-icon { background: rgba(245, 158, 11, 0.18); }
+
+/* ⑨ 上手练习 - 粉色 */
+.callout-practice {
+  border-left-color: var(--pink);
+  background: linear-gradient(135deg, var(--pink-soft) 0%, var(--bg-elevated) 60%);
+}
+.callout-practice .callout-header { color: var(--pink); }
+.callout-practice .callout-icon { background: rgba(232, 121, 160, 0.18); }
+
+/* ⑩ 相关知识链接 - 靛蓝色 */
+.callout-related {
+  border-left-color: var(--indigo);
+  background: linear-gradient(135deg, var(--indigo-soft) 0%, var(--bg-elevated) 60%);
+}
+.callout-related .callout-header { color: var(--indigo); }
+.callout-related .callout-icon { background: rgba(99, 102, 241, 0.18); }

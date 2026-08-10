@@ -1,0 +1,141 @@
+/* ============================================================
+   WPF上位机学习平台 - 主题设计令牌
+   工控科技风 · 蓝灰暗色底 + 橙色强调
+   ============================================================ */
+
+/* --- CSS 变量 --- */
+:root {
+  /* 背景层级 */
+  --bg-deep: #0d1117;
+  --bg-surface: #131a24;
+  --bg-elevated: #1a2332;
+  --bg-code: #1e293b;
+  --bg-card: #162032;
+
+  /* 强调色 - 工控橙色 */
+  --accent: #f59e0b;
+  --accent-hover: #d97706;
+  --accent-soft: rgba(245, 158, 11, 0.12);
+  --accent-glow: rgba(245, 158, 11, 0.25);
+
+  /* 辅助色 */
+  --blue: #3b82f6;
+  --blue-soft: rgba(59, 130, 246, 0.12);
+  --green: #10b981;
+  --green-soft: rgba(16, 185, 129, 0.12);
+  --purple: #8b5cf6;
+  --purple-soft: rgba(139, 92, 246, 0.12);
+  --red: #ef4444;
+  --red-soft: rgba(239, 68, 68, 0.12);
+  --gold: #f59e0b;
+  --gold-soft: rgba(245, 158, 11, 0.12);
+  --pink: #e879a0;
+  --pink-soft: rgba(232, 121, 160, 0.12);
+  --indigo: #6366f1;
+  --indigo-soft: rgba(99, 102, 241, 0.12);
+  --cyan: #22d3ee;
+  --cyan-soft: rgba(34, 211, 238, 0.12);
+
+  /* 文字 */
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+
+  /* 边框 */
+  --border: #1e2d3d;
+  --border-light: #263548;
+
+  /* 字体 */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', monospace;
+
+  /* 间距 */
+  --sidebar-width: 300px;
+  --topbar-height: 56px;
+
+  /* 动画 */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* --- 全局重置 --- */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--text-primary);
+  background: var(--bg-deep);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* 全局网格线背景 */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(245, 158, 11, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(245, 158, 11, 0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 30%, transparent 70%);
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+  transition: color 0.2s var(--ease-out);
+}
+
+a:hover {
+  color: var(--accent-hover);
+}
+
+/* 选中文本 */
+::selection {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+/* focus 样式 */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-surface);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-light);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+/* 代码字体全局设置 */
+code, pre, kbd {
+  font-family: var(--font-mono);
+}

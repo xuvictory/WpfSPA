@@ -1,0 +1,19 @@
+{
+  "name": "wpf-tutorial-spa",
+  "version": "1.0.0",
+  "description": "WPF上位机开发学习平台 - 从C#基础到工业级实战",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "highlight.js": "^11.11.0",
+    "marked": "^15.0.0"
+  },
+  "devDependencies": {
+    "jsdom": "^29.1.1",
+    "vite": "^6.0.0"
+  }
+}

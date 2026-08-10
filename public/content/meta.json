@@ -1,0 +1,4236 @@
+{
+  "title": "WPF上位机开发学习平台",
+  "description": "从C#基础到工业级WPF上位机实战，500+知识点系统化学习",
+  "sections": [
+    {
+      "id": "00-prelude",
+      "title": "0. 编程先导课",
+      "children": [
+        {
+          "id": "sg-89",
+          "title": "0.1 C# 基础速览",
+          "children": [
+            {
+              "id": "sg-3",
+              "title": "开发环境",
+              "children": [
+                {
+                  "id": "leaf-0",
+                  "title": "Visual Studio 2022 安装与配置",
+                  "path": "/chapter/00-prelude/visual-studio-2022-安装与配置",
+                  "file": "00-prelude/visual-studio-2022-安装与配置.md"
+                },
+                {
+                  "id": "leaf-1",
+                  "title": ".NET SDK 安装",
+                  "path": "/chapter/00-prelude/net-sdk-安装",
+                  "file": "00-prelude/net-sdk-安装.md"
+                },
+                {
+                  "id": "leaf-2",
+                  "title": "第一个控制台程序：Hello World",
+                  "path": "/chapter/00-prelude/第一个控制台程序hello-world",
+                  "file": "00-prelude/第一个控制台程序hello-world.md"
+                }
+              ]
+            },
+            {
+              "id": "sg-10",
+              "title": "变量与数据类型",
+              "children": [
+                {
+                  "id": "leaf-4",
+                  "title": "值类型（int、float、double、bool、char、decimal、byte）",
+                  "path": "/chapter/00-prelude/值类型intfloatdoubleboolchardecimalbyte",
+                  "file": "00-prelude/值类型intfloatdoubleboolchardecimalbyte.md"
+                },
+                {
+                  "id": "leaf-5",
+                  "title": "引用类型（string、object）",
+                  "path": "/chapter/00-prelude/引用类型stringobject",
+                  "file": "00-prelude/引用类型stringobject.md"
+                },
+                {
+                  "id": "leaf-6",
+                  "title": "类型转换（隐式、显式、Convert、Parse、TryParse）",
+                  "path": "/chapter/00-prelude/类型转换隐式显式convertparsetryparse",
+                  "file": "00-prelude/类型转换隐式显式convertparsetryparse.md"
+                },
+                {
+                  "id": "leaf-7",
+                  "title": "var 类型推断",
+                  "path": "/chapter/00-prelude/var-类型推断",
+                  "file": "00-prelude/var-类型推断.md"
+                },
+                {
+                  "id": "leaf-8",
+                  "title": "可空类型（Nullable）",
+                  "path": "/chapter/00-prelude/可空类型nullable",
+                  "file": "00-prelude/可空类型nullable.md"
+                },
+                {
+                  "id": "leaf-9",
+                  "title": "常量与只读字段（const vs readonly）",
+                  "path": "/chapter/00-prelude/常量与只读字段const-vs-readonly",
+                  "file": "00-prelude/常量与只读字段const-vs-readonly.md"
+                }
+              ]
+            },
+            {
+              "id": "sg-17",
+              "title": "运算符与表达式",
+              "children": [
+                {
+                  "id": "leaf-11",
+                  "title": "算术运算符",
+                  "path": "/chapter/00-prelude/算术运算符",
+                  "file": "00-prelude/算术运算符.md"
+                },
+                {
+                  "id": "leaf-12",
+                  "title": "比较运算符",
+                  "path": "/chapter/00-prelude/比较运算符",
+                  "file": "00-prelude/比较运算符.md"
+                },
+                {
+                  "id": "leaf-13",
+                  "title": "逻辑运算符",
+                  "path": "/chapter/00-prelude/逻辑运算符",
+                  "file": "00-prelude/逻辑运算符.md"
+                },
+                {
+                  "id": "leaf-14",
+                  "title": "赋值运算符",
+                  "path": "/chapter/00-prelude/赋值运算符",
+                  "file": "00-prelude/赋值运算符.md"
+                },
+                {
+                  "id": "leaf-15",
+                  "title": "三元运算符与空合并运算符",
+                  "path": "/chapter/00-prelude/三元运算符与空合并运算符",
+                  "file": "00-prelude/三元运算符与空合并运算符.md"
+                },
+                {
+                  "id": "leaf-16",
+                  "title": "位运算符",
+                  "path": "/chapter/00-prelude/位运算符",
+                  "file": "00-prelude/位运算符.md"
+                }
+              ]
+            },
+            {
+              "id": "sg-24",
+              "title": "流程控制",
+              "children": [
+                {
+                  "id": "leaf-18",
+                  "title": "条件语句（if-else）",
+                  "path": "/chapter/00-prelude/条件语句if-else",
+                  "file": "00-prelude/条件语句if-else.md"
+                },
+                {
+                  "id": "leaf-19",
+                  "title": "switch 语句与 switch 表达式",
+                  "path": "/chapter/00-prelude/switch-语句与-switch-表达式",
+                  "file": "00-prelude/switch-语句与-switch-表达式.md"
+                },
+                {
+                  "id": "leaf-20",
+                  "title": "for 循环",
+                  "path": "/chapter/00-prelude/for-循环",
+                  "file": "00-prelude/for-循环.md"
+                },
+                {
+                  "id": "leaf-21",
+                  "title": "while 循环与 do-while 循环",
+                  "path": "/chapter/00-prelude/while-循环与-do-while-循环",
+                  "file": "00-prelude/while-循环与-do-while-循环.md"
+                },
+                {
+                  "id": "leaf-22",
+                  "title": "foreach 循环",
+                  "path": "/chapter/00-prelude/foreach-循环",
+                  "file": "00-prelude/foreach-循环.md"
+                },
+                {
+                  "id": "leaf-23",
+                  "title": "break、continue、return",
+                  "path": "/chapter/00-prelude/breakcontinuereturn",
+                  "file": "00-prelude/breakcontinuereturn.md"
+                }
+              ]
+            },
+            {
+              "id": "sg-29",
+              "title": "字符串操作",
+              "children": [
+                {
+                  "id": "leaf-25",
+                  "title": "字符串拼接与格式化",
+                  "path": "/chapter/00-prelude/字符串拼接与格式化",
+                  "file": "00-prelude/字符串拼接与格式化.md"
+                },
+                {
+                  "id": "leaf-26",
+                  "title": "字符串插值",
+                  "path": "/chapter/00-prelude/字符串插值",
+                  "file": "00-prelude/字符串插值.md"
+                },
+                {
+                  "id": "leaf-27",
+                  "title": "常用字符串方法",
+                  "path": "/chapter/00-prelude/常用字符串方法",
+                  "file": "00-prelude/常用字符串方法.md"
+                },
+                {
+                  "id": "leaf-28",
+                  "title": "StringBuilder",
+                  "path": "/chapter/00-prelude/stringbuilder",
+                  "file": "00-prelude/stringbuilder.md"
+                }
+              ]
+            },
+            {
+              "id": "sg-37",
+              "title": "数组与集合",
+              "children": [
+                {
+                  "id": "leaf-30",
+                  "title": "一维数组与多维数组",
+                  "path": "/chapter/00-prelude/一维数组与多维数组",
+                  "file": "00-prelude/一维数组与多维数组.md"
+                },
+                {
+                  "id": "leaf-31",
+                  "title": "List 泛型集合",
+                  "path": "/chapter/00-prelude/list-泛型集合",
+                  "file": "00-prelude/list-泛型集合.md"
+                },
+                {
+                  "id": "leaf-32",
+                  "title": "Dictionary 字典",
+                  "path": "/chapter/00-prelude/dictionary-字典",
+                  "file": "00-prelude/dictionary-字典.md"
+                },
+                {
+                  "id": "leaf-33",
+                  "title": "HashSet 集合",
+                  "path": "/chapter/00-prelude/hashset-集合",
+                  "file": "00-prelude/hashset-集合.md"
+                },
+                {
+                  "id": "leaf-34",
+                  "title": "Queue 与 Stack",
+                  "path": "/chapter/00-prelude/queue-与-stack",
+                  "file": "00-prelude/queue-与-stack.md"
+                },
+                {
+                  "id": "leaf-35",
+                  "title": "ObservableCollection（上位机必用）",
+                  "path": "/chapter/00-prelude/observablecollection上位机必用",
+                  "file": "00-prelude/observablecollection上位机必用.md"
+                },
+                {
+                  "id": "leaf-36",
+                  "title": "LINQ 基础",
+                  "path": "/chapter/00-prelude/linq-基础",
+                  "file": "00-prelude/linq-基础.md"
+                }
+              ]
+            },
+            {
+              "id": "sg-45",
+              "title": "类与对象",
+              "children": [
+                {
+                  "id": "leaf-38",
+                  "title": "类的定义与实例化",
+                  "path": "/chapter/00-prelude/类的定义与实例化",
+                  "file": "00-prelude/类的定义与实例化.md"
+                },
+                {
+                  "id": "leaf-39",
+                  "title": "字段与属性（getset、自动属性）",
+                  "path": "/chapter/00-prelude/字段与属性getset自动属性",
+                  "file": "00-prelude/字段与属性getset自动属性.md"
+                },
+                {
+                  "id": "leaf-40",
+                  "title": "构造函数",
+                  "path": "/chapter/00-prelude/构造函数",
+                  "file": "00-prelude/构造函数.md"
+                },
+                {
+                  "id": "leaf-41",
+                  "title": "方法（值传递、ref、out）",
+                  "path": "/chapter/00-prelude/方法值传递refout",
+                  "file": "00-prelude/方法值传递refout.md"
+                },
+                {
+                  "id": "leaf-42",
+                  "title": "方法重载",
+                  "path": "/chapter/00-prelude/方法重载",
+                  "file": "00-prelude/方法重载.md"
+                },
+                {
+                  "id": "leaf-43",
+                  "title": "静态成员",
+                  "path": "/chapter/00-prelude/静态成员",
+                  "file": "00-prelude/静态成员.md"
+                },
+                {
+                  "id": "leaf-44",
+                  "title": "命名空间与 using",
+                  "path": "/chapter/00-prelude/命名空间与-using",
+                  "file": "00-prelude/命名空间与-using.md"
+                }
+              ]
+            },
+            {
+              "id": "sg-48",
+              "title": "封装与访问修饰符",
+              "children": [
+                {
+                  "id": "leaf-46",
+                  "title": "public、private、protected、internal",
+                  "path": "/chapter/00-prelude/publicprivateprotectedinternal",
+                  "file": "00-prelude/publicprivateprotectedinternal.md"
+                },
+                {
+                  "id": "leaf-47",
+                  "title": "属性封装字段的技巧",
+                  "path": "/chapter/00-prelude/属性封装字段的技巧",
+                  "file": "00-prelude/属性封装字段的技巧.md"
+                }
+              ]
+            },
+            {
+              "id": "sg-55",
+              "title": "继承与多态",
+              "children": [
+                {
+                  "id": "leaf-49",
+                  "title": "基类与派生类",
+                  "path": "/chapter/00-prelude/基类与派生类",
+                  "file": "00-prelude/基类与派生类.md"
+                },
+                {
+                  "id": "leaf-50",
+                  "title": "virtual、override、new 关键字",
+                  "path": "/chapter/00-prelude/virtualoverridenew-关键字",
+                  "file": "00-prelude/virtualoverridenew-关键字.md"
+                },
+                {
+                  "id": "leaf-51",
+                  "title": "abstract 抽象类与抽象方法",
+                  "path": "/chapter/00-prelude/abstract-抽象类与抽象方法",
+                  "file": "00-prelude/abstract-抽象类与抽象方法.md"
+                },
+                {
+                  "id": "leaf-52",
+                  "title": "sealed 密封类",
+                  "path": "/chapter/00-prelude/sealed-密封类",
+                  "file": "00-prelude/sealed-密封类.md"
+                },
+                {
+                  "id": "leaf-53",
+                  "title": "接口定义与实现",
+                  "path": "/chapter/00-prelude/接口定义与实现",
+                  "file": "00-prelude/接口定义与实现.md"
+                },
+                {
+                  "id": "leaf-54",
+                  "title": "接口 vs 抽象类的选择",
+                  "path": "/chapter/00-prelude/接口-vs-抽象类的选择",
+                  "file": "00-prelude/接口-vs-抽象类的选择.md"
+                }
+              ]
+            },
+            {
+              "id": "sg-60",
+              "title": "异常处理",
+              "children": [
+                {
+                  "id": "leaf-56",
+                  "title": "try-catch-finally",
+                  "path": "/chapter/00-prelude/try-catch-finally",
+                  "file": "00-prelude/try-catch-finally.md"
+                },
+                {
+                  "id": "leaf-57",
+                  "title": "throw 抛出异常",
+                  "path": "/chapter/00-prelude/throw-抛出异常",
+                  "file": "00-prelude/throw-抛出异常.md"
+                },
+                {
+                  "id": "leaf-58",
+                  "title": "自定义异常类",
+                  "path": "/chapter/00-prelude/自定义异常类",
+                  "file": "00-prelude/自定义异常类.md"
+                },
+                {
+                  "id": "leaf-59",
+                  "title": "using 语句与 IDisposable",
+                  "path": "/chapter/00-prelude/using-语句与-idisposable",
+                  "file": "00-prelude/using-语句与-idisposable.md"
+                }
+              ]
+            },
+            {
+              "id": "sg-66",
+              "title": "委托与事件",
+              "children": [
+                {
+                  "id": "leaf-61",
+                  "title": "delegate 委托定义",
+                  "path": "/chapter/00-prelude/delegate-委托定义",
+                  "file": "00-prelude/delegate-委托定义.md"
+                },
+                {
+                  "id": "leaf-62",
+                  "title": "Action 与 Func",
+                  "path": "/chapter/00-prelude/action-与-func",
+                  "file": "00-prelude/action-与-func.md"
+                },
+                {
+                  "id": "leaf-63",
+                  "title": "event 事件声明与触发",
+                  "path": "/chapter/00-prelude/event-事件声明与触发",
+                  "file": "00-prelude/event-事件声明与触发.md"
+                },
+                {
+                  "id": "leaf-64",
+                  "title": "EventHandler 与 EventArgs",
+                  "path": "/chapter/00-prelude/eventhandler-与-eventargs",
+                  "file": "00-prelude/eventhandler-与-eventargs.md"
+                },
+                {
+                  "id": "leaf-65",
+                  "title": "匿名方法与 Lambda 表达式",
+                  "path": "/chapter/00-prelude/匿名方法与-lambda-表达式",
+                  "file": "00-prelude/匿名方法与-lambda-表达式.md"
+                }
+              ]
+            },
+            {
+              "id": "sg-70",
+              "title": "泛型",
+              "children": [
+                {
+                  "id": "leaf-67",
+                  "title": "泛型类",
+                  "path": "/chapter/00-prelude/泛型类",
+                  "file": "00-prelude/泛型类.md"
+                },
+                {
+                  "id": "leaf-68",
+                  "title": "泛型方法",
+                  "path": "/chapter/00-prelude/泛型方法",
+                  "file": "00-prelude/泛型方法.md"
+                },
+                {
+                  "id": "leaf-69",
+                  "title": "泛型约束",
+                  "path": "/chapter/00-prelude/泛型约束",
+                  "file": "00-prelude/泛型约束.md"
+                }
+              ]
+            },
+            {
+              "id": "sg-79",
+              "title": "异步编程（上位机核心技能）",
+              "children": [
+                {
+                  "id": "leaf-71",
+                  "title": "同步 vs 异步概念",
+                  "path": "/chapter/00-prelude/同步-vs-异步概念",
+                  "file": "00-prelude/同步-vs-异步概念.md"
+                },
+                {
+                  "id": "leaf-72",
+                  "title": "Task 与 Task<T>",
+                  "path": "/chapter/00-prelude/task-与-taskt",
+                  "file": "00-prelude/task-与-taskt.md"
+                },
+                {
+                  "id": "leaf-73",
+                  "title": "async 与 await 关键字",
+                  "path": "/chapter/00-prelude/async-与-await-关键字",
+                  "file": "00-prelude/async-与-await-关键字.md"
+                },
+                {
+                  "id": "leaf-74",
+                  "title": "ConfigureAwait(false) 在UI线程中的重要性",
+                  "path": "/chapter/00-prelude/configureawaitfalse-在ui线程中的重要性",
+                  "file": "00-prelude/configureawaitfalse-在ui线程中的重要性.md"
+                },
+                {
+                  "id": "leaf-75",
+                  "title": "Task.Run 与线程池",
+                  "path": "/chapter/00-prelude/taskrun-与线程池",
+                  "file": "00-prelude/taskrun-与线程池.md"
+                },
+                {
+                  "id": "leaf-76",
+                  "title": "Task.Delay 与计时",
+                  "path": "/chapter/00-prelude/taskdelay-与计时",
+                  "file": "00-prelude/taskdelay-与计时.md"
+                },
+                {
+                  "id": "leaf-77",
+                  "title": "CancellationToken 取消令牌",
+                  "path": "/chapter/00-prelude/cancellationtoken-取消令牌",
+                  "file": "00-prelude/cancellationtoken-取消令牌.md"
+                },
+                {
+                  "id": "leaf-78",
+                  "title": "并行任务（WhenAll、WhenAny）",
+                  "path": "/chapter/00-prelude/并行任务whenallwhenany",
+                  "file": "00-prelude/并行任务whenallwhenany.md"
+                }
+              ]
+            },
+            {
+              "id": "sg-84",
+              "title": "文件与 IO 操作",
+              "children": [
+                {
+                  "id": "leaf-80",
+                  "title": "File 类（ReadAllText、WriteAllText 等）",
+                  "path": "/chapter/00-prelude/file-类readalltextwritealltext-等",
+                  "file": "00-prelude/file-类readalltextwritealltext-等.md"
+                },
+                {
+                  "id": "leaf-81",
+                  "title": "FileStream 读写文件流",
+                  "path": "/chapter/00-prelude/filestream-读写文件流",
+                  "file": "00-prelude/filestream-读写文件流.md"
+                },
+                {
+                  "id": "leaf-82",
+                  "title": "StreamReader 与 StreamWriter",
+                  "path": "/chapter/00-prelude/streamreader-与-streamwriter",
+                  "file": "00-prelude/streamreader-与-streamwriter.md"
+                },
+                {
+                  "id": "leaf-83",
+                  "title": "Path 类与 Directory 类",
+                  "path": "/chapter/00-prelude/path-类与-directory-类",
+                  "file": "00-prelude/path-类与-directory-类.md"
+                }
+              ]
+            },
+            {
+              "id": "sg-88",
+              "title": "JSON 序列化",
+              "children": [
+                {
+                  "id": "leaf-85",
+                  "title": "Newtonsoft.Json 序列化与反序列化",
+                  "path": "/chapter/00-prelude/newtonsoftjson-序列化与反序列化",
+                  "file": "00-prelude/newtonsoftjson-序列化与反序列化.md"
+                },
+                {
+                  "id": "leaf-86",
+                  "title": "System.Text.Json 序列化",
+                  "path": "/chapter/00-prelude/systemtextjson-序列化",
+                  "file": "00-prelude/systemtextjson-序列化.md"
+                },
+                {
+                  "id": "leaf-87",
+                  "title": "JSON 配置文件读写实战",
+                  "path": "/chapter/00-prelude/json-配置文件读写实战",
+                  "file": "00-prelude/json-配置文件读写实战.md"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "sg-114",
+          "title": "0.2 开发环境与项目结构",
+          "children": [
+            {
+              "id": "sg-95",
+              "title": "Visual Studio 2022 工作区",
+              "children": [
+                {
+                  "id": "leaf-90",
+                  "title": "解决方案资源管理器",
+                  "path": "/chapter/00-prelude/解决方案资源管理器",
+                  "file": "00-prelude/解决方案资源管理器.md"
+                },
+                {
+                  "id": "leaf-91",
+                  "title": "工具箱",
+                  "path": "/chapter/00-prelude/工具箱",
+                  "file": "00-prelude/工具箱.md"
+                },
+                {
+                  "id": "leaf-92",
+                  "title": "属性窗口",
+                  "path": "/chapter/00-prelude/属性窗口",
+                  "file": "00-prelude/属性窗口.md"
+                },
+                {
+                  "id": "leaf-93",
+                  "title": "错误列表与输出窗口",
+                  "path": "/chapter/00-prelude/错误列表与输出窗口",
+                  "file": "00-prelude/错误列表与输出窗口.md"
+                },
+                {
+                  "id": "leaf-94",
+                  "title": "XAML 设计器与实时可视化树",
+                  "path": "/chapter/00-prelude/xaml-设计器与实时可视化树",
+                  "file": "00-prelude/xaml-设计器与实时可视化树.md"
+                }
+              ]
+            },
+            {
+              "id": "sg-102",
+              "title": "WPF 项目创建",
+              "children": [
+                {
+                  "id": "leaf-96",
+                  "title": "WPF App 项目模板",
+                  "path": "/chapter/00-prelude/wpf-app-项目模板",
+                  "file": "00-prelude/wpf-app-项目模板.md"
+                },
+                {
+                  "id": "leaf-97",
+                  "title": "项目文件结构详解",
+                  "path": "/chapter/00-prelude/项目文件结构详解",
+                  "file": "00-prelude/项目文件结构详解.md"
+                },
+                {
+                  "id": "leaf-98",
+                  "title": ".csproj 项目文件说明",
+                  "path": "/chapter/00-prelude/csproj-项目文件说明",
+                  "file": "00-prelude/csproj-项目文件说明.md"
+                },
+                {
+                  "id": "leaf-99",
+                  "title": "App.xaml 应用程序入口",
+                  "path": "/chapter/00-prelude/appxaml-应用程序入口",
+                  "file": "00-prelude/appxaml-应用程序入口.md"
+                },
+                {
+                  "id": "leaf-100",
+                  "title": "MainWindow.xaml 主窗口",
+                  "path": "/chapter/00-prelude/mainwindowxaml-主窗口",
+                  "file": "00-prelude/mainwindowxaml-主窗口.md"
+                },
+                {
+                  "id": "leaf-101",
+                  "title": "AssemblyInfo.cs 程序集信息",
+                  "path": "/chapter/00-prelude/assemblyinfocs-程序集信息",
+                  "file": "00-prelude/assemblyinfocs-程序集信息.md"
+                }
+              ]
+            },
+            {
+              "id": "sg-107",
+              "title": "解决方案结构",
+              "children": [
+                {
+                  "id": "leaf-103",
+                  "title": "单项目 vs 多项目解决方案",
+                  "path": "/chapter/00-prelude/单项目-vs-多项目解决方案",
+                  "file": "00-prelude/单项目-vs-多项目解决方案.md"
+                },
+                {
+                  "id": "leaf-104",
+                  "title": "类库项目的作用",
+                  "path": "/chapter/00-prelude/类库项目的作用",
+                  "file": "00-prelude/类库项目的作用.md"
+                },
+                {
+                  "id": "leaf-105",
+                  "title": "项目引用与依赖管理",
+                  "path": "/chapter/00-prelude/项目引用与依赖管理",
+                  "file": "00-prelude/项目引用与依赖管理.md"
+                },
+                {
+                  "id": "leaf-106",
+                  "title": "NuGet 包管理器使用",
+                  "path": "/chapter/00-prelude/nuget-包管理器使用",
+                  "file": "00-prelude/nuget-包管理器使用.md"
+                }
+              ]
+            },
+            {
+              "id": "sg-113",
+              "title": "调试基础",
+              "children": [
+                {
+                  "id": "leaf-108",
+                  "title": "断点设置与条件断点",
+                  "path": "/chapter/00-prelude/断点设置与条件断点",
+                  "file": "00-prelude/断点设置与条件断点.md"
+                },
+                {
+                  "id": "leaf-109",
+                  "title": "单步执行（F10、F11）",
+                  "path": "/chapter/00-prelude/单步执行f10f11",
+                  "file": "00-prelude/单步执行f10f11.md"
+                },
+                {
+                  "id": "leaf-110",
+                  "title": "监视窗口与即时窗口",
+                  "path": "/chapter/00-prelude/监视窗口与即时窗口",
+                  "file": "00-prelude/监视窗口与即时窗口.md"
+                },
+                {
+                  "id": "leaf-111",
+                  "title": "调用堆栈查看",
+                  "path": "/chapter/00-prelude/调用堆栈查看",
+                  "file": "00-prelude/调用堆栈查看.md"
+                },
+                {
+                  "id": "leaf-112",
+                  "title": "输出调试信息（Debug.WriteLine）",
+                  "path": "/chapter/00-prelude/输出调试信息debugwriteline",
+                  "file": "00-prelude/输出调试信息debugwriteline.md"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "01-quickstart",
+      "title": "1. WPF 快速入门",
+      "children": [
+        {
+          "id": "sg-120",
+          "title": "1.1 认识 WPF",
+          "children": [
+            {
+              "id": "leaf-115",
+              "title": "WPF 是什么？",
+              "path": "/chapter/01-quickstart/wpf-是什么",
+              "file": "01-quickstart/wpf-是什么.md"
+            },
+            {
+              "id": "leaf-116",
+              "title": "WPF 的特点",
+              "path": "/chapter/01-quickstart/wpf-的特点",
+              "file": "01-quickstart/wpf-的特点.md"
+            },
+            {
+              "id": "leaf-117",
+              "title": "WPF 的应用场景",
+              "path": "/chapter/01-quickstart/wpf-的应用场景",
+              "file": "01-quickstart/wpf-的应用场景.md"
+            },
+            {
+              "id": "leaf-118",
+              "title": "WPF 的优势和劣势",
+              "path": "/chapter/01-quickstart/wpf-的优势和劣势",
+              "file": "01-quickstart/wpf-的优势和劣势.md"
+            },
+            {
+              "id": "leaf-119",
+              "title": "WPF 的工作原理",
+              "path": "/chapter/01-quickstart/wpf-的工作原理",
+              "file": "01-quickstart/wpf-的工作原理.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-127",
+          "title": "1.2 第一个 WPF 应用",
+          "children": [
+            {
+              "id": "leaf-121",
+              "title": "创建 Hello World 项目",
+              "path": "/chapter/01-quickstart/创建-hello-world-项目",
+              "file": "01-quickstart/创建-hello-world-项目.md"
+            },
+            {
+              "id": "leaf-122",
+              "title": "通过 XAML 添加控件",
+              "path": "/chapter/01-quickstart/通过-xaml-添加控件",
+              "file": "01-quickstart/通过-xaml-添加控件.md"
+            },
+            {
+              "id": "leaf-123",
+              "title": "通过 C# 后台代码操控控件",
+              "path": "/chapter/01-quickstart/通过-c-后台代码操控控件",
+              "file": "01-quickstart/通过-c-后台代码操控控件.md"
+            },
+            {
+              "id": "leaf-124",
+              "title": "理解 InitializeComponent 方法",
+              "path": "/chapter/01-quickstart/理解-initializecomponent-方法",
+              "file": "01-quickstart/理解-initializecomponent-方法.md"
+            },
+            {
+              "id": "leaf-125",
+              "title": "控件命名（x:Name）与后台引用",
+              "path": "/chapter/01-quickstart/控件命名xname与后台引用",
+              "file": "01-quickstart/控件命名xname与后台引用.md"
+            },
+            {
+              "id": "leaf-126",
+              "title": "事件处理入门（Click 事件）",
+              "path": "/chapter/01-quickstart/事件处理入门click-事件",
+              "file": "01-quickstart/事件处理入门click-事件.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-134",
+          "title": "1.3 应用程序生命周期",
+          "children": [
+            {
+              "id": "leaf-128",
+              "title": "App.xaml 的 StartupUri",
+              "path": "/chapter/01-quickstart/appxaml-的-startupuri",
+              "file": "01-quickstart/appxaml-的-startupuri.md"
+            },
+            {
+              "id": "leaf-129",
+              "title": "Application 类详解",
+              "path": "/chapter/01-quickstart/application-类详解",
+              "file": "01-quickstart/application-类详解.md"
+            },
+            {
+              "id": "leaf-130",
+              "title": "应用程序事件（Startup、Exit 等）",
+              "path": "/chapter/01-quickstart/应用程序事件startupexit-等",
+              "file": "01-quickstart/应用程序事件startupexit-等.md"
+            },
+            {
+              "id": "leaf-131",
+              "title": "Application.Current 全局访问",
+              "path": "/chapter/01-quickstart/applicationcurrent-全局访问",
+              "file": "01-quickstart/applicationcurrent-全局访问.md"
+            },
+            {
+              "id": "leaf-132",
+              "title": "ShutdownMode 属性",
+              "path": "/chapter/01-quickstart/shutdownmode-属性",
+              "file": "01-quickstart/shutdownmode-属性.md"
+            },
+            {
+              "id": "leaf-133",
+              "title": "单实例应用实现",
+              "path": "/chapter/01-quickstart/单实例应用实现",
+              "file": "01-quickstart/单实例应用实现.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-139",
+          "title": "1.4 窗口 Window 详解",
+          "children": [
+            {
+              "id": "leaf-135",
+              "title": "Window 常用属性",
+              "path": "/chapter/01-quickstart/window-常用属性",
+              "file": "01-quickstart/window-常用属性.md"
+            },
+            {
+              "id": "leaf-136",
+              "title": "Window 常用方法（Show、ShowDialog 等）",
+              "path": "/chapter/01-quickstart/window-常用方法showshowdialog-等",
+              "file": "01-quickstart/window-常用方法showshowdialog-等.md"
+            },
+            {
+              "id": "leaf-137",
+              "title": "Window 常用事件（Loaded、Closing 等）",
+              "path": "/chapter/01-quickstart/window-常用事件loadedclosing-等",
+              "file": "01-quickstart/window-常用事件loadedclosing-等.md"
+            },
+            {
+              "id": "leaf-138",
+              "title": "窗口传值与数据交互",
+              "path": "/chapter/01-quickstart/窗口传值与数据交互",
+              "file": "01-quickstart/窗口传值与数据交互.md"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "02-xaml",
+      "title": "2. XAML 详解",
+      "children": [
+        {
+          "id": "sg-144",
+          "title": "2.1 XAML 基础",
+          "children": [
+            {
+              "id": "leaf-140",
+              "title": "什么是 XAML？",
+              "path": "/chapter/02-xaml/什么是-xaml",
+              "file": "02-xaml/什么是-xaml.md"
+            },
+            {
+              "id": "leaf-141",
+              "title": "XAML 的特点",
+              "path": "/chapter/02-xaml/xaml-的特点",
+              "file": "02-xaml/xaml-的特点.md"
+            },
+            {
+              "id": "leaf-142",
+              "title": "XAML 与 C# 代码的关系",
+              "path": "/chapter/02-xaml/xaml-与-c-代码的关系",
+              "file": "02-xaml/xaml-与-c-代码的关系.md"
+            },
+            {
+              "id": "leaf-143",
+              "title": "XAML 语法规则",
+              "path": "/chapter/02-xaml/xaml-语法规则",
+              "file": "02-xaml/xaml-语法规则.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-148",
+          "title": "2.2 XAML 命名空间",
+          "children": [
+            {
+              "id": "leaf-145",
+              "title": "默认命名空间",
+              "path": "/chapter/02-xaml/默认命名空间",
+              "file": "02-xaml/默认命名空间.md"
+            },
+            {
+              "id": "leaf-146",
+              "title": "x: 命名空间",
+              "path": "/chapter/02-xaml/x-命名空间",
+              "file": "02-xaml/x-命名空间.md"
+            },
+            {
+              "id": "leaf-147",
+              "title": "自定义命名空间引入",
+              "path": "/chapter/02-xaml/自定义命名空间引入",
+              "file": "02-xaml/自定义命名空间引入.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-150",
+          "title": "2.3 XAML 类派生关系",
+          "children": [
+            {
+              "id": "leaf-149",
+              "title": "WPF 核心类层次结构",
+              "path": "/chapter/02-xaml/wpf-核心类层次结构",
+              "file": "02-xaml/wpf-核心类层次结构.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-153",
+          "title": "2.4 XAML 核心文件解读",
+          "children": [
+            {
+              "id": "leaf-151",
+              "title": "App.xaml 详解",
+              "path": "/chapter/02-xaml/appxaml-详解",
+              "file": "02-xaml/appxaml-详解.md"
+            },
+            {
+              "id": "leaf-152",
+              "title": "MainWindow.xaml 详解",
+              "path": "/chapter/02-xaml/mainwindowxaml-详解",
+              "file": "02-xaml/mainwindowxaml-详解.md"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "03-layout",
+      "title": "3. 布局系统",
+      "children": [
+        {
+          "id": "sg-157",
+          "title": "3.1 布局基本概念",
+          "children": [
+            {
+              "id": "leaf-154",
+              "title": "WPF 布局特点",
+              "path": "/chapter/03-layout/wpf-布局特点",
+              "file": "03-layout/wpf-布局特点.md"
+            },
+            {
+              "id": "leaf-155",
+              "title": "常用布局属性",
+              "path": "/chapter/03-layout/常用布局属性",
+              "file": "03-layout/常用布局属性.md"
+            },
+            {
+              "id": "leaf-156",
+              "title": "尺寸单位说明",
+              "path": "/chapter/03-layout/尺寸单位说明",
+              "file": "03-layout/尺寸单位说明.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-162",
+          "title": "3.2 Grid 网格布局",
+          "children": [
+            {
+              "id": "leaf-158",
+              "title": "Grid 核心特点与属性",
+              "path": "/chapter/03-layout/grid-核心特点与属性",
+              "file": "03-layout/grid-核心特点与属性.md"
+            },
+            {
+              "id": "leaf-159",
+              "title": "尺寸模式详解",
+              "path": "/chapter/03-layout/尺寸模式详解",
+              "file": "03-layout/尺寸模式详解.md"
+            },
+            {
+              "id": "leaf-160",
+              "title": "GridSplitter 可拖拽分隔条",
+              "path": "/chapter/03-layout/gridsplitter-可拖拽分隔条",
+              "file": "03-layout/gridsplitter-可拖拽分隔条.md"
+            },
+            {
+              "id": "leaf-161",
+              "title": "Grid 用法示例与最佳实践",
+              "path": "/chapter/03-layout/grid-用法示例与最佳实践",
+              "file": "03-layout/grid-用法示例与最佳实践.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-165",
+          "title": "3.3 StackPanel 堆叠布局",
+          "children": [
+            {
+              "id": "leaf-163",
+              "title": "StackPanel 核心特点与属性",
+              "path": "/chapter/03-layout/stackpanel-核心特点与属性",
+              "file": "03-layout/stackpanel-核心特点与属性.md"
+            },
+            {
+              "id": "leaf-164",
+              "title": "用法示例与选择指南",
+              "path": "/chapter/03-layout/用法示例与选择指南",
+              "file": "03-layout/用法示例与选择指南.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-168",
+          "title": "3.4 WrapPanel 环绕布局",
+          "children": [
+            {
+              "id": "leaf-166",
+              "title": "WrapPanel 核心特点与属性",
+              "path": "/chapter/03-layout/wrappanel-核心特点与属性",
+              "file": "03-layout/wrappanel-核心特点与属性.md"
+            },
+            {
+              "id": "leaf-167",
+              "title": "用法示例",
+              "path": "/chapter/03-layout/用法示例",
+              "file": "03-layout/用法示例.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-171",
+          "title": "3.5 DockPanel 停靠布局",
+          "children": [
+            {
+              "id": "leaf-169",
+              "title": "DockPanel 核心特点与属性",
+              "path": "/chapter/03-layout/dockpanel-核心特点与属性",
+              "file": "03-layout/dockpanel-核心特点与属性.md"
+            },
+            {
+              "id": "leaf-170",
+              "title": "用法示例：经典主界面",
+              "path": "/chapter/03-layout/用法示例经典主界面",
+              "file": "03-layout/用法示例经典主界面.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-174",
+          "title": "3.6 Canvas 画布布局",
+          "children": [
+            {
+              "id": "leaf-172",
+              "title": "Canvas 核心特点与属性",
+              "path": "/chapter/03-layout/canvas-核心特点与属性",
+              "file": "03-layout/canvas-核心特点与属性.md"
+            },
+            {
+              "id": "leaf-173",
+              "title": "用法示例与注意事项",
+              "path": "/chapter/03-layout/用法示例与注意事项",
+              "file": "03-layout/用法示例与注意事项.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-177",
+          "title": "3.7 UniformGrid 均匀网格",
+          "children": [
+            {
+              "id": "leaf-175",
+              "title": "UniformGrid 核心特点与属性",
+              "path": "/chapter/03-layout/uniformgrid-核心特点与属性",
+              "file": "03-layout/uniformgrid-核心特点与属性.md"
+            },
+            {
+              "id": "leaf-176",
+              "title": "用法示例",
+              "path": "/chapter/03-layout/用法示例",
+              "file": "03-layout/用法示例.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-181",
+          "title": "3.8 辅助容器",
+          "children": [
+            {
+              "id": "leaf-178",
+              "title": "Border 边框容器",
+              "path": "/chapter/03-layout/border-边框容器",
+              "file": "03-layout/border-边框容器.md"
+            },
+            {
+              "id": "leaf-179",
+              "title": "ScrollViewer 滚动容器",
+              "path": "/chapter/03-layout/scrollviewer-滚动容器",
+              "file": "03-layout/scrollviewer-滚动容器.md"
+            },
+            {
+              "id": "leaf-180",
+              "title": "Viewbox 缩放容器",
+              "path": "/chapter/03-layout/viewbox-缩放容器",
+              "file": "03-layout/viewbox-缩放容器.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-183",
+          "title": "3.9 布局选择策略",
+          "children": [
+            {
+              "id": "leaf-182",
+              "title": "布局容器选择指南",
+              "path": "/chapter/03-layout/布局容器选择指南",
+              "file": "03-layout/布局容器选择指南.md"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "04-controls",
+      "title": "4. 控件体系",
+      "children": [
+        {
+          "id": "sg-188",
+          "title": "4.1 控件内容模型",
+          "children": [
+            {
+              "id": "leaf-184",
+              "title": "ContentControl 内容控件",
+              "path": "/chapter/04-controls/contentcontrol-内容控件",
+              "file": "04-controls/contentcontrol-内容控件.md"
+            },
+            {
+              "id": "leaf-185",
+              "title": "HeaderedContentControl 带标题内容控件",
+              "path": "/chapter/04-controls/headeredcontentcontrol-带标题内容控件",
+              "file": "04-controls/headeredcontentcontrol-带标题内容控件.md"
+            },
+            {
+              "id": "leaf-186",
+              "title": "ItemsControl 条目控件",
+              "path": "/chapter/04-controls/itemscontrol-条目控件",
+              "file": "04-controls/itemscontrol-条目控件.md"
+            },
+            {
+              "id": "leaf-187",
+              "title": "HeaderedItemsControl 带标题条目控件",
+              "path": "/chapter/04-controls/headereditemscontrol-带标题条目控件",
+              "file": "04-controls/headereditemscontrol-带标题条目控件.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-195",
+          "title": "4.2 按钮类控件",
+          "children": [
+            {
+              "id": "leaf-189",
+              "title": "Button 按钮",
+              "path": "/chapter/04-controls/button-按钮",
+              "file": "04-controls/button-按钮.md"
+            },
+            {
+              "id": "leaf-190",
+              "title": "RepeatButton 重复按钮",
+              "path": "/chapter/04-controls/repeatbutton-重复按钮",
+              "file": "04-controls/repeatbutton-重复按钮.md"
+            },
+            {
+              "id": "leaf-191",
+              "title": "ToggleButton 切换按钮",
+              "path": "/chapter/04-controls/togglebutton-切换按钮",
+              "file": "04-controls/togglebutton-切换按钮.md"
+            },
+            {
+              "id": "leaf-192",
+              "title": "RadioButton 单选按钮",
+              "path": "/chapter/04-controls/radiobutton-单选按钮",
+              "file": "04-controls/radiobutton-单选按钮.md"
+            },
+            {
+              "id": "leaf-193",
+              "title": "CheckBox 复选框",
+              "path": "/chapter/04-controls/checkbox-复选框",
+              "file": "04-controls/checkbox-复选框.md"
+            },
+            {
+              "id": "leaf-194",
+              "title": "图标按钮实现",
+              "path": "/chapter/04-controls/图标按钮实现",
+              "file": "04-controls/图标按钮实现.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-202",
+          "title": "4.3 文本类控件",
+          "children": [
+            {
+              "id": "leaf-196",
+              "title": "Label 标签",
+              "path": "/chapter/04-controls/label-标签",
+              "file": "04-controls/label-标签.md"
+            },
+            {
+              "id": "leaf-197",
+              "title": "TextBlock 轻量文本",
+              "path": "/chapter/04-controls/textblock-轻量文本",
+              "file": "04-controls/textblock-轻量文本.md"
+            },
+            {
+              "id": "leaf-198",
+              "title": "TextBox 文本框",
+              "path": "/chapter/04-controls/textbox-文本框",
+              "file": "04-controls/textbox-文本框.md"
+            },
+            {
+              "id": "leaf-199",
+              "title": "PasswordBox 密码框",
+              "path": "/chapter/04-controls/passwordbox-密码框",
+              "file": "04-controls/passwordbox-密码框.md"
+            },
+            {
+              "id": "leaf-200",
+              "title": "RichTextBox 富文本框",
+              "path": "/chapter/04-controls/richtextbox-富文本框",
+              "file": "04-controls/richtextbox-富文本框.md"
+            },
+            {
+              "id": "leaf-201",
+              "title": "AccessText 助记符文本",
+              "path": "/chapter/04-controls/accesstext-助记符文本",
+              "file": "04-controls/accesstext-助记符文本.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-207",
+          "title": "4.4 选择类控件",
+          "children": [
+            {
+              "id": "leaf-203",
+              "title": "ComboBox 下拉选择框",
+              "path": "/chapter/04-controls/combobox-下拉选择框",
+              "file": "04-controls/combobox-下拉选择框.md"
+            },
+            {
+              "id": "leaf-204",
+              "title": "ListBox 列表框",
+              "path": "/chapter/04-controls/listbox-列表框",
+              "file": "04-controls/listbox-列表框.md"
+            },
+            {
+              "id": "leaf-205",
+              "title": "ListView 列表视图",
+              "path": "/chapter/04-controls/listview-列表视图",
+              "file": "04-controls/listview-列表视图.md"
+            },
+            {
+              "id": "leaf-206",
+              "title": "选择类控件对比指南",
+              "path": "/chapter/04-controls/选择类控件对比指南",
+              "file": "04-controls/选择类控件对比指南.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-211",
+          "title": "4.5 范围类控件",
+          "children": [
+            {
+              "id": "leaf-208",
+              "title": "Slider 滑块",
+              "path": "/chapter/04-controls/slider-滑块",
+              "file": "04-controls/slider-滑块.md"
+            },
+            {
+              "id": "leaf-209",
+              "title": "ProgressBar 进度条",
+              "path": "/chapter/04-controls/progressbar-进度条",
+              "file": "04-controls/progressbar-进度条.md"
+            },
+            {
+              "id": "leaf-210",
+              "title": "ScrollBar 滚动条",
+              "path": "/chapter/04-controls/scrollbar-滚动条",
+              "file": "04-controls/scrollbar-滚动条.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-218",
+          "title": "4.6 日期与信息显示控件",
+          "children": [
+            {
+              "id": "leaf-212",
+              "title": "DatePicker 日期选择器",
+              "path": "/chapter/04-controls/datepicker-日期选择器",
+              "file": "04-controls/datepicker-日期选择器.md"
+            },
+            {
+              "id": "leaf-213",
+              "title": "Calendar 日历控件",
+              "path": "/chapter/04-controls/calendar-日历控件",
+              "file": "04-controls/calendar-日历控件.md"
+            },
+            {
+              "id": "leaf-214",
+              "title": "Image 图片显示",
+              "path": "/chapter/04-controls/image-图片显示",
+              "file": "04-controls/image-图片显示.md"
+            },
+            {
+              "id": "leaf-215",
+              "title": "MediaElement 媒体播放器",
+              "path": "/chapter/04-controls/mediaelement-媒体播放器",
+              "file": "04-controls/mediaelement-媒体播放器.md"
+            },
+            {
+              "id": "leaf-216",
+              "title": "Popup 弹出层",
+              "path": "/chapter/04-controls/popup-弹出层",
+              "file": "04-controls/popup-弹出层.md"
+            },
+            {
+              "id": "leaf-217",
+              "title": "ToolTip 工具提示",
+              "path": "/chapter/04-controls/tooltip-工具提示",
+              "file": "04-controls/tooltip-工具提示.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-223",
+          "title": "4.7 容器与分组控件",
+          "children": [
+            {
+              "id": "leaf-219",
+              "title": "TabControl 选项卡",
+              "path": "/chapter/04-controls/tabcontrol-选项卡",
+              "file": "04-controls/tabcontrol-选项卡.md"
+            },
+            {
+              "id": "leaf-220",
+              "title": "GroupBox 分组框",
+              "path": "/chapter/04-controls/groupbox-分组框",
+              "file": "04-controls/groupbox-分组框.md"
+            },
+            {
+              "id": "leaf-221",
+              "title": "Expander 折叠面板",
+              "path": "/chapter/04-controls/expander-折叠面板",
+              "file": "04-controls/expander-折叠面板.md"
+            },
+            {
+              "id": "leaf-222",
+              "title": "Frame 页面框架",
+              "path": "/chapter/04-controls/frame-页面框架",
+              "file": "04-controls/frame-页面框架.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-228",
+          "title": "4.8 菜单与工具栏",
+          "children": [
+            {
+              "id": "leaf-224",
+              "title": "Menu 菜单栏",
+              "path": "/chapter/04-controls/menu-菜单栏",
+              "file": "04-controls/menu-菜单栏.md"
+            },
+            {
+              "id": "leaf-225",
+              "title": "ContextMenu 右键菜单",
+              "path": "/chapter/04-controls/contextmenu-右键菜单",
+              "file": "04-controls/contextmenu-右键菜单.md"
+            },
+            {
+              "id": "leaf-226",
+              "title": "ToolBar 工具栏",
+              "path": "/chapter/04-controls/toolbar-工具栏",
+              "file": "04-controls/toolbar-工具栏.md"
+            },
+            {
+              "id": "leaf-227",
+              "title": "StatusBar 状态栏",
+              "path": "/chapter/04-controls/statusbar-状态栏",
+              "file": "04-controls/statusbar-状态栏.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-233",
+          "title": "4.9 装饰与辅助控件",
+          "children": [
+            {
+              "id": "leaf-229",
+              "title": "Separator 分隔线",
+              "path": "/chapter/04-controls/separator-分隔线",
+              "file": "04-controls/separator-分隔线.md"
+            },
+            {
+              "id": "leaf-230",
+              "title": "GridSplitter 网格分割条",
+              "path": "/chapter/04-controls/gridsplitter-网格分割条",
+              "file": "04-controls/gridsplitter-网格分割条.md"
+            },
+            {
+              "id": "leaf-231",
+              "title": "InkCanvas 手写画布",
+              "path": "/chapter/04-controls/inkcanvas-手写画布",
+              "file": "04-controls/inkcanvas-手写画布.md"
+            },
+            {
+              "id": "leaf-232",
+              "title": "WebBrowser 内嵌浏览器",
+              "path": "/chapter/04-controls/webbrowser-内嵌浏览器",
+              "file": "04-controls/webbrowser-内嵌浏览器.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-238",
+          "title": "4.10 对话框与交互",
+          "children": [
+            {
+              "id": "leaf-234",
+              "title": "MessageBox 消息弹窗",
+              "path": "/chapter/04-controls/messagebox-消息弹窗",
+              "file": "04-controls/messagebox-消息弹窗.md"
+            },
+            {
+              "id": "leaf-235",
+              "title": "OpenFileDialog 打开文件对话框",
+              "path": "/chapter/04-controls/openfiledialog-打开文件对话框",
+              "file": "04-controls/openfiledialog-打开文件对话框.md"
+            },
+            {
+              "id": "leaf-236",
+              "title": "SaveFileDialog 保存文件对话框",
+              "path": "/chapter/04-controls/savefiledialog-保存文件对话框",
+              "file": "04-controls/savefiledialog-保存文件对话框.md"
+            },
+            {
+              "id": "leaf-237",
+              "title": "选择文件夹对话框",
+              "path": "/chapter/04-controls/选择文件夹对话框",
+              "file": "04-controls/选择文件夹对话框.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-242",
+          "title": "4.11 用户控件与自定义控件",
+          "children": [
+            {
+              "id": "leaf-239",
+              "title": "UserControl 用户控件",
+              "path": "/chapter/04-controls/usercontrol-用户控件",
+              "file": "04-controls/usercontrol-用户控件.md"
+            },
+            {
+              "id": "leaf-240",
+              "title": "CustomControl 自定义控件",
+              "path": "/chapter/04-controls/customcontrol-自定义控件",
+              "file": "04-controls/customcontrol-自定义控件.md"
+            },
+            {
+              "id": "leaf-241",
+              "title": "UserControl vs CustomControl 选择指南",
+              "path": "/chapter/04-controls/usercontrol-vs-customcontrol-选择指南",
+              "file": "04-controls/usercontrol-vs-customcontrol-选择指南.md"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "05-core-concepts",
+      "title": "5. WPF 核心概念",
+      "children": [
+        {
+          "id": "sg-249",
+          "title": "5.1 依赖属性",
+          "children": [
+            {
+              "id": "leaf-243",
+              "title": "什么是依赖属性？",
+              "path": "/chapter/05-core-concepts/什么是依赖属性",
+              "file": "05-core-concepts/什么是依赖属性.md"
+            },
+            {
+              "id": "leaf-244",
+              "title": "依赖属性的原理",
+              "path": "/chapter/05-core-concepts/依赖属性的原理",
+              "file": "05-core-concepts/依赖属性的原理.md"
+            },
+            {
+              "id": "leaf-245",
+              "title": "注册依赖属性",
+              "path": "/chapter/05-core-concepts/注册依赖属性",
+              "file": "05-core-concepts/注册依赖属性.md"
+            },
+            {
+              "id": "leaf-246",
+              "title": "附加属性",
+              "path": "/chapter/05-core-concepts/附加属性",
+              "file": "05-core-concepts/附加属性.md"
+            },
+            {
+              "id": "leaf-247",
+              "title": "依赖属性 vs CLR 属性",
+              "path": "/chapter/05-core-concepts/依赖属性-vs-clr-属性",
+              "file": "05-core-concepts/依赖属性-vs-clr-属性.md"
+            },
+            {
+              "id": "leaf-248",
+              "title": "依赖属性应用场景",
+              "path": "/chapter/05-core-concepts/依赖属性应用场景",
+              "file": "05-core-concepts/依赖属性应用场景.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-258",
+          "title": "5.2 路由事件",
+          "children": [
+            {
+              "id": "leaf-250",
+              "title": "什么是路由事件？",
+              "path": "/chapter/05-core-concepts/什么是路由事件",
+              "file": "05-core-concepts/什么是路由事件.md"
+            },
+            {
+              "id": "leaf-251",
+              "title": "路由策略（冒泡、隧道、直接）",
+              "path": "/chapter/05-core-concepts/路由策略冒泡隧道直接",
+              "file": "05-core-concepts/路由策略冒泡隧道直接.md"
+            },
+            {
+              "id": "leaf-252",
+              "title": "路由事件参数",
+              "path": "/chapter/05-core-concepts/路由事件参数",
+              "file": "05-core-concepts/路由事件参数.md"
+            },
+            {
+              "id": "leaf-253",
+              "title": "注册自定义路由事件",
+              "path": "/chapter/05-core-concepts/注册自定义路由事件",
+              "file": "05-core-concepts/注册自定义路由事件.md"
+            },
+            {
+              "id": "leaf-254",
+              "title": "附加事件",
+              "path": "/chapter/05-core-concepts/附加事件",
+              "file": "05-core-concepts/附加事件.md"
+            },
+            {
+              "id": "leaf-255",
+              "title": "常用内置路由事件",
+              "path": "/chapter/05-core-concepts/常用内置路由事件",
+              "file": "05-core-concepts/常用内置路由事件.md"
+            },
+            {
+              "id": "leaf-256",
+              "title": "隧道事件 vs 冒泡事件",
+              "path": "/chapter/05-core-concepts/隧道事件-vs-冒泡事件",
+              "file": "05-core-concepts/隧道事件-vs-冒泡事件.md"
+            },
+            {
+              "id": "leaf-257",
+              "title": "路由事件实战技巧",
+              "path": "/chapter/05-core-concepts/路由事件实战技巧",
+              "file": "05-core-concepts/路由事件实战技巧.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-266",
+          "title": "5.3 命令系统",
+          "children": [
+            {
+              "id": "leaf-259",
+              "title": "什么是命令？",
+              "path": "/chapter/05-core-concepts/什么是命令",
+              "file": "05-core-concepts/什么是命令.md"
+            },
+            {
+              "id": "leaf-260",
+              "title": "ICommand 接口",
+              "path": "/chapter/05-core-concepts/icommand-接口",
+              "file": "05-core-concepts/icommand-接口.md"
+            },
+            {
+              "id": "leaf-261",
+              "title": "内置命令",
+              "path": "/chapter/05-core-concepts/内置命令",
+              "file": "05-core-concepts/内置命令.md"
+            },
+            {
+              "id": "leaf-262",
+              "title": "命令绑定",
+              "path": "/chapter/05-core-concepts/命令绑定",
+              "file": "05-core-concepts/命令绑定.md"
+            },
+            {
+              "id": "leaf-263",
+              "title": "自定义命令",
+              "path": "/chapter/05-core-concepts/自定义命令",
+              "file": "05-core-concepts/自定义命令.md"
+            },
+            {
+              "id": "leaf-264",
+              "title": "MVVM 中的命令（RelayCommand）",
+              "path": "/chapter/05-core-concepts/mvvm-中的命令relaycommand",
+              "file": "05-core-concepts/mvvm-中的命令relaycommand.md"
+            },
+            {
+              "id": "leaf-265",
+              "title": "CommandParameter 参数传递",
+              "path": "/chapter/05-core-concepts/commandparameter-参数传递",
+              "file": "05-core-concepts/commandparameter-参数传递.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-277",
+          "title": "5.4 数据绑定",
+          "children": [
+            {
+              "id": "leaf-267",
+              "title": "什么是数据绑定？",
+              "path": "/chapter/05-core-concepts/什么是数据绑定",
+              "file": "05-core-concepts/什么是数据绑定.md"
+            },
+            {
+              "id": "leaf-268",
+              "title": "Binding 核心属性",
+              "path": "/chapter/05-core-concepts/binding-核心属性",
+              "file": "05-core-concepts/binding-核心属性.md"
+            },
+            {
+              "id": "leaf-269",
+              "title": "DataContext 数据上下文",
+              "path": "/chapter/05-core-concepts/datacontext-数据上下文",
+              "file": "05-core-concepts/datacontext-数据上下文.md"
+            },
+            {
+              "id": "leaf-270",
+              "title": "INotifyPropertyChanged 接口",
+              "path": "/chapter/05-core-concepts/inotifypropertychanged-接口",
+              "file": "05-core-concepts/inotifypropertychanged-接口.md"
+            },
+            {
+              "id": "leaf-271",
+              "title": "绑定表达式高级用法",
+              "path": "/chapter/05-core-concepts/绑定表达式高级用法",
+              "file": "05-core-concepts/绑定表达式高级用法.md"
+            },
+            {
+              "id": "leaf-272",
+              "title": "RelativeSource 详解",
+              "path": "/chapter/05-core-concepts/relativesource-详解",
+              "file": "05-core-concepts/relativesource-详解.md"
+            },
+            {
+              "id": "leaf-273",
+              "title": "ElementName 绑定",
+              "path": "/chapter/05-core-concepts/elementname-绑定",
+              "file": "05-core-concepts/elementname-绑定.md"
+            },
+            {
+              "id": "leaf-274",
+              "title": "值转换器 IValueConverter",
+              "path": "/chapter/05-core-concepts/值转换器-ivalueconverter",
+              "file": "05-core-concepts/值转换器-ivalueconverter.md"
+            },
+            {
+              "id": "leaf-275",
+              "title": "数据验证",
+              "path": "/chapter/05-core-concepts/数据验证",
+              "file": "05-core-concepts/数据验证.md"
+            },
+            {
+              "id": "leaf-276",
+              "title": "调试数据绑定",
+              "path": "/chapter/05-core-concepts/调试数据绑定",
+              "file": "05-core-concepts/调试数据绑定.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-282",
+          "title": "5.5 标记扩展",
+          "children": [
+            {
+              "id": "leaf-278",
+              "title": "什么是标记扩展？",
+              "path": "/chapter/05-core-concepts/什么是标记扩展",
+              "file": "05-core-concepts/什么是标记扩展.md"
+            },
+            {
+              "id": "leaf-279",
+              "title": "常用内置标记扩展",
+              "path": "/chapter/05-core-concepts/常用内置标记扩展",
+              "file": "05-core-concepts/常用内置标记扩展.md"
+            },
+            {
+              "id": "leaf-280",
+              "title": "StaticResource vs DynamicResource",
+              "path": "/chapter/05-core-concepts/staticresource-vs-dynamicresource",
+              "file": "05-core-concepts/staticresource-vs-dynamicresource.md"
+            },
+            {
+              "id": "leaf-281",
+              "title": "自定义标记扩展",
+              "path": "/chapter/05-core-concepts/自定义标记扩展",
+              "file": "05-core-concepts/自定义标记扩展.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-288",
+          "title": "5.6 资源系统",
+          "children": [
+            {
+              "id": "leaf-283",
+              "title": "什么是 WPF 资源？",
+              "path": "/chapter/05-core-concepts/什么是-wpf-资源",
+              "file": "05-core-concepts/什么是-wpf-资源.md"
+            },
+            {
+              "id": "leaf-284",
+              "title": "资源层级与查找顺序",
+              "path": "/chapter/05-core-concepts/资源层级与查找顺序",
+              "file": "05-core-concepts/资源层级与查找顺序.md"
+            },
+            {
+              "id": "leaf-285",
+              "title": "资源定义与引用",
+              "path": "/chapter/05-core-concepts/资源定义与引用",
+              "file": "05-core-concepts/资源定义与引用.md"
+            },
+            {
+              "id": "leaf-286",
+              "title": "资源字典",
+              "path": "/chapter/05-core-concepts/资源字典",
+              "file": "05-core-concepts/资源字典.md"
+            },
+            {
+              "id": "leaf-287",
+              "title": "二进制资源与 Pack URI",
+              "path": "/chapter/05-core-concepts/二进制资源与-pack-uri",
+              "file": "05-core-concepts/二进制资源与-pack-uri.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-295",
+          "title": "5.7 样式",
+          "children": [
+            {
+              "id": "leaf-289",
+              "title": "什么是样式？",
+              "path": "/chapter/05-core-concepts/什么是样式",
+              "file": "05-core-concepts/什么是样式.md"
+            },
+            {
+              "id": "leaf-290",
+              "title": "Style 核心属性",
+              "path": "/chapter/05-core-concepts/style-核心属性",
+              "file": "05-core-concepts/style-核心属性.md"
+            },
+            {
+              "id": "leaf-291",
+              "title": "Setter 详解",
+              "path": "/chapter/05-core-concepts/setter-详解",
+              "file": "05-core-concepts/setter-详解.md"
+            },
+            {
+              "id": "leaf-292",
+              "title": "样式继承（BasedOn）",
+              "path": "/chapter/05-core-concepts/样式继承basedon",
+              "file": "05-core-concepts/样式继承basedon.md"
+            },
+            {
+              "id": "leaf-293",
+              "title": "隐式样式",
+              "path": "/chapter/05-core-concepts/隐式样式",
+              "file": "05-core-concepts/隐式样式.md"
+            },
+            {
+              "id": "leaf-294",
+              "title": "上位机中样式使用技巧",
+              "path": "/chapter/05-core-concepts/上位机中样式使用技巧",
+              "file": "05-core-concepts/上位机中样式使用技巧.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-301",
+          "title": "5.8 模板",
+          "children": [
+            {
+              "id": "leaf-296",
+              "title": "控件模板 ControlTemplate",
+              "path": "/chapter/05-core-concepts/控件模板-controltemplate",
+              "file": "05-core-concepts/控件模板-controltemplate.md"
+            },
+            {
+              "id": "leaf-297",
+              "title": "数据模板 DataTemplate",
+              "path": "/chapter/05-core-concepts/数据模板-datatemplate",
+              "file": "05-core-concepts/数据模板-datatemplate.md"
+            },
+            {
+              "id": "leaf-298",
+              "title": "HierarchicalDataTemplate 层级模板",
+              "path": "/chapter/05-core-concepts/hierarchicaldatatemplate-层级模板",
+              "file": "05-core-concepts/hierarchicaldatatemplate-层级模板.md"
+            },
+            {
+              "id": "leaf-299",
+              "title": "ItemContainerStyle 条目容器样式",
+              "path": "/chapter/05-core-concepts/itemcontainerstyle-条目容器样式",
+              "file": "05-core-concepts/itemcontainerstyle-条目容器样式.md"
+            },
+            {
+              "id": "leaf-300",
+              "title": "模板绑定语法",
+              "path": "/chapter/05-core-concepts/模板绑定语法",
+              "file": "05-core-concepts/模板绑定语法.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-308",
+          "title": "5.9 触发器",
+          "children": [
+            {
+              "id": "leaf-302",
+              "title": "属性触发器（Trigger）",
+              "path": "/chapter/05-core-concepts/属性触发器trigger",
+              "file": "05-core-concepts/属性触发器trigger.md"
+            },
+            {
+              "id": "leaf-303",
+              "title": "多条件触发器（MultiTrigger）",
+              "path": "/chapter/05-core-concepts/多条件触发器multitrigger",
+              "file": "05-core-concepts/多条件触发器multitrigger.md"
+            },
+            {
+              "id": "leaf-304",
+              "title": "数据触发器（DataTrigger）",
+              "path": "/chapter/05-core-concepts/数据触发器datatrigger",
+              "file": "05-core-concepts/数据触发器datatrigger.md"
+            },
+            {
+              "id": "leaf-305",
+              "title": "多数据触发器（MultiDataTrigger）",
+              "path": "/chapter/05-core-concepts/多数据触发器multidatatrigger",
+              "file": "05-core-concepts/多数据触发器multidatatrigger.md"
+            },
+            {
+              "id": "leaf-306",
+              "title": "事件触发器（EventTrigger）",
+              "path": "/chapter/05-core-concepts/事件触发器eventtrigger",
+              "file": "05-core-concepts/事件触发器eventtrigger.md"
+            },
+            {
+              "id": "leaf-307",
+              "title": "各触发器适用场景对比",
+              "path": "/chapter/05-core-concepts/各触发器适用场景对比",
+              "file": "05-core-concepts/各触发器适用场景对比.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-310",
+          "title": "5.10 核心概念关系图",
+          "children": [
+            {
+              "id": "leaf-309",
+              "title": "各核心概念之间的联系",
+              "path": "/chapter/05-core-concepts/各核心概念之间的联系",
+              "file": "05-core-concepts/各核心概念之间的联系.md"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "06-graphics",
+      "title": "6. 图形与多媒体",
+      "children": [
+        {
+          "id": "sg-312",
+          "title": "6.1 图形渲染概述",
+          "children": [
+            {
+              "id": "leaf-311",
+              "title": "WPF 图形渲染概述",
+              "path": "/chapter/06-graphics/wpf-图形渲染概述",
+              "file": "06-graphics/wpf-图形渲染概述.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-320",
+          "title": "6.2 Shape 基本图形",
+          "children": [
+            {
+              "id": "leaf-313",
+              "title": "Line 直线",
+              "path": "/chapter/06-graphics/line-直线",
+              "file": "06-graphics/line-直线.md"
+            },
+            {
+              "id": "leaf-314",
+              "title": "Rectangle 矩形",
+              "path": "/chapter/06-graphics/rectangle-矩形",
+              "file": "06-graphics/rectangle-矩形.md"
+            },
+            {
+              "id": "leaf-315",
+              "title": "Ellipse 椭圆",
+              "path": "/chapter/06-graphics/ellipse-椭圆",
+              "file": "06-graphics/ellipse-椭圆.md"
+            },
+            {
+              "id": "leaf-316",
+              "title": "Polygon 多边形",
+              "path": "/chapter/06-graphics/polygon-多边形",
+              "file": "06-graphics/polygon-多边形.md"
+            },
+            {
+              "id": "leaf-317",
+              "title": "Polyline 折线",
+              "path": "/chapter/06-graphics/polyline-折线",
+              "file": "06-graphics/polyline-折线.md"
+            },
+            {
+              "id": "leaf-318",
+              "title": "Path 路径",
+              "path": "/chapter/06-graphics/path-路径",
+              "file": "06-graphics/path-路径.md"
+            },
+            {
+              "id": "leaf-319",
+              "title": "所有 Shape 共享属性",
+              "path": "/chapter/06-graphics/所有-shape-共享属性",
+              "file": "06-graphics/所有-shape-共享属性.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-324",
+          "title": "6.3 Path 与 Geometry",
+          "children": [
+            {
+              "id": "leaf-321",
+              "title": "Geometry 类型",
+              "path": "/chapter/06-graphics/geometry-类型",
+              "file": "06-graphics/geometry-类型.md"
+            },
+            {
+              "id": "leaf-322",
+              "title": "路径标记语法",
+              "path": "/chapter/06-graphics/路径标记语法",
+              "file": "06-graphics/路径标记语法.md"
+            },
+            {
+              "id": "leaf-323",
+              "title": "上位机应用场景",
+              "path": "/chapter/06-graphics/上位机应用场景",
+              "file": "06-graphics/上位机应用场景.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-332",
+          "title": "6.4 Brush 画刷",
+          "children": [
+            {
+              "id": "leaf-325",
+              "title": "SolidColorBrush 纯色画刷",
+              "path": "/chapter/06-graphics/solidcolorbrush-纯色画刷",
+              "file": "06-graphics/solidcolorbrush-纯色画刷.md"
+            },
+            {
+              "id": "leaf-326",
+              "title": "LinearGradientBrush 线性渐变",
+              "path": "/chapter/06-graphics/lineargradientbrush-线性渐变",
+              "file": "06-graphics/lineargradientbrush-线性渐变.md"
+            },
+            {
+              "id": "leaf-327",
+              "title": "RadialGradientBrush 径向渐变",
+              "path": "/chapter/06-graphics/radialgradientbrush-径向渐变",
+              "file": "06-graphics/radialgradientbrush-径向渐变.md"
+            },
+            {
+              "id": "leaf-328",
+              "title": "ImageBrush 图像画刷",
+              "path": "/chapter/06-graphics/imagebrush-图像画刷",
+              "file": "06-graphics/imagebrush-图像画刷.md"
+            },
+            {
+              "id": "leaf-329",
+              "title": "VisualBrush 可视画刷",
+              "path": "/chapter/06-graphics/visualbrush-可视画刷",
+              "file": "06-graphics/visualbrush-可视画刷.md"
+            },
+            {
+              "id": "leaf-330",
+              "title": "DrawingBrush 绘图画刷",
+              "path": "/chapter/06-graphics/drawingbrush-绘图画刷",
+              "file": "06-graphics/drawingbrush-绘图画刷.md"
+            },
+            {
+              "id": "leaf-331",
+              "title": "上位机画刷应用",
+              "path": "/chapter/06-graphics/上位机画刷应用",
+              "file": "06-graphics/上位机画刷应用.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-340",
+          "title": "6.5 Transform 变换",
+          "children": [
+            {
+              "id": "leaf-333",
+              "title": "RotateTransform 旋转",
+              "path": "/chapter/06-graphics/rotatetransform-旋转",
+              "file": "06-graphics/rotatetransform-旋转.md"
+            },
+            {
+              "id": "leaf-334",
+              "title": "ScaleTransform 缩放",
+              "path": "/chapter/06-graphics/scaletransform-缩放",
+              "file": "06-graphics/scaletransform-缩放.md"
+            },
+            {
+              "id": "leaf-335",
+              "title": "SkewTransform 倾斜",
+              "path": "/chapter/06-graphics/skewtransform-倾斜",
+              "file": "06-graphics/skewtransform-倾斜.md"
+            },
+            {
+              "id": "leaf-336",
+              "title": "TranslateTransform 平移",
+              "path": "/chapter/06-graphics/translatetransform-平移",
+              "file": "06-graphics/translatetransform-平移.md"
+            },
+            {
+              "id": "leaf-337",
+              "title": "TransformGroup 变换组合",
+              "path": "/chapter/06-graphics/transformgroup-变换组合",
+              "file": "06-graphics/transformgroup-变换组合.md"
+            },
+            {
+              "id": "leaf-338",
+              "title": "MatrixTransform 矩阵变换",
+              "path": "/chapter/06-graphics/matrixtransform-矩阵变换",
+              "file": "06-graphics/matrixtransform-矩阵变换.md"
+            },
+            {
+              "id": "leaf-339",
+              "title": "RenderTransform vs LayoutTransform",
+              "path": "/chapter/06-graphics/rendertransform-vs-layouttransform",
+              "file": "06-graphics/rendertransform-vs-layouttransform.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-344",
+          "title": "6.6 Effect 特效",
+          "children": [
+            {
+              "id": "leaf-341",
+              "title": "BlurEffect 模糊",
+              "path": "/chapter/06-graphics/blureffect-模糊",
+              "file": "06-graphics/blureffect-模糊.md"
+            },
+            {
+              "id": "leaf-342",
+              "title": "DropShadowEffect 投影",
+              "path": "/chapter/06-graphics/dropshadoweffect-投影",
+              "file": "06-graphics/dropshadoweffect-投影.md"
+            },
+            {
+              "id": "leaf-343",
+              "title": "性能注意事项",
+              "path": "/chapter/06-graphics/性能注意事项",
+              "file": "06-graphics/性能注意事项.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-349",
+          "title": "6.7 图像处理",
+          "children": [
+            {
+              "id": "leaf-345",
+              "title": "Image 控件",
+              "path": "/chapter/06-graphics/image-控件",
+              "file": "06-graphics/image-控件.md"
+            },
+            {
+              "id": "leaf-346",
+              "title": "BitmapImage",
+              "path": "/chapter/06-graphics/bitmapimage",
+              "file": "06-graphics/bitmapimage.md"
+            },
+            {
+              "id": "leaf-347",
+              "title": "WriteableBitmap 可写入位图",
+              "path": "/chapter/06-graphics/writeablebitmap-可写入位图",
+              "file": "06-graphics/writeablebitmap-可写入位图.md"
+            },
+            {
+              "id": "leaf-348",
+              "title": "RenderTargetBitmap 渲染到位图",
+              "path": "/chapter/06-graphics/rendertargetbitmap-渲染到位图",
+              "file": "06-graphics/rendertargetbitmap-渲染到位图.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-353",
+          "title": "6.8 音频与视频",
+          "children": [
+            {
+              "id": "leaf-350",
+              "title": "MediaElement 媒体播放",
+              "path": "/chapter/06-graphics/mediaelement-媒体播放",
+              "file": "06-graphics/mediaelement-媒体播放.md"
+            },
+            {
+              "id": "leaf-351",
+              "title": "SoundPlayer 系统声音",
+              "path": "/chapter/06-graphics/soundplayer-系统声音",
+              "file": "06-graphics/soundplayer-系统声音.md"
+            },
+            {
+              "id": "leaf-352",
+              "title": "上位机音频场景",
+              "path": "/chapter/06-graphics/上位机音频场景",
+              "file": "06-graphics/上位机音频场景.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-356",
+          "title": "6.9 2D与3D图形",
+          "children": [
+            {
+              "id": "leaf-354",
+              "title": "2D 绘图综合",
+              "path": "/chapter/06-graphics/2d-绘图综合",
+              "file": "06-graphics/2d-绘图综合.md"
+            },
+            {
+              "id": "leaf-355",
+              "title": "3D 图形入门",
+              "path": "/chapter/06-graphics/3d-图形入门",
+              "file": "06-graphics/3d-图形入门.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-363",
+          "title": "6.10 动画",
+          "children": [
+            {
+              "id": "leaf-357",
+              "title": "动画基础概念",
+              "path": "/chapter/06-graphics/动画基础概念",
+              "file": "06-graphics/动画基础概念.md"
+            },
+            {
+              "id": "leaf-358",
+              "title": "基础动画类型",
+              "path": "/chapter/06-graphics/基础动画类型",
+              "file": "06-graphics/基础动画类型.md"
+            },
+            {
+              "id": "leaf-359",
+              "title": "关键帧动画",
+              "path": "/chapter/06-graphics/关键帧动画",
+              "file": "06-graphics/关键帧动画.md"
+            },
+            {
+              "id": "leaf-360",
+              "title": "缓动函数",
+              "path": "/chapter/06-graphics/缓动函数",
+              "file": "06-graphics/缓动函数.md"
+            },
+            {
+              "id": "leaf-361",
+              "title": "Storyboard 故事板",
+              "path": "/chapter/06-graphics/storyboard-故事板",
+              "file": "06-graphics/storyboard-故事板.md"
+            },
+            {
+              "id": "leaf-362",
+              "title": "动画在上位机的应用",
+              "path": "/chapter/06-graphics/动画在上位机的应用",
+              "file": "06-graphics/动画在上位机的应用.md"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "07-mvvm",
+      "title": "7. MVVM 设计模式",
+      "children": [
+        {
+          "id": "sg-368",
+          "title": "7.1 MVVM 基础概念",
+          "children": [
+            {
+              "id": "leaf-364",
+              "title": "什么是 MVVM？",
+              "path": "/chapter/07-mvvm/什么是-mvvm",
+              "file": "07-mvvm/什么是-mvvm.md"
+            },
+            {
+              "id": "leaf-365",
+              "title": "MVVM vs MVC vs MVP 对比",
+              "path": "/chapter/07-mvvm/mvvm-vs-mvc-vs-mvp-对比",
+              "file": "07-mvvm/mvvm-vs-mvc-vs-mvp-对比.md"
+            },
+            {
+              "id": "leaf-366",
+              "title": "为什么要用 MVVM？",
+              "path": "/chapter/07-mvvm/为什么要用-mvvm",
+              "file": "07-mvvm/为什么要用-mvvm.md"
+            },
+            {
+              "id": "leaf-367",
+              "title": "MVVM 各层职责",
+              "path": "/chapter/07-mvvm/mvvm-各层职责",
+              "file": "07-mvvm/mvvm-各层职责.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-373",
+          "title": "7.2 Model 层",
+          "children": [
+            {
+              "id": "leaf-369",
+              "title": "数据实体定义",
+              "path": "/chapter/07-mvvm/数据实体定义",
+              "file": "07-mvvm/数据实体定义.md"
+            },
+            {
+              "id": "leaf-370",
+              "title": "数据验证逻辑",
+              "path": "/chapter/07-mvvm/数据验证逻辑",
+              "file": "07-mvvm/数据验证逻辑.md"
+            },
+            {
+              "id": "leaf-371",
+              "title": "数据访问（Repository 模式）",
+              "path": "/chapter/07-mvvm/数据访问repository-模式",
+              "file": "07-mvvm/数据访问repository-模式.md"
+            },
+            {
+              "id": "leaf-372",
+              "title": "DTO vs Entity",
+              "path": "/chapter/07-mvvm/dto-vs-entity",
+              "file": "07-mvvm/dto-vs-entity.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-377",
+          "title": "7.3 View 层",
+          "children": [
+            {
+              "id": "leaf-374",
+              "title": "纯 XAML 展示",
+              "path": "/chapter/07-mvvm/纯-xaml-展示",
+              "file": "07-mvvm/纯-xaml-展示.md"
+            },
+            {
+              "id": "leaf-375",
+              "title": "DataContext 绑定到 ViewModel",
+              "path": "/chapter/07-mvvm/datacontext-绑定到-viewmodel",
+              "file": "07-mvvm/datacontext-绑定到-viewmodel.md"
+            },
+            {
+              "id": "leaf-376",
+              "title": "Command 绑定",
+              "path": "/chapter/07-mvvm/command-绑定",
+              "file": "07-mvvm/command-绑定.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-382",
+          "title": "7.4 ViewModel 层",
+          "children": [
+            {
+              "id": "leaf-378",
+              "title": "INotifyPropertyChanged 实现",
+              "path": "/chapter/07-mvvm/inotifypropertychanged-实现",
+              "file": "07-mvvm/inotifypropertychanged-实现.md"
+            },
+            {
+              "id": "leaf-379",
+              "title": "ICommand 实现（RelayCommand 系列）",
+              "path": "/chapter/07-mvvm/icommand-实现relaycommand-系列",
+              "file": "07-mvvm/icommand-实现relaycommand-系列.md"
+            },
+            {
+              "id": "leaf-380",
+              "title": "ViewModel 间的通信",
+              "path": "/chapter/07-mvvm/viewmodel-间的通信",
+              "file": "07-mvvm/viewmodel-间的通信.md"
+            },
+            {
+              "id": "leaf-381",
+              "title": "ViewModel 生命周期",
+              "path": "/chapter/07-mvvm/viewmodel-生命周期",
+              "file": "07-mvvm/viewmodel-生命周期.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-387",
+          "title": "7.5 主流 MVVM 框架",
+          "children": [
+            {
+              "id": "leaf-383",
+              "title": "CommunityToolkit.Mvvm（推荐）",
+              "path": "/chapter/07-mvvm/communitytoolkitmvvm推荐",
+              "file": "07-mvvm/communitytoolkitmvvm推荐.md"
+            },
+            {
+              "id": "leaf-384",
+              "title": "Prism 企业级框架",
+              "path": "/chapter/07-mvvm/prism-企业级框架",
+              "file": "07-mvvm/prism-企业级框架.md"
+            },
+            {
+              "id": "leaf-385",
+              "title": "MVVM Light Toolkit",
+              "path": "/chapter/07-mvvm/mvvm-light-toolkit",
+              "file": "07-mvvm/mvvm-light-toolkit.md"
+            },
+            {
+              "id": "leaf-386",
+              "title": "ReactiveUI 响应式框架",
+              "path": "/chapter/07-mvvm/reactiveui-响应式框架",
+              "file": "07-mvvm/reactiveui-响应式框架.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-392",
+          "title": "7.6 依赖注入",
+          "children": [
+            {
+              "id": "leaf-388",
+              "title": "什么是依赖注入？",
+              "path": "/chapter/07-mvvm/什么是依赖注入",
+              "file": "07-mvvm/什么是依赖注入.md"
+            },
+            {
+              "id": "leaf-389",
+              "title": "容器组成与生命周期",
+              "path": "/chapter/07-mvvm/容器组成与生命周期",
+              "file": "07-mvvm/容器组成与生命周期.md"
+            },
+            {
+              "id": "leaf-390",
+              "title": "常用 DI 容器",
+              "path": "/chapter/07-mvvm/常用-di-容器",
+              "file": "07-mvvm/常用-di-容器.md"
+            },
+            {
+              "id": "leaf-391",
+              "title": "DI 在 MVVM 中的应用",
+              "path": "/chapter/07-mvvm/di-在-mvvm-中的应用",
+              "file": "07-mvvm/di-在-mvvm-中的应用.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-398",
+          "title": "7.7 MVVM 实战：从零搭建",
+          "children": [
+            {
+              "id": "leaf-393",
+              "title": "项目结构与目录规划",
+              "path": "/chapter/07-mvvm/项目结构与目录规划",
+              "file": "07-mvvm/项目结构与目录规划.md"
+            },
+            {
+              "id": "leaf-394",
+              "title": "导航服务实现",
+              "path": "/chapter/07-mvvm/导航服务实现",
+              "file": "07-mvvm/导航服务实现.md"
+            },
+            {
+              "id": "leaf-395",
+              "title": "对话框服务",
+              "path": "/chapter/07-mvvm/对话框服务",
+              "file": "07-mvvm/对话框服务.md"
+            },
+            {
+              "id": "leaf-396",
+              "title": "配置服务",
+              "path": "/chapter/07-mvvm/配置服务",
+              "file": "07-mvvm/配置服务.md"
+            },
+            {
+              "id": "leaf-397",
+              "title": "日志服务集成",
+              "path": "/chapter/07-mvvm/日志服务集成",
+              "file": "07-mvvm/日志服务集成.md"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "08-threading",
+      "title": "8. 线程与异步",
+      "children": [
+        {
+          "id": "sg-402",
+          "title": "8.1 WPF 线程模型",
+          "children": [
+            {
+              "id": "leaf-399",
+              "title": "主线程与后台线程",
+              "path": "/chapter/08-threading/主线程与后台线程",
+              "file": "08-threading/主线程与后台线程.md"
+            },
+            {
+              "id": "leaf-400",
+              "title": "STA 单线程单元",
+              "path": "/chapter/08-threading/sta-单线程单元",
+              "file": "08-threading/sta-单线程单元.md"
+            },
+            {
+              "id": "leaf-401",
+              "title": "为什么不能跨线程访问控件",
+              "path": "/chapter/08-threading/为什么不能跨线程访问控件",
+              "file": "08-threading/为什么不能跨线程访问控件.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-407",
+          "title": "8.2 Dispatcher 调度器",
+          "children": [
+            {
+              "id": "leaf-403",
+              "title": "Dispatcher.Invoke 与 BeginInvoke",
+              "path": "/chapter/08-threading/dispatcherinvoke-与-begininvoke",
+              "file": "08-threading/dispatcherinvoke-与-begininvoke.md"
+            },
+            {
+              "id": "leaf-404",
+              "title": "DispatcherPriority 优先级",
+              "path": "/chapter/08-threading/dispatcherpriority-优先级",
+              "file": "08-threading/dispatcherpriority-优先级.md"
+            },
+            {
+              "id": "leaf-405",
+              "title": "DispatcherTimer",
+              "path": "/chapter/08-threading/dispatchertimer",
+              "file": "08-threading/dispatchertimer.md"
+            },
+            {
+              "id": "leaf-406",
+              "title": "检查是否需要调度",
+              "path": "/chapter/08-threading/检查是否需要调度",
+              "file": "08-threading/检查是否需要调度.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-413",
+          "title": "8.3 Task 与 async 和 await",
+          "children": [
+            {
+              "id": "leaf-408",
+              "title": "async 与 await 详解",
+              "path": "/chapter/08-threading/async-与-await-详解",
+              "file": "08-threading/async-与-await-详解.md"
+            },
+            {
+              "id": "leaf-409",
+              "title": "Task.Run 与 Task.Delay",
+              "path": "/chapter/08-threading/taskrun-与-taskdelay",
+              "file": "08-threading/taskrun-与-taskdelay.md"
+            },
+            {
+              "id": "leaf-410",
+              "title": "从 UI 线程安全更新控件",
+              "path": "/chapter/08-threading/从-ui-线程安全更新控件",
+              "file": "08-threading/从-ui-线程安全更新控件.md"
+            },
+            {
+              "id": "leaf-411",
+              "title": "取消异步操作",
+              "path": "/chapter/08-threading/取消异步操作",
+              "file": "08-threading/取消异步操作.md"
+            },
+            {
+              "id": "leaf-412",
+              "title": "并行任务（WhenAll、WhenAny）",
+              "path": "/chapter/08-threading/并行任务whenallwhenany",
+              "file": "08-threading/并行任务whenallwhenany.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-415",
+          "title": "8.4 BackgroundWorker",
+          "children": [
+            {
+              "id": "leaf-414",
+              "title": "BackgroundWorker 使用与对比",
+              "path": "/chapter/08-threading/backgroundworker-使用与对比",
+              "file": "08-threading/backgroundworker-使用与对比.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-421",
+          "title": "8.5 多线程同步与安全",
+          "children": [
+            {
+              "id": "leaf-416",
+              "title": "lock 与 Monitor",
+              "path": "/chapter/08-threading/lock-与-monitor",
+              "file": "08-threading/lock-与-monitor.md"
+            },
+            {
+              "id": "leaf-417",
+              "title": "Mutex 跨进程互斥",
+              "path": "/chapter/08-threading/mutex-跨进程互斥",
+              "file": "08-threading/mutex-跨进程互斥.md"
+            },
+            {
+              "id": "leaf-418",
+              "title": "Semaphore 信号量",
+              "path": "/chapter/08-threading/semaphore-信号量",
+              "file": "08-threading/semaphore-信号量.md"
+            },
+            {
+              "id": "leaf-419",
+              "title": "并发集合",
+              "path": "/chapter/08-threading/并发集合",
+              "file": "08-threading/并发集合.md"
+            },
+            {
+              "id": "leaf-420",
+              "title": "死锁的成因与避免",
+              "path": "/chapter/08-threading/死锁的成因与避免",
+              "file": "08-threading/死锁的成因与避免.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-425",
+          "title": "8.6 上位机多线程设计模式",
+          "children": [
+            {
+              "id": "leaf-422",
+              "title": "生产者-消费者模式",
+              "path": "/chapter/08-threading/生产者-消费者模式",
+              "file": "08-threading/生产者-消费者模式.md"
+            },
+            {
+              "id": "leaf-423",
+              "title": "定时数据采集模式",
+              "path": "/chapter/08-threading/定时数据采集模式",
+              "file": "08-threading/定时数据采集模式.md"
+            },
+            {
+              "id": "leaf-424",
+              "title": "线程池 vs 专用线程",
+              "path": "/chapter/08-threading/线程池-vs-专用线程",
+              "file": "08-threading/线程池-vs-专用线程.md"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "09-communication",
+      "title": "9. 上位机通信协议",
+      "children": [
+        {
+          "id": "sg-430",
+          "title": "9.1 通信协议概述",
+          "children": [
+            {
+              "id": "leaf-426",
+              "title": "上位机通信应用场景",
+              "path": "/chapter/09-communication/上位机通信应用场景",
+              "file": "09-communication/上位机通信应用场景.md"
+            },
+            {
+              "id": "leaf-427",
+              "title": "通信模型分类",
+              "path": "/chapter/09-communication/通信模型分类",
+              "file": "09-communication/通信模型分类.md"
+            },
+            {
+              "id": "leaf-428",
+              "title": "OSI 七层模型简化",
+              "path": "/chapter/09-communication/osi-七层模型简化",
+              "file": "09-communication/osi-七层模型简化.md"
+            },
+            {
+              "id": "leaf-429",
+              "title": "上位机通信协议全景图",
+              "path": "/chapter/09-communication/上位机通信协议全景图",
+              "file": "09-communication/上位机通信协议全景图.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-437",
+          "title": "9.2 串口通信",
+          "children": [
+            {
+              "id": "leaf-431",
+              "title": "串口通信基础概念（RS-232、RS-485 等）",
+              "path": "/chapter/09-communication/串口通信基础概念rs-232rs-485-等",
+              "file": "09-communication/串口通信基础概念rs-232rs-485-等.md"
+            },
+            {
+              "id": "leaf-432",
+              "title": "SerialPort 类详解",
+              "path": "/chapter/09-communication/serialport-类详解",
+              "file": "09-communication/serialport-类详解.md"
+            },
+            {
+              "id": "leaf-433",
+              "title": "串口事件处理",
+              "path": "/chapter/09-communication/串口事件处理",
+              "file": "09-communication/串口事件处理.md"
+            },
+            {
+              "id": "leaf-434",
+              "title": "串口通信调试",
+              "path": "/chapter/09-communication/串口通信调试",
+              "file": "09-communication/串口通信调试.md"
+            },
+            {
+              "id": "leaf-435",
+              "title": "串口数据接收最佳实践",
+              "path": "/chapter/09-communication/串口数据接收最佳实践",
+              "file": "09-communication/串口数据接收最佳实践.md"
+            },
+            {
+              "id": "leaf-436",
+              "title": "上位机串口实战封装",
+              "path": "/chapter/09-communication/上位机串口实战封装",
+              "file": "09-communication/上位机串口实战封装.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-443",
+          "title": "9.3 Socket 网络通信",
+          "children": [
+            {
+              "id": "leaf-438",
+              "title": "网络基础概念（IP、端口、TCP vs UDP）",
+              "path": "/chapter/09-communication/网络基础概念ip端口tcp-vs-udp",
+              "file": "09-communication/网络基础概念ip端口tcp-vs-udp.md"
+            },
+            {
+              "id": "leaf-439",
+              "title": "TCP 通信（TcpListener、TcpClient）",
+              "path": "/chapter/09-communication/tcp-通信tcplistenertcpclient",
+              "file": "09-communication/tcp-通信tcplistenertcpclient.md"
+            },
+            {
+              "id": "leaf-440",
+              "title": "UDP 通信（UdpClient）",
+              "path": "/chapter/09-communication/udp-通信udpclient",
+              "file": "09-communication/udp-通信udpclient.md"
+            },
+            {
+              "id": "leaf-441",
+              "title": "异步通信与高并发",
+              "path": "/chapter/09-communication/异步通信与高并发",
+              "file": "09-communication/异步通信与高并发.md"
+            },
+            {
+              "id": "leaf-442",
+              "title": "Socket 通信实战",
+              "path": "/chapter/09-communication/socket-通信实战",
+              "file": "09-communication/socket-通信实战.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-450",
+          "title": "9.4 Modbus 通信协议",
+          "children": [
+            {
+              "id": "leaf-444",
+              "title": "Modbus 协议概述",
+              "path": "/chapter/09-communication/modbus-协议概述",
+              "file": "09-communication/modbus-协议概述.md"
+            },
+            {
+              "id": "leaf-445",
+              "title": "Modbus RTU（串口）",
+              "path": "/chapter/09-communication/modbus-rtu串口",
+              "file": "09-communication/modbus-rtu串口.md"
+            },
+            {
+              "id": "leaf-446",
+              "title": "Modbus TCP（网口）",
+              "path": "/chapter/09-communication/modbus-tcp网口",
+              "file": "09-communication/modbus-tcp网口.md"
+            },
+            {
+              "id": "leaf-447",
+              "title": "常用功能码详解",
+              "path": "/chapter/09-communication/常用功能码详解",
+              "file": "09-communication/常用功能码详解.md"
+            },
+            {
+              "id": "leaf-448",
+              "title": "常用 Modbus 库",
+              "path": "/chapter/09-communication/常用-modbus-库",
+              "file": "09-communication/常用-modbus-库.md"
+            },
+            {
+              "id": "leaf-449",
+              "title": "Modbus 上位机实战",
+              "path": "/chapter/09-communication/modbus-上位机实战",
+              "file": "09-communication/modbus-上位机实战.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-455",
+          "title": "9.5 OPC 协议",
+          "children": [
+            {
+              "id": "leaf-451",
+              "title": "OPC 概述（Classic vs UA）",
+              "path": "/chapter/09-communication/opc-概述classic-vs-ua",
+              "file": "09-communication/opc-概述classic-vs-ua.md"
+            },
+            {
+              "id": "leaf-452",
+              "title": "OPC UA 核心概念",
+              "path": "/chapter/09-communication/opc-ua-核心概念",
+              "file": "09-communication/opc-ua-核心概念.md"
+            },
+            {
+              "id": "leaf-453",
+              "title": "OPC UA .NET 开发",
+              "path": "/chapter/09-communication/opc-ua-net-开发",
+              "file": "09-communication/opc-ua-net-开发.md"
+            },
+            {
+              "id": "leaf-454",
+              "title": "与 PLC 的 OPC UA 连接",
+              "path": "/chapter/09-communication/与-plc-的-opc-ua-连接",
+              "file": "09-communication/与-plc-的-opc-ua-连接.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-459",
+          "title": "9.6 MQTT 协议",
+          "children": [
+            {
+              "id": "leaf-456",
+              "title": "MQTT 概述与核心概念",
+              "path": "/chapter/09-communication/mqtt-概述与核心概念",
+              "file": "09-communication/mqtt-概述与核心概念.md"
+            },
+            {
+              "id": "leaf-457",
+              "title": ".NET 中使用 MQTT（MQTTnet）",
+              "path": "/chapter/09-communication/net-中使用-mqttmqttnet",
+              "file": "09-communication/net-中使用-mqttmqttnet.md"
+            },
+            {
+              "id": "leaf-458",
+              "title": "上位机 MQTT 应用",
+              "path": "/chapter/09-communication/上位机-mqtt-应用",
+              "file": "09-communication/上位机-mqtt-应用.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-464",
+          "title": "9.7 其他通信方式",
+          "children": [
+            {
+              "id": "leaf-460",
+              "title": "USB 与 HID 通信",
+              "path": "/chapter/09-communication/usb-与-hid-通信",
+              "file": "09-communication/usb-与-hid-通信.md"
+            },
+            {
+              "id": "leaf-461",
+              "title": "CAN 总线",
+              "path": "/chapter/09-communication/can-总线",
+              "file": "09-communication/can-总线.md"
+            },
+            {
+              "id": "leaf-462",
+              "title": "WebSocket 全双工通信",
+              "path": "/chapter/09-communication/websocket-全双工通信",
+              "file": "09-communication/websocket-全双工通信.md"
+            },
+            {
+              "id": "leaf-463",
+              "title": "HTTP API 调用",
+              "path": "/chapter/09-communication/http-api-调用",
+              "file": "09-communication/http-api-调用.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-466",
+          "title": "9.8 通信协议选择策略",
+          "children": [
+            {
+              "id": "leaf-465",
+              "title": "通信方式选型指南",
+              "path": "/chapter/09-communication/通信方式选型指南",
+              "file": "09-communication/通信方式选型指南.md"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "10-data-collection",
+      "title": "10. 数据采集与处理",
+      "children": [
+        {
+          "id": "sg-470",
+          "title": "10.1 数据采集系统架构",
+          "children": [
+            {
+              "id": "leaf-467",
+              "title": "采集系统总体设计",
+              "path": "/chapter/10-data-collection/采集系统总体设计",
+              "file": "10-data-collection/采集系统总体设计.md"
+            },
+            {
+              "id": "leaf-468",
+              "title": "采集策略（轮询、事件驱动、订阅）",
+              "path": "/chapter/10-data-collection/采集策略轮询事件驱动订阅",
+              "file": "10-data-collection/采集策略轮询事件驱动订阅.md"
+            },
+            {
+              "id": "leaf-469",
+              "title": "采集线程模型设计",
+              "path": "/chapter/10-data-collection/采集线程模型设计",
+              "file": "10-data-collection/采集线程模型设计.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-475",
+          "title": "10.2 实时数据处理",
+          "children": [
+            {
+              "id": "leaf-471",
+              "title": "数据解析（字节序、类型转换）",
+              "path": "/chapter/10-data-collection/数据解析字节序类型转换",
+              "file": "10-data-collection/数据解析字节序类型转换.md"
+            },
+            {
+              "id": "leaf-472",
+              "title": "数据校验（CRC、校验和等）",
+              "path": "/chapter/10-data-collection/数据校验crc校验和等",
+              "file": "10-data-collection/数据校验crc校验和等.md"
+            },
+            {
+              "id": "leaf-473",
+              "title": "数据过滤与清洗",
+              "path": "/chapter/10-data-collection/数据过滤与清洗",
+              "file": "10-data-collection/数据过滤与清洗.md"
+            },
+            {
+              "id": "leaf-474",
+              "title": "数据转换与工程值计算",
+              "path": "/chapter/10-data-collection/数据转换与工程值计算",
+              "file": "10-data-collection/数据转换与工程值计算.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-481",
+          "title": "10.3 数据存储",
+          "children": [
+            {
+              "id": "leaf-476",
+              "title": "本地文件存储（JSON、XML、CSV、二进制）",
+              "path": "/chapter/10-data-collection/本地文件存储jsonxmlcsv二进制",
+              "file": "10-data-collection/本地文件存储jsonxmlcsv二进制.md"
+            },
+            {
+              "id": "leaf-477",
+              "title": "轻量级数据库 SQLite",
+              "path": "/chapter/10-data-collection/轻量级数据库-sqlite",
+              "file": "10-data-collection/轻量级数据库-sqlite.md"
+            },
+            {
+              "id": "leaf-478",
+              "title": "关系型数据库（SQL Server、MySQL）",
+              "path": "/chapter/10-data-collection/关系型数据库sql-servermysql",
+              "file": "10-data-collection/关系型数据库sql-servermysql.md"
+            },
+            {
+              "id": "leaf-479",
+              "title": "时序数据库简介",
+              "path": "/chapter/10-data-collection/时序数据库简介",
+              "file": "10-data-collection/时序数据库简介.md"
+            },
+            {
+              "id": "leaf-480",
+              "title": "存储策略与数据保留",
+              "path": "/chapter/10-data-collection/存储策略与数据保留",
+              "file": "10-data-collection/存储策略与数据保留.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-487",
+          "title": "10.4 数据可视化",
+          "children": [
+            {
+              "id": "leaf-482",
+              "title": "实时曲线：LiveCharts2",
+              "path": "/chapter/10-data-collection/实时曲线livecharts2",
+              "file": "10-data-collection/实时曲线livecharts2.md"
+            },
+            {
+              "id": "leaf-483",
+              "title": "实时曲线：OxyPlot",
+              "path": "/chapter/10-data-collection/实时曲线oxyplot",
+              "file": "10-data-collection/实时曲线oxyplot.md"
+            },
+            {
+              "id": "leaf-484",
+              "title": "仪表盘控件",
+              "path": "/chapter/10-data-collection/仪表盘控件",
+              "file": "10-data-collection/仪表盘控件.md"
+            },
+            {
+              "id": "leaf-485",
+              "title": "状态指示灯",
+              "path": "/chapter/10-data-collection/状态指示灯",
+              "file": "10-data-collection/状态指示灯.md"
+            },
+            {
+              "id": "leaf-486",
+              "title": "报警系统",
+              "path": "/chapter/10-data-collection/报警系统",
+              "file": "10-data-collection/报警系统.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-492",
+          "title": "10.5 数据导入导出",
+          "children": [
+            {
+              "id": "leaf-488",
+              "title": "导出 Excel（EPPlus、ClosedXML）",
+              "path": "/chapter/10-data-collection/导出-excelepplusclosedxml",
+              "file": "10-data-collection/导出-excelepplusclosedxml.md"
+            },
+            {
+              "id": "leaf-489",
+              "title": "导出 PDF",
+              "path": "/chapter/10-data-collection/导出-pdf",
+              "file": "10-data-collection/导出-pdf.md"
+            },
+            {
+              "id": "leaf-490",
+              "title": "导出 CSV",
+              "path": "/chapter/10-data-collection/导出-csv",
+              "file": "10-data-collection/导出-csv.md"
+            },
+            {
+              "id": "leaf-491",
+              "title": "报表生成",
+              "path": "/chapter/10-data-collection/报表生成",
+              "file": "10-data-collection/报表生成.md"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "11-advanced-ui",
+      "title": "11. WPF 高级 UI 开发",
+      "children": [
+        {
+          "id": "sg-498",
+          "title": "11.1 自定义控件深度开发",
+          "children": [
+            {
+              "id": "leaf-493",
+              "title": "控件生命周期",
+              "path": "/chapter/11-advanced-ui/控件生命周期",
+              "file": "11-advanced-ui/控件生命周期.md"
+            },
+            {
+              "id": "leaf-494",
+              "title": "自定义依赖属性",
+              "path": "/chapter/11-advanced-ui/自定义依赖属性",
+              "file": "11-advanced-ui/自定义依赖属性.md"
+            },
+            {
+              "id": "leaf-495",
+              "title": "自定义路由事件",
+              "path": "/chapter/11-advanced-ui/自定义路由事件",
+              "file": "11-advanced-ui/自定义路由事件.md"
+            },
+            {
+              "id": "leaf-496",
+              "title": "控件重绘（OnRender）",
+              "path": "/chapter/11-advanced-ui/控件重绘onrender",
+              "file": "11-advanced-ui/控件重绘onrender.md"
+            },
+            {
+              "id": "leaf-497",
+              "title": "焦点管理",
+              "path": "/chapter/11-advanced-ui/焦点管理",
+              "file": "11-advanced-ui/焦点管理.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-503",
+          "title": "11.2 数据模板高级应用",
+          "children": [
+            {
+              "id": "leaf-499",
+              "title": "DataTemplateSelector 选择器",
+              "path": "/chapter/11-advanced-ui/datatemplateselector-选择器",
+              "file": "11-advanced-ui/datatemplateselector-选择器.md"
+            },
+            {
+              "id": "leaf-500",
+              "title": "DataTemplate 中的事件绑定",
+              "path": "/chapter/11-advanced-ui/datatemplate-中的事件绑定",
+              "file": "11-advanced-ui/datatemplate-中的事件绑定.md"
+            },
+            {
+              "id": "leaf-501",
+              "title": "HierarchicalDataTemplate 层级数据",
+              "path": "/chapter/11-advanced-ui/hierarchicaldatatemplate-层级数据",
+              "file": "11-advanced-ui/hierarchicaldatatemplate-层级数据.md"
+            },
+            {
+              "id": "leaf-502",
+              "title": "ItemContainerStyle 列表项样式",
+              "path": "/chapter/11-advanced-ui/itemcontainerstyle-列表项样式",
+              "file": "11-advanced-ui/itemcontainerstyle-列表项样式.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-507",
+          "title": "11.3 主题与换肤",
+          "children": [
+            {
+              "id": "leaf-504",
+              "title": "资源字典组织主题",
+              "path": "/chapter/11-advanced-ui/资源字典组织主题",
+              "file": "11-advanced-ui/资源字典组织主题.md"
+            },
+            {
+              "id": "leaf-505",
+              "title": "动态切换主题",
+              "path": "/chapter/11-advanced-ui/动态切换主题",
+              "file": "11-advanced-ui/动态切换主题.md"
+            },
+            {
+              "id": "leaf-506",
+              "title": "MaterialDesignInXAML 与 HandyControl 主题定制",
+              "path": "/chapter/11-advanced-ui/materialdesigninxaml-与-handycontrol-主题定制",
+              "file": "11-advanced-ui/materialdesigninxaml-与-handycontrol-主题定制.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-510",
+          "title": "11.4 多语言与国际化",
+          "children": [
+            {
+              "id": "leaf-508",
+              "title": "资源文件（.resx）与动态读取",
+              "path": "/chapter/11-advanced-ui/资源文件resx与动态读取",
+              "file": "11-advanced-ui/资源文件resx与动态读取.md"
+            },
+            {
+              "id": "leaf-509",
+              "title": "WPF 本地化方案",
+              "path": "/chapter/11-advanced-ui/wpf-本地化方案",
+              "file": "11-advanced-ui/wpf-本地化方案.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-514",
+          "title": "11.5 拖拽功能",
+          "children": [
+            {
+              "id": "leaf-511",
+              "title": "控件间拖拽",
+              "path": "/chapter/11-advanced-ui/控件间拖拽",
+              "file": "11-advanced-ui/控件间拖拽.md"
+            },
+            {
+              "id": "leaf-512",
+              "title": "文件拖入",
+              "path": "/chapter/11-advanced-ui/文件拖入",
+              "file": "11-advanced-ui/文件拖入.md"
+            },
+            {
+              "id": "leaf-513",
+              "title": "自定义拖拽数据格式",
+              "path": "/chapter/11-advanced-ui/自定义拖拽数据格式",
+              "file": "11-advanced-ui/自定义拖拽数据格式.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-517",
+          "title": "11.6 WPF 与 Windows API 交互",
+          "children": [
+            {
+              "id": "leaf-515",
+              "title": "P/Invoke 基础",
+              "path": "/chapter/11-advanced-ui/p-invoke-基础",
+              "file": "11-advanced-ui/p-invoke-基础.md"
+            },
+            {
+              "id": "leaf-516",
+              "title": "常用 Win32 API 封装",
+              "path": "/chapter/11-advanced-ui/常用-win32-api-封装",
+              "file": "11-advanced-ui/常用-win32-api-封装.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-523",
+          "title": "11.7 第三方 UI 控件库",
+          "children": [
+            {
+              "id": "leaf-518",
+              "title": "MaterialDesignInXAML",
+              "path": "/chapter/11-advanced-ui/materialdesigninxaml",
+              "file": "11-advanced-ui/materialdesigninxaml.md"
+            },
+            {
+              "id": "leaf-519",
+              "title": "HandyControl",
+              "path": "/chapter/11-advanced-ui/handycontrol",
+              "file": "11-advanced-ui/handycontrol.md"
+            },
+            {
+              "id": "leaf-520",
+              "title": "ModernWPF",
+              "path": "/chapter/11-advanced-ui/modernwpf",
+              "file": "11-advanced-ui/modernwpf.md"
+            },
+            {
+              "id": "leaf-521",
+              "title": "LiveCharts2 图表",
+              "path": "/chapter/11-advanced-ui/livecharts2-图表",
+              "file": "11-advanced-ui/livecharts2-图表.md"
+            },
+            {
+              "id": "leaf-522",
+              "title": "Extended WPF Toolkit",
+              "path": "/chapter/11-advanced-ui/extended-wpf-toolkit",
+              "file": "11-advanced-ui/extended-wpf-toolkit.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-527",
+          "title": "11.8 响应式布局与自适应",
+          "children": [
+            {
+              "id": "leaf-524",
+              "title": "百分比布局策略",
+              "path": "/chapter/11-advanced-ui/百分比布局策略",
+              "file": "11-advanced-ui/百分比布局策略.md"
+            },
+            {
+              "id": "leaf-525",
+              "title": "Viewbox 缩放适配",
+              "path": "/chapter/11-advanced-ui/viewbox-缩放适配",
+              "file": "11-advanced-ui/viewbox-缩放适配.md"
+            },
+            {
+              "id": "leaf-526",
+              "title": "多屏适配（拼接屏场景）",
+              "path": "/chapter/11-advanced-ui/多屏适配拼接屏场景",
+              "file": "11-advanced-ui/多屏适配拼接屏场景.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-530",
+          "title": "11.9 高 DPI 适配",
+          "children": [
+            {
+              "id": "leaf-528",
+              "title": "DPI 感知模式设置",
+              "path": "/chapter/11-advanced-ui/dpi-感知模式设置",
+              "file": "11-advanced-ui/dpi-感知模式设置.md"
+            },
+            {
+              "id": "leaf-529",
+              "title": "Per-Monitor DPI Awareness",
+              "path": "/chapter/11-advanced-ui/per-monitor-dpi-awareness",
+              "file": "11-advanced-ui/per-monitor-dpi-awareness.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-533",
+          "title": "11.10 触控与手势",
+          "children": [
+            {
+              "id": "leaf-531",
+              "title": "Manipulation 事件",
+              "path": "/chapter/11-advanced-ui/manipulation-事件",
+              "file": "11-advanced-ui/manipulation-事件.md"
+            },
+            {
+              "id": "leaf-532",
+              "title": "触控旋转、缩放、平移",
+              "path": "/chapter/11-advanced-ui/触控旋转缩放平移",
+              "file": "11-advanced-ui/触控旋转缩放平移.md"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "12-architecture",
+      "title": "12. 系统架构与设计模式",
+      "children": [
+        {
+          "id": "sg-536",
+          "title": "12.1 上位机软件架构概述",
+          "children": [
+            {
+              "id": "leaf-534",
+              "title": "架构设计重要性与类型",
+              "path": "/chapter/12-architecture/架构设计重要性与类型",
+              "file": "12-architecture/架构设计重要性与类型.md"
+            },
+            {
+              "id": "leaf-535",
+              "title": "SOLID 设计原则",
+              "path": "/chapter/12-architecture/solid-设计原则",
+              "file": "12-architecture/solid-设计原则.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-539",
+          "title": "12.2 分层架构",
+          "children": [
+            {
+              "id": "leaf-537",
+              "title": "三层架构（表示层、业务层、数据层）",
+              "path": "/chapter/12-architecture/三层架构表示层业务层数据层",
+              "file": "12-architecture/三层架构表示层业务层数据层.md"
+            },
+            {
+              "id": "leaf-538",
+              "title": "各层职责与交互",
+              "path": "/chapter/12-architecture/各层职责与交互",
+              "file": "12-architecture/各层职责与交互.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-543",
+          "title": "12.3 插件化架构",
+          "children": [
+            {
+              "id": "leaf-540",
+              "title": "什么是插件化架构？",
+              "path": "/chapter/12-architecture/什么是插件化架构",
+              "file": "12-architecture/什么是插件化架构.md"
+            },
+            {
+              "id": "leaf-541",
+              "title": "MEF 与 Prism Modules",
+              "path": "/chapter/12-architecture/mef-与-prism-modules",
+              "file": "12-architecture/mef-与-prism-modules.md"
+            },
+            {
+              "id": "leaf-542",
+              "title": "上位机插件化场景",
+              "path": "/chapter/12-architecture/上位机插件化场景",
+              "file": "12-architecture/上位机插件化场景.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-552",
+          "title": "12.4 常用设计模式",
+          "children": [
+            {
+              "id": "leaf-544",
+              "title": "单例模式",
+              "path": "/chapter/12-architecture/单例模式",
+              "file": "12-architecture/单例模式.md"
+            },
+            {
+              "id": "leaf-545",
+              "title": "工厂模式",
+              "path": "/chapter/12-architecture/工厂模式",
+              "file": "12-architecture/工厂模式.md"
+            },
+            {
+              "id": "leaf-546",
+              "title": "观察者模式",
+              "path": "/chapter/12-architecture/观察者模式",
+              "file": "12-architecture/观察者模式.md"
+            },
+            {
+              "id": "leaf-547",
+              "title": "策略模式",
+              "path": "/chapter/12-architecture/策略模式",
+              "file": "12-architecture/策略模式.md"
+            },
+            {
+              "id": "leaf-548",
+              "title": "适配器模式",
+              "path": "/chapter/12-architecture/适配器模式",
+              "file": "12-architecture/适配器模式.md"
+            },
+            {
+              "id": "leaf-549",
+              "title": "外观模式",
+              "path": "/chapter/12-architecture/外观模式",
+              "file": "12-architecture/外观模式.md"
+            },
+            {
+              "id": "leaf-550",
+              "title": "模板方法模式",
+              "path": "/chapter/12-architecture/模板方法模式",
+              "file": "12-architecture/模板方法模式.md"
+            },
+            {
+              "id": "leaf-551",
+              "title": "状态模式",
+              "path": "/chapter/12-architecture/状态模式",
+              "file": "12-architecture/状态模式.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-556",
+          "title": "12.5 配置文件管理",
+          "children": [
+            {
+              "id": "leaf-553",
+              "title": "appsettings.json（推荐方案）",
+              "path": "/chapter/12-architecture/appsettingsjson推荐方案",
+              "file": "12-architecture/appsettingsjson推荐方案.md"
+            },
+            {
+              "id": "leaf-554",
+              "title": "传统 App.config 方式",
+              "path": "/chapter/12-architecture/传统-appconfig-方式",
+              "file": "12-architecture/传统-appconfig-方式.md"
+            },
+            {
+              "id": "leaf-555",
+              "title": "配置加密与运行时修改",
+              "path": "/chapter/12-architecture/配置加密与运行时修改",
+              "file": "12-architecture/配置加密与运行时修改.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-562",
+          "title": "12.6 日志系统",
+          "children": [
+            {
+              "id": "leaf-557",
+              "title": "为什么要用日志？",
+              "path": "/chapter/12-architecture/为什么要用日志",
+              "file": "12-architecture/为什么要用日志.md"
+            },
+            {
+              "id": "leaf-558",
+              "title": "Serilog 结构化日志",
+              "path": "/chapter/12-architecture/serilog-结构化日志",
+              "file": "12-architecture/serilog-结构化日志.md"
+            },
+            {
+              "id": "leaf-559",
+              "title": "NLog 与 Log4Net",
+              "path": "/chapter/12-architecture/nlog-与-log4net",
+              "file": "12-architecture/nlog-与-log4net.md"
+            },
+            {
+              "id": "leaf-560",
+              "title": "全局异常捕获与记录",
+              "path": "/chapter/12-architecture/全局异常捕获与记录",
+              "file": "12-architecture/全局异常捕获与记录.md"
+            },
+            {
+              "id": "leaf-561",
+              "title": "上位机日志场景",
+              "path": "/chapter/12-architecture/上位机日志场景",
+              "file": "12-architecture/上位机日志场景.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-566",
+          "title": "12.7 软件更新方案",
+          "children": [
+            {
+              "id": "leaf-563",
+              "title": "ClickOnce 部署与更新",
+              "path": "/chapter/12-architecture/clickonce-部署与更新",
+              "file": "12-architecture/clickonce-部署与更新.md"
+            },
+            {
+              "id": "leaf-564",
+              "title": "自动更新检测与下载",
+              "path": "/chapter/12-architecture/自动更新检测与下载",
+              "file": "12-architecture/自动更新检测与下载.md"
+            },
+            {
+              "id": "leaf-565",
+              "title": "增量更新与版本管理",
+              "path": "/chapter/12-architecture/增量更新与版本管理",
+              "file": "12-architecture/增量更新与版本管理.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-570",
+          "title": "12.8 测试",
+          "children": [
+            {
+              "id": "leaf-567",
+              "title": "单元测试（xUnit、Moq）",
+              "path": "/chapter/12-architecture/单元测试xunitmoq",
+              "file": "12-architecture/单元测试xunitmoq.md"
+            },
+            {
+              "id": "leaf-568",
+              "title": "UI 自动化测试（FlaUI）",
+              "path": "/chapter/12-architecture/ui-自动化测试flaui",
+              "file": "12-architecture/ui-自动化测试flaui.md"
+            },
+            {
+              "id": "leaf-569",
+              "title": "工控软件测试要点",
+              "path": "/chapter/12-architecture/工控软件测试要点",
+              "file": "12-architecture/工控软件测试要点.md"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "13-performance",
+      "title": "13. 性能优化与调试",
+      "children": [
+        {
+          "id": "sg-573",
+          "title": "13.1 渲染原理深入",
+          "children": [
+            {
+              "id": "leaf-571",
+              "title": "视觉树与渲染线程",
+              "path": "/chapter/13-performance/视觉树与渲染线程",
+              "file": "13-performance/视觉树与渲染线程.md"
+            },
+            {
+              "id": "leaf-572",
+              "title": "硬件加速与渲染层级",
+              "path": "/chapter/13-performance/硬件加速与渲染层级",
+              "file": "13-performance/硬件加速与渲染层级.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-581",
+          "title": "13.2 UI 性能优化",
+          "children": [
+            {
+              "id": "leaf-574",
+              "title": "UI 虚拟化",
+              "path": "/chapter/13-performance/ui-虚拟化",
+              "file": "13-performance/ui-虚拟化.md"
+            },
+            {
+              "id": "leaf-575",
+              "title": "延迟加载与数据分页",
+              "path": "/chapter/13-performance/延迟加载与数据分页",
+              "file": "13-performance/延迟加载与数据分页.md"
+            },
+            {
+              "id": "leaf-576",
+              "title": "减少视觉树复杂度",
+              "path": "/chapter/13-performance/减少视觉树复杂度",
+              "file": "13-performance/减少视觉树复杂度.md"
+            },
+            {
+              "id": "leaf-577",
+              "title": "冻结 Freezable 对象",
+              "path": "/chapter/13-performance/冻结-freezable-对象",
+              "file": "13-performance/冻结-freezable-对象.md"
+            },
+            {
+              "id": "leaf-578",
+              "title": "异步绑定与延迟",
+              "path": "/chapter/13-performance/异步绑定与延迟",
+              "file": "13-performance/异步绑定与延迟.md"
+            },
+            {
+              "id": "leaf-579",
+              "title": "图片优化与位图缓存",
+              "path": "/chapter/13-performance/图片优化与位图缓存",
+              "file": "13-performance/图片优化与位图缓存.md"
+            },
+            {
+              "id": "leaf-580",
+              "title": "避免频繁布局计算",
+              "path": "/chapter/13-performance/避免频繁布局计算",
+              "file": "13-performance/避免频繁布局计算.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-586",
+          "title": "13.3 内存管理",
+          "children": [
+            {
+              "id": "leaf-582",
+              "title": "WPF 内存常见问题与泄漏场景",
+              "path": "/chapter/13-performance/wpf-内存常见问题与泄漏场景",
+              "file": "13-performance/wpf-内存常见问题与泄漏场景.md"
+            },
+            {
+              "id": "leaf-583",
+              "title": "弱事件模式",
+              "path": "/chapter/13-performance/弱事件模式",
+              "file": "13-performance/弱事件模式.md"
+            },
+            {
+              "id": "leaf-584",
+              "title": "资源释放与 IDisposable",
+              "path": "/chapter/13-performance/资源释放与-idisposable",
+              "file": "13-performance/资源释放与-idisposable.md"
+            },
+            {
+              "id": "leaf-585",
+              "title": "内存分析工具",
+              "path": "/chapter/13-performance/内存分析工具",
+              "file": "13-performance/内存分析工具.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-590",
+          "title": "13.4 性能分析工具",
+          "children": [
+            {
+              "id": "leaf-587",
+              "title": "Visual Studio 诊断工具",
+              "path": "/chapter/13-performance/visual-studio-诊断工具",
+              "file": "13-performance/visual-studio-诊断工具.md"
+            },
+            {
+              "id": "leaf-588",
+              "title": "WPF Performance Suite",
+              "path": "/chapter/13-performance/wpf-performance-suite",
+              "file": "13-performance/wpf-performance-suite.md"
+            },
+            {
+              "id": "leaf-589",
+              "title": "Snoop 与 WPF Inspector",
+              "path": "/chapter/13-performance/snoop-与-wpf-inspector",
+              "file": "13-performance/snoop-与-wpf-inspector.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-595",
+          "title": "13.5 常见性能陷阱",
+          "children": [
+            {
+              "id": "leaf-591",
+              "title": "大量控件同时可见",
+              "path": "/chapter/13-performance/大量控件同时可见",
+              "file": "13-performance/大量控件同时可见.md"
+            },
+            {
+              "id": "leaf-592",
+              "title": "频繁 UI 更新（节流防抖）",
+              "path": "/chapter/13-performance/频繁-ui-更新节流防抖",
+              "file": "13-performance/频繁-ui-更新节流防抖.md"
+            },
+            {
+              "id": "leaf-593",
+              "title": "过度使用 Effect 特效",
+              "path": "/chapter/13-performance/过度使用-effect-特效",
+              "file": "13-performance/过度使用-effect-特效.md"
+            },
+            {
+              "id": "leaf-594",
+              "title": "布局循环",
+              "path": "/chapter/13-performance/布局循环",
+              "file": "13-performance/布局循环.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-599",
+          "title": "13.6 调试技巧",
+          "children": [
+            {
+              "id": "leaf-596",
+              "title": "XAML 调试与热重载",
+              "path": "/chapter/13-performance/xaml-调试与热重载",
+              "file": "13-performance/xaml-调试与热重载.md"
+            },
+            {
+              "id": "leaf-597",
+              "title": "数据绑定调试",
+              "path": "/chapter/13-performance/数据绑定调试",
+              "file": "13-performance/数据绑定调试.md"
+            },
+            {
+              "id": "leaf-598",
+              "title": "运行时调试技巧",
+              "path": "/chapter/13-performance/运行时调试技巧",
+              "file": "13-performance/运行时调试技巧.md"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "14-projects",
+      "title": "14. 工业级实战项目",
+      "children": [
+        {
+          "id": "sg-606",
+          "title": "14.1 项目一：温湿度监控系统（入门级）",
+          "children": [
+            {
+              "id": "leaf-600",
+              "title": "项目概述与需求分析",
+              "path": "/chapter/14-projects/项目概述与需求分析",
+              "file": "14-projects/项目概述与需求分析.md"
+            },
+            {
+              "id": "leaf-601",
+              "title": "系统设计与通信协议",
+              "path": "/chapter/14-projects/系统设计与通信协议",
+              "file": "14-projects/系统设计与通信协议.md"
+            },
+            {
+              "id": "leaf-602",
+              "title": "串口数据采集模块",
+              "path": "/chapter/14-projects/串口数据采集模块",
+              "file": "14-projects/串口数据采集模块.md"
+            },
+            {
+              "id": "leaf-603",
+              "title": "ViewModel 与 UI 设计",
+              "path": "/chapter/14-projects/viewmodel-与-ui-设计",
+              "file": "14-projects/viewmodel-与-ui-设计.md"
+            },
+            {
+              "id": "leaf-604",
+              "title": "实时曲线与仪表盘",
+              "path": "/chapter/14-projects/实时曲线与仪表盘",
+              "file": "14-projects/实时曲线与仪表盘.md"
+            },
+            {
+              "id": "leaf-605",
+              "title": "报警功能与历史数据",
+              "path": "/chapter/14-projects/报警功能与历史数据",
+              "file": "14-projects/报警功能与历史数据.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-611",
+          "title": "14.2 项目二：Modbus PLC 数据采集看板（进阶级）",
+          "children": [
+            {
+              "id": "leaf-607",
+              "title": "项目概述与需求分析",
+              "path": "/chapter/14-projects/项目概述与需求分析",
+              "file": "14-projects/项目概述与需求分析.md"
+            },
+            {
+              "id": "leaf-608",
+              "title": "Modbus 通信层封装",
+              "path": "/chapter/14-projects/modbus-通信层封装",
+              "file": "14-projects/modbus-通信层封装.md"
+            },
+            {
+              "id": "leaf-609",
+              "title": "设备管理与采集调度",
+              "path": "/chapter/14-projects/设备管理与采集调度",
+              "file": "14-projects/设备管理与采集调度.md"
+            },
+            {
+              "id": "leaf-610",
+              "title": "看板 UI 与读写功能",
+              "path": "/chapter/14-projects/看板-ui-与读写功能",
+              "file": "14-projects/看板-ui-与读写功能.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-616",
+          "title": "14.3 项目三：产线设备状态监控平台（进阶级）",
+          "children": [
+            {
+              "id": "leaf-612",
+              "title": "系统架构设计",
+              "path": "/chapter/14-projects/系统架构设计",
+              "file": "14-projects/系统架构设计.md"
+            },
+            {
+              "id": "leaf-613",
+              "title": "设备状态机设计",
+              "path": "/chapter/14-projects/设备状态机设计",
+              "file": "14-projects/设备状态机设计.md"
+            },
+            {
+              "id": "leaf-614",
+              "title": "通信管理与 OEE 计算",
+              "path": "/chapter/14-projects/通信管理与-oee-计算",
+              "file": "14-projects/通信管理与-oee-计算.md"
+            },
+            {
+              "id": "leaf-615",
+              "title": "大屏可视化看板",
+              "path": "/chapter/14-projects/大屏可视化看板",
+              "file": "14-projects/大屏可视化看板.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-621",
+          "title": "14.4 项目四：智能仓储管理系统 WMS（中高级）",
+          "children": [
+            {
+              "id": "leaf-617",
+              "title": "需求与数据库设计",
+              "path": "/chapter/14-projects/需求与数据库设计",
+              "file": "14-projects/需求与数据库设计.md"
+            },
+            {
+              "id": "leaf-618",
+              "title": "Prism 模块划分",
+              "path": "/chapter/14-projects/prism-模块划分",
+              "file": "14-projects/prism-模块划分.md"
+            },
+            {
+              "id": "leaf-619",
+              "title": "库存管理与 RFID 集成",
+              "path": "/chapter/14-projects/库存管理与-rfid-集成",
+              "file": "14-projects/库存管理与-rfid-集成.md"
+            },
+            {
+              "id": "leaf-620",
+              "title": "库位可视化展示",
+              "path": "/chapter/14-projects/库位可视化展示",
+              "file": "14-projects/库位可视化展示.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-624",
+          "title": "14.5 项目五：工业视觉检测上位机（中高级）",
+          "children": [
+            {
+              "id": "leaf-622",
+              "title": "相机通信与图像显示",
+              "path": "/chapter/14-projects/相机通信与图像显示",
+              "file": "14-projects/相机通信与图像显示.md"
+            },
+            {
+              "id": "leaf-623",
+              "title": "检测逻辑与结果统计",
+              "path": "/chapter/14-projects/检测逻辑与结果统计",
+              "file": "14-projects/检测逻辑与结果统计.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-627",
+          "title": "14.6 项目六：多轴运动控制平台（高级）",
+          "children": [
+            {
+              "id": "leaf-625",
+              "title": "运动控制卡通信",
+              "path": "/chapter/14-projects/运动控制卡通信",
+              "file": "14-projects/运动控制卡通信.md"
+            },
+            {
+              "id": "leaf-626",
+              "title": "轴状态监控与轨迹编程",
+              "path": "/chapter/14-projects/轴状态监控与轨迹编程",
+              "file": "14-projects/轴状态监控与轨迹编程.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-633",
+          "title": "14.7 项目七：SCADA 综合监控系统（高级）",
+          "children": [
+            {
+              "id": "leaf-628",
+              "title": "SCADA 系统架构",
+              "path": "/chapter/14-projects/scada-系统架构",
+              "file": "14-projects/scada-系统架构.md"
+            },
+            {
+              "id": "leaf-629",
+              "title": "组态化设计与 OPC UA 对接",
+              "path": "/chapter/14-projects/组态化设计与-opc-ua-对接",
+              "file": "14-projects/组态化设计与-opc-ua-对接.md"
+            },
+            {
+              "id": "leaf-630",
+              "title": "报警规则引擎",
+              "path": "/chapter/14-projects/报警规则引擎",
+              "file": "14-projects/报警规则引擎.md"
+            },
+            {
+              "id": "leaf-631",
+              "title": "历史趋势与报表",
+              "path": "/chapter/14-projects/历史趋势与报表",
+              "file": "14-projects/历史趋势与报表.md"
+            },
+            {
+              "id": "leaf-632",
+              "title": "权限管理与审计",
+              "path": "/chapter/14-projects/权限管理与审计",
+              "file": "14-projects/权限管理与审计.md"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "15-deployment",
+      "title": "15. 部署与发布",
+      "children": [
+        {
+          "id": "sg-638",
+          "title": "15.1 发布方式",
+          "children": [
+            {
+              "id": "leaf-634",
+              "title": "ClickOnce 发布",
+              "path": "/chapter/15-deployment/clickonce-发布",
+              "file": "15-deployment/clickonce-发布.md"
+            },
+            {
+              "id": "leaf-635",
+              "title": "MSI 安装包（WiX Toolset）",
+              "path": "/chapter/15-deployment/msi-安装包wix-toolset",
+              "file": "15-deployment/msi-安装包wix-toolset.md"
+            },
+            {
+              "id": "leaf-636",
+              "title": "独立发布与单文件发布",
+              "path": "/chapter/15-deployment/独立发布与单文件发布",
+              "file": "15-deployment/独立发布与单文件发布.md"
+            },
+            {
+              "id": "leaf-637",
+              "title": "框架依赖 vs 独立部署比较",
+              "path": "/chapter/15-deployment/框架依赖-vs-独立部署比较",
+              "file": "15-deployment/框架依赖-vs-独立部署比较.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-643",
+          "title": "15.2 部署注意事项",
+          "children": [
+            {
+              "id": "leaf-639",
+              "title": "目标机器 .NET Runtime 检查",
+              "path": "/chapter/15-deployment/目标机器-net-runtime-检查",
+              "file": "15-deployment/目标机器-net-runtime-检查.md"
+            },
+            {
+              "id": "leaf-640",
+              "title": "依赖项打包与配置文件",
+              "path": "/chapter/15-deployment/依赖项打包与配置文件",
+              "file": "15-deployment/依赖项打包与配置文件.md"
+            },
+            {
+              "id": "leaf-641",
+              "title": "开机自启动设置",
+              "path": "/chapter/15-deployment/开机自启动设置",
+              "file": "15-deployment/开机自启动设置.md"
+            },
+            {
+              "id": "leaf-642",
+              "title": "Windows 服务模式",
+              "path": "/chapter/15-deployment/windows-服务模式",
+              "file": "15-deployment/windows-服务模式.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-646",
+          "title": "15.3 版本管理",
+          "children": [
+            {
+              "id": "leaf-644",
+              "title": "语义版本号（SemVer）",
+              "path": "/chapter/15-deployment/语义版本号semver",
+              "file": "15-deployment/语义版本号semver.md"
+            },
+            {
+              "id": "leaf-645",
+              "title": "Assembly Version vs File Version",
+              "path": "/chapter/15-deployment/assembly-version-vs-file-version",
+              "file": "15-deployment/assembly-version-vs-file-version.md"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "16-resources",
+      "title": "16. 开源项目与学习资源",
+      "children": [
+        {
+          "id": "sg-659",
+          "title": "16.1 GitHub 优质 WPF 开源项目",
+          "children": [
+            {
+              "id": "leaf-647",
+              "title": "MaterialDesignInXAML",
+              "path": "/chapter/16-resources/materialdesigninxaml",
+              "file": "16-resources/materialdesigninxaml.md"
+            },
+            {
+              "id": "leaf-648",
+              "title": "HandyControl",
+              "path": "/chapter/16-resources/handycontrol",
+              "file": "16-resources/handycontrol.md"
+            },
+            {
+              "id": "leaf-649",
+              "title": "LiveCharts2",
+              "path": "/chapter/16-resources/livecharts2",
+              "file": "16-resources/livecharts2.md"
+            },
+            {
+              "id": "leaf-650",
+              "title": "OxyPlot",
+              "path": "/chapter/16-resources/oxyplot",
+              "file": "16-resources/oxyplot.md"
+            },
+            {
+              "id": "leaf-651",
+              "title": "Prism",
+              "path": "/chapter/16-resources/prism",
+              "file": "16-resources/prism.md"
+            },
+            {
+              "id": "leaf-652",
+              "title": "CommunityToolkit.Mvvm",
+              "path": "/chapter/16-resources/communitytoolkitmvvm",
+              "file": "16-resources/communitytoolkitmvvm.md"
+            },
+            {
+              "id": "leaf-653",
+              "title": "PropertyChanged.Fody",
+              "path": "/chapter/16-resources/propertychangedfody",
+              "file": "16-resources/propertychangedfody.md"
+            },
+            {
+              "id": "leaf-654",
+              "title": "NModbus",
+              "path": "/chapter/16-resources/nmodbus",
+              "file": "16-resources/nmodbus.md"
+            },
+            {
+              "id": "leaf-655",
+              "title": "MQTTnet",
+              "path": "/chapter/16-resources/mqttnet",
+              "file": "16-resources/mqttnet.md"
+            },
+            {
+              "id": "leaf-656",
+              "title": "Serilog",
+              "path": "/chapter/16-resources/serilog",
+              "file": "16-resources/serilog.md"
+            },
+            {
+              "id": "leaf-657",
+              "title": "Dapper",
+              "path": "/chapter/16-resources/dapper",
+              "file": "16-resources/dapper.md"
+            },
+            {
+              "id": "leaf-658",
+              "title": "FlaUI",
+              "path": "/chapter/16-resources/flaui",
+              "file": "16-resources/flaui.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-663",
+          "title": "16.2 上位机相关开源项目",
+          "children": [
+            {
+              "id": "leaf-660",
+              "title": "开源 PLC 通信库",
+              "path": "/chapter/16-resources/开源-plc-通信库",
+              "file": "16-resources/开源-plc-通信库.md"
+            },
+            {
+              "id": "leaf-661",
+              "title": "开源 SCADA 项目",
+              "path": "/chapter/16-resources/开源-scada-项目",
+              "file": "16-resources/开源-scada-项目.md"
+            },
+            {
+              "id": "leaf-662",
+              "title": "工控看板模板项目",
+              "path": "/chapter/16-resources/工控看板模板项目",
+              "file": "16-resources/工控看板模板项目.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-668",
+          "title": "16.3 推荐书籍",
+          "children": [
+            {
+              "id": "leaf-664",
+              "title": "WPF 编程宝典",
+              "path": "/chapter/16-resources/wpf-编程宝典",
+              "file": "16-resources/wpf-编程宝典.md"
+            },
+            {
+              "id": "leaf-665",
+              "title": "深入浅出 WPF",
+              "path": "/chapter/16-resources/深入浅出-wpf",
+              "file": "16-resources/深入浅出-wpf.md"
+            },
+            {
+              "id": "leaf-666",
+              "title": "C# 高级编程",
+              "path": "/chapter/16-resources/c-高级编程",
+              "file": "16-resources/c-高级编程.md"
+            },
+            {
+              "id": "leaf-667",
+              "title": "C# 并发编程经典实例",
+              "path": "/chapter/16-resources/c-并发编程经典实例",
+              "file": "16-resources/c-并发编程经典实例.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-672",
+          "title": "16.4 在线教程与文档",
+          "children": [
+            {
+              "id": "leaf-669",
+              "title": "Microsoft Docs WPF 官方文档",
+              "path": "/chapter/16-resources/microsoft-docs-wpf-官方文档",
+              "file": "16-resources/microsoft-docs-wpf-官方文档.md"
+            },
+            {
+              "id": "leaf-670",
+              "title": "Microsoft Learn WPF 学习路径",
+              "path": "/chapter/16-resources/microsoft-learn-wpf-学习路径",
+              "file": "16-resources/microsoft-learn-wpf-学习路径.md"
+            },
+            {
+              "id": "leaf-671",
+              "title": "YouTube 与 B站 WPF 教程推荐",
+              "path": "/chapter/16-resources/youtube-与-b站-wpf-教程推荐",
+              "file": "16-resources/youtube-与-b站-wpf-教程推荐.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-676",
+          "title": "16.5 技术社区",
+          "children": [
+            {
+              "id": "leaf-673",
+              "title": "Stack Overflow",
+              "path": "/chapter/16-resources/stack-overflow",
+              "file": "16-resources/stack-overflow.md"
+            },
+            {
+              "id": "leaf-674",
+              "title": "博客园与 CSDN",
+              "path": "/chapter/16-resources/博客园与-csdn",
+              "file": "16-resources/博客园与-csdn.md"
+            },
+            {
+              "id": "leaf-675",
+              "title": ".NET 中文社区与知乎",
+              "path": "/chapter/16-resources/net-中文社区与知乎",
+              "file": "16-resources/net-中文社区与知乎.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-681",
+          "title": "16.6 常用 NuGet 包清单",
+          "children": [
+            {
+              "id": "leaf-677",
+              "title": "数据类 NuGet 包",
+              "path": "/chapter/16-resources/数据类-nuget-包",
+              "file": "16-resources/数据类-nuget-包.md"
+            },
+            {
+              "id": "leaf-678",
+              "title": "UI 类 NuGet 包",
+              "path": "/chapter/16-resources/ui-类-nuget-包",
+              "file": "16-resources/ui-类-nuget-包.md"
+            },
+            {
+              "id": "leaf-679",
+              "title": "MVVM 与通信类 NuGet 包",
+              "path": "/chapter/16-resources/mvvm-与通信类-nuget-包",
+              "file": "16-resources/mvvm-与通信类-nuget-包.md"
+            },
+            {
+              "id": "leaf-680",
+              "title": "日志与工具类 NuGet 包",
+              "path": "/chapter/16-resources/日志与工具类-nuget-包",
+              "file": "16-resources/日志与工具类-nuget-包.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-685",
+          "title": "16.7 开发工具清单",
+          "children": [
+            {
+              "id": "leaf-682",
+              "title": "Visual Studio 2022 与 ReSharper",
+              "path": "/chapter/16-resources/visual-studio-2022-与-resharper",
+              "file": "16-resources/visual-studio-2022-与-resharper.md"
+            },
+            {
+              "id": "leaf-683",
+              "title": "Snoop 与 WPF Performance Suite",
+              "path": "/chapter/16-resources/snoop-与-wpf-performance-suite",
+              "file": "16-resources/snoop-与-wpf-performance-suite.md"
+            },
+            {
+              "id": "leaf-684",
+              "title": "通信调试工具（VSPD、MQTTX、Modbus Poll）",
+              "path": "/chapter/16-resources/通信调试工具vspdmqttxmodbus-poll",
+              "file": "16-resources/通信调试工具vspdmqttxmodbus-poll.md"
+            }
+          ]
+        },
+        {
+          "id": "sg-687",
+          "title": "16.8 学习路线图",
+          "children": [
+            {
+              "id": "leaf-686",
+              "title": "完整学习路线图（7个阶段）",
+              "path": "/chapter/16-resources/完整学习路线图7个阶段",
+              "file": "16-resources/完整学习路线图7个阶段.md"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,105 @@
+[
+  {
+    "id": "quiz-wpf-intro",
+    "path": "/chapter/01-quickstart/visual-studio-2022--vs-config",
+    "title": "WPF入门小测验",
+    "questions": [
+      {
+        "question": "WPF 的全称是什么？",
+        "options": [
+          "Windows Presentation Foundation",
+          "Windows Program Framework",
+          "Web Presentation Format",
+          "Windows Platform Foundation"
+        ],
+        "answer": 0,
+        "explanation": "WPF 全称是 Windows Presentation Foundation，是微软推出的新一代图形系统。"
+      },
+      {
+        "question": "WPF 使用什么语言定义界面？",
+        "options": ["HTML", "XAML", "XML", "JSON"],
+        "answer": 1,
+        "explanation": "WPF 使用 XAML（可扩展应用程序标记语言）来定义界面元素。"
+      },
+      {
+        "question": "在 WPF 项目中，哪个文件是应用程序的入口？",
+        "options": ["MainWindow.xaml", "Program.cs", "App.xaml", "Settings.xaml"],
+        "answer": 2,
+        "explanation": "App.xaml 是整个 WPF 应用程序的入口点，它定义了应用程序的启动和关闭行为。"
+      }
+    ]
+  },
+  {
+    "id": "quiz-xaml-basics",
+    "path": "/chapter/02-xaml/xamlnamespace",
+    "title": "XAML 基础测验",
+    "questions": [
+      {
+        "question": "XAML 中的 x:Name 属性的作用是什么？",
+        "options": [
+          "设置控件的显示文字",
+          "为控件赋予标识符，后台代码可以通过此标识符引用控件",
+          "设置控件的样式",
+          "定义控件的布局位置"
+        ],
+        "answer": 1,
+        "explanation": "x:Name 为 XAML 元素赋予一个唯一的标识符，使得后台 C# 代码可以通过该名称直接引用和操控控件。"
+      },
+      {
+        "question": "XAML 中的默认命名空间（xmlns=\"...\"）指向什么？",
+        "options": [
+          "一个自定义的 URL",
+          "WPF 控件和类型的命名映射",
+          "JavaScript 库",
+          "CSS 样式定义"
+        ],
+        "answer": 1,
+        "explanation": "默认命名空间将 XAML 标签映射到 WPF 的 .NET 类型（如 System.Windows.Controls），使得可以直接使用 Button、TextBox 等控件。"
+      }
+    ]
+  },
+  {
+    "id": "quiz-layout",
+    "path": "/chapter/03-layout/gridvsgridsplitter",
+    "title": "布局系统测验",
+    "questions": [
+      {
+        "question": "如果需要创建类似表格的复杂行列布局，应该使用哪个容器？",
+        "options": ["StackPanel", "Grid", "Canvas", "WrapPanel"],
+        "answer": 1,
+        "explanation": "Grid 是 WPF 中最强大的布局容器，支持行列定义，适合构建复杂的表格化布局界面。"
+      },
+      {
+        "question": "StackPanel 默认的排列方向是什么？",
+        "options": ["水平排列", "垂直排列", "随机排列", "Z轴排列"],
+        "answer": 1,
+        "explanation": "StackPanel 默认的 Orientation 属性值为 Vertical，即子元素默认垂直堆叠排列。"
+      },
+      {
+        "question": "哪个容器适合用绝对坐标精确控制子元素位置？",
+        "options": ["WrapPanel", "DockPanel", "UniformGrid", "Canvas"],
+        "answer": 3,
+        "explanation": "Canvas 使用 Canvas.Left 和 Canvas.Top 附加属性，通过绝对坐标（像素）来精确控制子元素的位置。"
+      }
+    ]
+  },
+  {
+    "id": "quiz-mvvm",
+    "path": "/chapter/07-mvvm/mvvmvsvolvsvsvs",
+    "title": "MVVM 设计模式测验",
+    "questions": [
+      {
+        "question": "MVVM 中的 V 代表什么？",
+        "options": ["Variable（变量）", "View（视图）", "Virtual（虚拟）", "Value（值）"],
+        "answer": 1,
+        "explanation": "MVVM 的 V 是 View，即视图层，负责界面展示和用户交互，通常由 XAML 文件定义。"
+      },
+      {
+        "question": "ViewModel 层需要通过哪个接口通知 View 层数据发生了变化？",
+        "options": ["IDisposable", "ICommand", "INotifyPropertyChanged", "ICloneable"],
+        "answer": 2,
+        "explanation": "INotifyPropertyChanged 接口是实现数据绑定双向通知的关键，当 ViewModel 中的属性值发生变化时，通过触发 PropertyChanged 事件通知 View 更新显示。"
+      }
+    ]
+  }
+]
