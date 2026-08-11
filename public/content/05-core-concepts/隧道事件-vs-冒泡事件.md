@@ -13,7 +13,17 @@ parent: 5.2 路由事件
 > 隧道事件（Tunneling Events）以 `Preview` 前缀命名，沿可视树从根向源传递，由 `RoutingStrategy.Tunnel` 注册。冒泡事件（Bubbling Events）去掉 Preview 前缀，沿可视树从源向根传递，由 `RoutingStrategy.Bubble` 注册。两者共享同一个 `RoutedEventArgs` 实例，隧道事件先触发，冒泡事件后触发。如果在隧道事件处理器中设置了 `e.Handled = true`，对应的冒泡事件将不会触发。这一机制用于实现"操作前拦截/校验"模式（如权限检查、输入验证、拖放预览）。
 
 > [!origin] 由来背景
-> 1999 年，W3C 在 DOM Level 2 Events 规范中定义了事件流的三个阶段：捕获阶段（capturing phase）→ 目标阶段（target phase）→ 冒泡阶段（bubbling phase）。WPF 团队参考了这个设计，但做了面向 UI 框架的适配：(1) 把"捕获阶段"重命名为更容易理解的"隧道阶段"；(2) 给隧道阶段的事件统一加 `Preview` 前缀，命名规范自解释；(3) 隧道/冒泡共享同一个事件参数实例，使得隧道阶段的"否决"能直接阻止冒泡阶段。这种设计在 Silverlight、UWP、WinUI 中一直沿用至今。
+> 1999 年，W3C 在 DOM Level 2 Events 规范中定义了事件流的三个阶段：捕获阶段（capturing phase）→ 目标阶段（target phase）→ 冒泡阶段（bubbling phase）。
+>
+> WPF 团队参考了这个设计，但做了面向 UI 框架的适配：
+>
+> (1) 把"捕获阶段"重命名为更容易理解的"隧道阶段"；
+>
+> (2) 给隧道阶段的事件统一加 `Preview` 前缀，命名规范自解释；
+>
+> (3) 隧道/冒泡共享同一个事件参数实例，使得隧道阶段的"否决"能直接阻止冒泡阶段。
+>
+> 这种设计在 Silverlight、UWP、WinUI 中一直沿用至今。
 
 > [!essentials] 核心要点
 > - **命名规则**：隧道事件 = `Preview` + 冒泡事件名（如 `PreviewMouseDown` → `MouseDown`）

@@ -10,7 +10,15 @@ parent: 5.3 命令系统
 > `ICommand` 接口就像一个**带锁的按钮**。锁的钥匙是 `CanExecute`——只有满足条件（锁打开）时，按钮才能被按下。按下之后做什么？`Execute` 来定义。最后一个 `CanExecuteChanged` 事件就像"锁状态变了"的通知——当条件从"不满足 → 满足"时，系统喊一声"锁开了！"，所有绑定的按钮自动从灰色变亮。这三个成员就构成了 WPF 命令系统的全部 DNA。
 
 > [!def] 官方定义
-> `ICommand` 接口定义在 `System.Windows.Input` 命名空间中，包含三个成员：`bool CanExecute(object? parameter)`——判断命令当前是否可以执行；`void Execute(object? parameter)`——执行命令的业务逻辑；`event EventHandler? CanExecuteChanged`——当 CanExecute 的返回值可能发生变化时触发，UI 元素（如 Button）监听此事件自动更新 `IsEnabled` 状态。ICommand 是纯接口，与 UI 框架解耦——同一个命令对象可以在 WPF、MAUI、Web 项目中复用。
+> `ICommand` 接口定义在 `System.Windows.Input` 命名空间中，包含三个成员：
+>
+> `bool CanExecute(object? parameter)`——判断命令当前是否可以执行；
+>
+> `void Execute(object? parameter)`——执行命令的业务逻辑；
+>
+> `event EventHandler? CanExecuteChanged`——当 CanExecute 的返回值可能发生变化时触发，UI 元素（如 Button）监听此事件自动更新 `IsEnabled` 状态。
+>
+> ICommand 是纯接口，与 UI 框架解耦——同一个命令对象可以在 WPF、MAUI、Web 项目中复用。
 
 > [!origin] 由来背景
 > WPF 的 `ICommand` 接口比 WPF 本身更老——它最早出现在 2005 年 .NET Framework 3.0 的 System.Windows.Input.dll 中。最初的 WPF 设计更多使用 `RoutedCommand`（继承自 ICommand），但 MVVM 模式普及后，开发者发现 RoutedCommand 太重（需要 CommandBinding + RoutedUICommand），于是社区创造了 RelayCommand / DelegateCommand 模式——直接用委托实现 ICommand，零 UI 依赖。这种轻量级 Pattern 后来被微软官方采纳，成为 MVVM 的标准实践。
