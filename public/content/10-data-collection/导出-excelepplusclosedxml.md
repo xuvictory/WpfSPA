@@ -7,22 +7,29 @@ parent: 10.5 数据导入导出
 # 导出 Excel（EPPlus、ClosedXML）
 
 > [!plain] 白话理解
-> "导出 Excel（EPPlus、ClosedXML）"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"导出 Excel（EPPlus、ClosedXML）"是一个重要的知识点。数据是工业的灵魂。采集、处理、存储、展示——这个完整的链路就是上位机的核心价值。掌握了它，你就能更好地构建工业级上位机应用程序。
+> 把导出 Excel 比作**把纸质台账誊写进 Excel 表格**：你的上位机里存着采集数据（内存/数据库），导出就是把它"誊"进一个 `.xlsx` 文件——第一行写表头（时间、设备、温度），下面一行行填数据，最后调一下列宽让表格好看，存盘收工。
+>
+> 为什么要用库而不是自己写？因为 `.xlsx` 文件表面是文件、内里其实是一个 **ZIP 压缩包 + 一堆 XML**（这就是 Office Open XML 格式），手写这套结构又繁琐又容易错。**ClosedXML 和 EPPlus 就是帮你把"建表、写单元格、调格式、存盘"包好的工具**——你要做的只是"给哪个单元格写什么值"。
+>
+> 一句话：**导出 Excel = 用 ClosedXML/EPPlus 把内存数据一行行写进 `.xlsx` 的单元格，再用 SaveFileDialog 让用户选个保存位置**。
 
 > [!def] 官方定义
-> 导出 Excel（EPPlus、ClosedXML）是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> - **ClosedXML**：开源（MIT）的 .NET 库（NuGet `ClosedXML`），**不是微软官方控件**。它以**友好对象模型**封装 Office Open XML（xlsx），核心类型：`ClosedXML.Excel.XLWorkbook`（工作簿）、`IXLWorksheet`（工作表）、`IXLCell`（单元格）。
+> - **EPPlus**：老牌 .NET Excel 库（NuGet `EPPlus`，2019 年起 v5 改为 Polyform Noncommercial 许可，**商业使用需付费**）。提供高性能写入与样式、图表、公式支持。
+> - 两者共同点：读写 `.xlsx`（Excel 2007+ 格式）、无需安装 Excel、跨平台（.NET Core/.NET 5+）。
+> - 📖 官方文档：[ClosedXML GitHub](https://github.com/ClosedXML/ClosedXML)、[EPPlus 官网](https://epplussoftware.com/)
 
 > [!origin] 由来背景
-> 导出 Excel（EPPlus、ClosedXML）的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：数据是工业的灵魂。采集、处理、存储、展示——这个完整的链路就是上位机的核心价值。
+> Excel 的 `.xls` 二进制格式长期是微软私有秘密，第三方程序导出 Excel 只能依赖 COM 自动化（调用真实 Excel，慢且要求装 Office）。2006 年微软发布 **Office Open XML**（ECMA-376 标准）——xlsx 变为公开的 ZIP+XML 结构，于是社区诞生了一批"无需装 Excel 直接读写 xlsx"的库。
+> **EPPlus** 2009 年发布，功能全、性能好，2019 年 v5 改商业许可引起一阵风波；**ClosedXML** 则以 MIT 免费许可成为替代首选，API 更贴近"所见即所得"。上位机领域，导出报表给车间管理/质检人员看 Excel 是刚需，这两款库是当前 WPF 上位机导出 Excel 的两大主力。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"导出 Excel（EPPlus、ClosedXML）"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **三步导出流程**：`new XLWorkbook()` → `wb.Worksheets.Add("表名")` 拿工作表 → 给单元格 `Cell(行,列).Value = 值` 赋值 → `wb.SaveAs(路径)` 存盘
+> - **先让用户选保存路径**：`SaveFileDialog`（`Microsoft.Win32`）设 `Filter = "Excel 文件 (*.xlsx)|*.xlsx"`，用户取消时 `ShowDialog() != true` 直接 return
+> - **表头与数据分开写**：第一行写列名（时间/设备/温度），第二行起循环写数据行——表格才有"表头语义"
+> - **收尾调样式**：`ws.Columns().AdjustToContents()` 自适应列宽；需要时 `Style.Font.Bold` 表头加粗、`Style.Fill.BackgroundColor` 上色
+> - **工作簿用完 `using` 释放**：`XLWorkbook` 占用文件句柄与内存，`using` 包裹确保 `SaveAs` 后释放
+> - **注意 EPPlus 授权**：EPPlus 5.0+ 非商业用途免费、商用需授权；ClosedXML 一直 MIT——**商业上位机默认选 ClosedXML 更省心**
 
 > [!example] 完整示例
 > **Excel 导出演示：基于 ClosedXML 生成 .xlsx 报表(EPPlus 用法类似，均需 NuGet 安装)：**
@@ -122,37 +129,38 @@ parent: 10.5 数据导入导出
 >     }
 > }
 > ```
-> 
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ **报表导出给业务人员**：车间管理、质检、工艺人员拿到 Excel 直接筛选、透视、画图
+> ✅ **历史数据导出分析**：采集数据导出给数据分析/质量问题追溯，Excel 是通用载体
+> ✅ **交接班/日报台账**：每班导出当日生产记录，Excel 存档便于核对
+> ❌ **海量数据导出（百万行级）**：Excel 单 sheet 上限 104 万行且性能差，应导出 CSV（见 `导出-csv`）或交给数据库
+> ❌ **需要 VBA 宏/旧 .xls 格式**：xlsx 不支持宏（用 xlsm），老系统兼容需另想办法
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
-> 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 1：**EPPlus 5.0+ 未设授权直接抛异常** → 现象：`LicenseException: You must add the license...` → 原因：EPPlus 5 起要求显式设置许可 → 解决：商用买授权、非商用 `ExcelPackage.LicenseContext = LicenseContext.NonCommercial`；或干脆用 ClosedXML（MIT 免费无此问题）
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 2：**日期写入后 Excel 显示一串数字（序列号）** → 现象：时间列显示 `45255.5` 而不是"2026-08-17 08:30" → 原因：Excel 内部日期就是序列号，需要单元格格式 → 解决：给时间列设格式 `ws.Cell(row,1).Style.DateFormat.Format = "yyyy-MM-dd HH:mm:ss"`，或写入已格式化的字符串
+>
+> 坑 3：**导出路径含非法字符/目录不存在** → 现象：`SaveAs` 抛 `DirectoryNotFoundException` → 原因：用户输入了 `\ / : * ?` 等非法字符或选了不存在的目录 → 解决：对文件名做 `Path.GetInvalidFileNameChars()` 清洗；`Directory.CreateDirectory(Path.GetDirectoryName(path))` 兜底
+>
+> 坑 4：**大数据量用逐单元格写入** → 现象：几万行导出要等几十秒、内存飙升 → 原因：每个 `Cell` 赋值都有对象开销 → 解决：大批量用 `ws.Cell(row,1).InsertData`/`LoadFromDataTable`（ClosedXML）或 EPPlus 的 `LoadFromCollection` 批量装载
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - **导出逻辑封装成服务**：`ExcelExportService.Export<T>(IEnumerable<T> rows, string path)`，统一管表头、格式、异常，UI 只调一行
+> - **表头先加粗再写数据**：`ws.Range(1,1,1,3).Style.Font.Bold = true`，报表可读性立刻提升
+> - **列宽统一 `AdjustToContents` 兜底**：不调整列宽导出后中文全挤在一起，`AdjustToContents()` 一行解决
+> - **数据源优先取数据库**：导出前从 `轻量级数据库-sqlite`/关系库 `SELECT` 查好，别把采集内存列表直接导出（数据可能没落库不完整）
+> - **文件名带时间戳**：`报表_{yyyyMMdd_HHmmss}.xlsx` 避免覆盖，配合 `存储策略与数据保留` 的归档思路
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"导出 Excel（EPPlus、ClosedXML）"实现一个上位机中的小功能模块
+> **Lv.1 运行改参数**：运行示例"生成数据 → 导出 Excel"，用 Excel 打开检查三列数据；把 `AdjustToContents` 那行注释掉再导一次，对比列宽差异
+> **Lv.2 加属性**：加一个"设备"筛选 ComboBox（选择只导出某台设备的数据）；导出时把表头加粗、加"汇总行"（平均温度）
+> **Lv.3 改造**：把数据源从内存列表换成 `轻量级数据库-sqlite`：从 `DeviceData` 表查询最近 1 小时数据再导出，实现"历史数据导出"完整链路
+> **Lv.4 挑战**：生成"多 Sheet 报表"：Sheet1 明细、Sheet2 按设备分组统计（`GroupBy` 汇总）、Sheet3 报警记录，全部带样式与列宽自适应——一份可直接交付车间使用的 Excel 报表
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"导出 Excel（EPPlus、ClosedXML）"
-> - → 后续必学：掌握"导出 Excel（EPPlus、ClosedXML）"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：`本地文件存储jsonxmlcsv二进制`（文件 IO 与路径管理）、`轻量级数据库-sqlite`（导出数据源）
+> - → 同类必读：`导出-csv`（轻量导出方案）、`导出-pdf`（不可编辑版式）、`报表生成`（报表的统计逻辑）
+> - ⇄ 关联概念：`存储策略与数据保留`（导出的归档文件怎么管）、`数据转换与工程值计算`（导出的工程值字段）
+> - 📖 官方文档：[ClosedXML GitHub](https://github.com/ClosedXML/ClosedXML)、[EPPlus 官网](https://epplussoftware.com/)、[Office Open XML（Wikipedia）](https://zh.wikipedia.org/wiki/Office_Open_XML)

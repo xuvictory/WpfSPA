@@ -7,22 +7,28 @@ parent: 10.4 数据可视化
 # 实时曲线：OxyPlot
 
 > [!plain] 白话理解
-> "实时曲线：OxyPlot"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"实时曲线：OxyPlot"是一个重要的知识点。数据是工业的灵魂。采集、处理、存储、展示——这个完整的链路就是上位机的核心价值。掌握了它，你就能更好地构建工业级上位机应用程序。
+> 如果 LiveCharts2 是**功能丰富的智能仪表**，那 OxyPlot 就是**皮实耐用的经典仪表**——界面朴素，但核心活（画曲线、标坐标）干得极稳，而且轻量、老牌、文档扎实。
+>
+> OxyPlot 的编程模型很直白：你先搭一个"图纸"（`PlotModel`），在图纸上加"画笔"（`LineSeries`）和"尺子"（`LinearAxis`），然后把图纸交给画架（`PlotView`）去显示。数据更新后喊一声"重画"（`InvalidatePlot`），它就重画。
+>
+> 一句话：**OxyPlot = 模型驱动的轻量级跨平台绘图库，上手快、依赖小、适合朴素而稳定的实时/历史曲线**；与 LiveCharts2 相比，它更"传统"但更省资源。
 
 > [!def] 官方定义
-> 实时曲线：OxyPlot是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> - **OxyPlot**：开源跨平台绘图库（MIT 协议），**非微软官方控件**，支持 WPF/Windows Forms/Avalonia/MAUI 等。WPF 包名 `OxyPlot.Wpf`。
+> - 核心类型归属：`OxyPlot.PlotModel`（图表模型，数据与渲染的载体）、`OxyPlot.Series.LineSeries`（折线系列）、`OxyPlot.Axes.LinearAxis`（线性坐标轴）、`OxyPlot.Wpf.PlotView`（WPF 控件，`PlotView.Model` 挂模型）。
+> - 关键用法：`model.Series.Add(lineSeries)`、`model.Axes.Add(axis)`，数据更新后 `PlotView.InvalidatePlot(true)` 请求重绘（`true` 表示同步刷新数据）。
+> - 📖 官方文档：[OxyPlot 官网](https://oxyplot.org/)、[OxyPlot 文档](https://oxyplot.readthedocs.io/)
 
 > [!origin] 由来背景
-> 实时曲线：OxyPlot的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：数据是工业的灵魂。采集、处理、存储、展示——这个完整的链路就是上位机的核心价值。
+> OxyPlot 由开发者 obelisk 于 2010 年发起，初衷是给 .NET 提供一款**免费、开源、跨平台**的绘图库，弥补微软官方图表控件的缺失（WPF 原生没有官方 Chart 控件，Windows Forms 的 Chart 又不够灵活）。它采用"模型 + 渲染器"架构：`PlotModel` 与平台无关，各平台只提供 `PlotView` 控件与渲染实现——所以同一套模型代码可跑在 WPF、Avalonia、MAUI 上。十余年稳定维护、文档示例丰富，加上**零外部依赖、体积小**，让它成为老工控机、内网离线环境、嵌入式 .NET 场景的首选。如今它与 LiveCharts2 并列为 .NET 上位机曲线库两大主流。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"实时曲线：OxyPlot"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **NuGet 与命名空间**：`Install-Package OxyPlot.Wpf`，XAML 加 `xmlns:oxy="http://oxyplot.org/wpf"`，控件为 `oxy:PlotView`
+> - **模型驱动四步**：建 `PlotModel` → 加 `LinearAxis`（Bottom/Left）→ 加 `LineSeries` → `Plot.Model = model`
+> - **实时更新三连**：向 `_line.Points` 加新点 → 清理窗口旧点 → `Plot.InvalidatePlot(true)` 重绘
+> - **滑动窗口控制点数**：`if (_points.Count > 100) _points.RemoveAt(0)`，不控制则曲线越来越密、内存上涨
+> - **轴范围要固定**：`LinearAxis { Minimum = 0, Maximum = 100 }` 定死 Y 轴，防实时尖峰把曲线压扁
+> - **`Points` 用 `Clear()` + `Add()` 增量维护**：不要每次重建整个列表，减少 GC 压力
 
 > [!example] 完整示例
 > **实时曲线演示：OxyPlot 折线图，200ms 追加一个数据点，滑动窗口只保留最近 100 个点：**
@@ -128,37 +134,39 @@ parent: 10.4 数据可视化
 >     }
 > }
 > ```
-> 
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ **轻量实时曲线**：单机、点位不多的实时趋势图，OxyPlot 加载快、内存占用小
+> ✅ **老工控机/低配现场终端**：无 GPU、内存小，OxyPlot 纯 CPU 渲染也流畅
+> ✅ **离线内网环境**：单 DLL 无传递依赖，拷进内网项目即可用，不受 NuGet 源限制
+> ✅ **需要完全控制细节的历史曲线**：`PlotModel` 数据模型清晰，适合报表/打印类图表
+> ❌ **需要手势缩放、十字光标等强交互**：OxyPlot 交互能力弱于 LiveCharts2，分析型界面优先 LiveCharts2（见 `实时曲线livecharts2`）
+> ❌ **超大点数实时流（万点/秒）**：性能与 LiveCharts2（SkiaSharp 硬件加速）有差距
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
-> 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 1：**每次更新重建整个 `Points` 列表** → 现象：数据稍多就明显卡顿、GC 频繁 → 原因：频繁分配大对象 → 解决：`Clear()` + `Add()` 增量维护（示例写法），只在窗口滑动时移除头部
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 2：**忘记 `InvalidatePlot`** → 现象：数据一直在加，画面纹丝不动 → 原因：`PlotView` 不会自动感知数据变化 → 解决：每次改完数据调 `Plot.InvalidatePlot(true)`；批量更新完只调一次，别每加一点调一次
+>
+> 坑 3：**后台线程直接操作 `PlotModel`/`Points`** → 现象：偶发跨线程异常、绘制错乱 → 原因：`PlotModel` 非线程安全，UI 渲染在 UI 线程 → 解决：数据在采集线程入队，UI 线程定时取出更新（见 `采集线程模型设计`）
+>
+> 坑 4：**Y 轴范围留空让曲线自动缩放** → 现象：一个异常尖峰把曲线压成一条直线，其余数据看不出趋势 → 原因：轴自动缩放被极端值带飞 → 解决：`Minimum`/`Maximum` 定死量程，数据先过 `数据过滤与清洗`
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - **模型与渲染分离**：`PlotModel` 的构建封装成 `BuildModel()`，`PlotView` 只负责显示，切换画面（实时/历史）只换 `Model`
+> - **批量更新限流**：采集线程 10ms 一个点，UI 侧 200ms 一次 `InvalidatePlot`，一次把一批点画上去（对应 `采集线程模型设计` 的限流思路）
+> - **窗口上限集中管理**：`const int MaxPoints = 100;`，与 LiveCharts2 示例保持一致的管理方式
+> - **配色跟随主题**：`TextColor`/`Axisline` 与面板深色主题统一，多曲线时每条一个对比色（与 `仪表盘控件` 的颜色分区一致）
+> - **历史大查询用 Decimator**：OxyPlot 内置 `Decimator.Decimate` 可对海量点降采样后再画，别把百万原始点灌进 `LineSeries`
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"实时曲线：OxyPlot"实现一个上位机中的小功能模块
+> **Lv.1 运行改参数**：运行示例观察曲线滚动；把 `Interval` 改成 50ms、`MaxPoints` 改成 300，观察流畅度与 LiveCharts2 示例的差异
+> **Lv.2 加属性**：添加第二条 `LineSeries`（橙色，"压力"），并给每条曲线加 `MarkerType = MarkerType.Circle` 显示数据点
+> **Lv.3 改造**：接入 `数据过滤与清洗` 的"原始值+平滑值"双曲线，用 OxyPlot 画出来对比平滑效果；再把 X 轴从"序号"改成"真实时间"（`DateTimeAxis`）
+> **Lv.4 挑战**：实现"历史查询曲线"：从 `轻量级数据库-sqlite` 按时间范围查询数据，用 `Decimator.Decimate` 降采样后绘制，支持切换"最近 1 小时/1 天/1 周"三个按钮——对比 OxyPlot 与 LiveCharts2 在历史场景的取舍
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"实时曲线：OxyPlot"
-> - → 后续必学：掌握"实时曲线：OxyPlot"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：`数据转换与工程值计算`（曲线画工程值）、`数据过滤与清洗`（毛刺会撕裂曲线）
+> - → 对比必读：`实时曲线livecharts2`（另一款图表库，交互更强）
+> - ⇄ 关联概念：`时序数据库简介`（历史曲线的数据源与降采样）、`仪表盘控件`（单点值的仪表表达）、`数据解析字节序类型转换`（曲线前的数据链路）
+> - 📖 官方文档：[OxyPlot 官网](https://oxyplot.org/)、[OxyPlot 文档](https://oxyplot.readthedocs.io/)、[OxyPlot GitHub](https://github.com/oxyplot/oxyplot)

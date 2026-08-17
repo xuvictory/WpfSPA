@@ -7,22 +7,30 @@ parent: 10.3 数据存储
 # 轻量级数据库 SQLite
 
 > [!plain] 白话理解
-> "轻量级数据库 SQLite"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"轻量级数据库 SQLite"是一个重要的知识点。数据是工业的灵魂。采集、处理、存储、展示——这个完整的链路就是上位机的核心价值。掌握了它，你就能更好地构建工业级上位机应用程序。
+> 把 SQLite 比作**一个能装下整座档案室的"魔法手提箱"**：不用专门租一栋档案楼（不用安装数据库服务器），不用请管理员（零配置），整个数据库就是**一个普通文件**——拷贝文件就等于备份整个数据库，删文件就等于清空数据库。
+>
+> 想想用文件存储的痛点：JSON/CSV 存数据，想查"昨天下午 3 点到 4 点所有设备的平均温度"得把整个文件读进内存自己算。而 SQLite 是**真数据库**，会 SQL：`SELECT 设备, AVG(温度) FROM 历史 WHERE 时间 BETWEEN … GROUP BY 设备` 一句话就查出来，还有索引加速、事务保证、崩溃恢复。
+>
+> 一句话：**SQLite = "单文件 + 真 SQL + 零维护"的嵌入式数据库，是单机上位机本地历史数据存储的默认选择**；数据量小用它，数据量大、多客户端并发再升级到服务型数据库。
 
 > [!def] 官方定义
-> 轻量级数据库 SQLite是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> - **SQLite**：由 D. Richard Hipp 于 2000 年发起并持续维护的**嵌入式关系型数据库**，无独立服务进程、零配置、单文件存储，全部代码编译进应用进程内，公共领域授权（Public Domain），全球部署量最大（每台手机都内置）。
+> - **.NET 访问库**：官方推荐 `Microsoft.Data.Sqlite`（微软维护，基于 SQLite 原生库的 ADO.NET 实现，API 与 `System.Data.SqlClient` 风格一致：`SqliteConnection`/`SqliteCommand`/`SqliteDataReader`）。
+> - 特性：支持标准 SQL、事务（ACID）、WAL 模式（Write-Ahead Logging，写不阻塞读）、并发模型为**单写多读**（同一时刻最多一个写者）。
+> - 📖 官方文档：[SQLite 官方网站](https://www.sqlite.org/)、[Microsoft.Data.Sqlite](https://learn.microsoft.com/zh-cn/dotnet/standard/data/sqlite/)
 
 > [!origin] 由来背景
-> 轻量级数据库 SQLite的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：数据是工业的灵魂。采集、处理、存储、展示——这个完整的链路就是上位机的核心价值。
+> 2000 年，嵌入式设备（PDA、早期手机）需要一个"无服务器、能塞进几十 KB 内存"的数据库。工程师 D. Richard Hipp 在海军项目中被现有嵌入式数据库的许可限制困扰，干脆自己写了一个——设计目标是简单到极致：**一个 C 文件、一个数据库文件、零配置、公共领域**。SQLite 因此迅速渗透：iOS/Android 内置、Firefox 书签、民航黑匣子数据记录都用它。
+>
+> 对上位机而言，SQLite 解决了"本地历史数据"的尴尬：早期上位机要么用文本文件（查不了 SQL），要么装 SQL Server（太重、还要运维）。SQLite 恰好是中间答案——**要 SQL 能力、又要零维护、还要单机离线**。如今几乎成了工控单机上位机"本地历史库"的事实标准。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"轻量级数据库 SQLite"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **连接串就是文件路径**：`Data Source=hmi.db`，文件不存在时首次 `Open()` 自动创建；`Database=""` 表示内存库
+> - **三个对象循环使用**：`SqliteConnection`（连接）→ `CreateCommand`（命令）→ `ExecuteNonQuery`/`ExecuteReader`（执行），全部 `using` 包裹确保释放
+> - **参数化查询防注入**：`cmd.CommandText = "INSERT INTO T VALUES ($name, $temp)"` + `cmd.Parameters.AddWithValue("$name", v)`，绝不用字符串拼接
+> - **写要开事务**：高频批量插入（每秒几千条）逐条提交会慢几十倍，`BEGIN TRANSACTION` 包住一批再 `COMMIT`（`SqliteTransaction`）
+> - **WAL 模式改善并发**：`PRAGMA journal_mode=WAL;` 让读写互不阻塞，多线程场景推荐开启
+> - **数据库就是文件**：备份 = 拷贝 `.db` 文件（WAL 模式下要把 `.db-wal` 一起处理或先 `PRAGMA wal_checkpoint`）
 
 > [!example] 完整示例
 > **SQLite 演示：单文件数据库建表、插入、查询、删除(无需安装数据库服务)：**
@@ -155,37 +163,39 @@ parent: 10.3 数据存储
 >     }
 > }
 > ```
-> 
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ **单机上位机本地历史库**：一台工控机采集、存储、查询本机数据，零维护成本
+> ✅ **无 DBA、无网络的现场环境**：装不了 SQL Server 的车间，SQLite 开箱即用
+> ✅ **报警/事件记录**：少量但需要 SQL 查询能力的数据，比文件存储优雅
+> ✅ **断网缓存**：采集数据先落 SQLite，网络恢复再同步到服务器（本地缓存模式）
+> ❌ **多客户端并发写**：SQLite 单写者模型，多台工控机同时写一个库会 `SQLITE_BUSY`
+> ❌ **海量数据（百GB 级）复杂分析**：性能与运维能力都不如服务型数据库（见 `关系型数据库sql-servermysql`）
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
-> 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 1：**连接没释放导致"database is locked"** → 现象：偶发 `SQLITE_BUSY` 异常，程序时好时坏 → 原因：某处连接/命令没 `using` 释放，锁没解除 → 解决：所有 `SqliteConnection`/`SqliteCommand`/`SqliteDataReader` 一律 `using`；加 `DefaultTimeout=5` 防死锁
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 2：**多线程同时写库** → 现象：频繁 `database is locked`，插入大量失败 → 原因：SQLite 同一时刻只允许一个写者 → 解决：所有写操作收敛到一个写入队列/单线程串行执行；开启 WAL（`PRAGMA journal_mode=WAL`）缓解读写竞争
+>
+> 坑 3：**逐条插入不提交事务** → 现象：插 1 万条数据要几分钟 → 原因：每条都隐含一次磁盘 fsync → 解决：`SqliteTransaction` 包住整批，1 万条可以秒级完成
+>
+> 坑 4：**数据库文件在写保护目录** → 现象：`unable to open database file` → 原因：程序装在 `Program Files` 等受保护目录 → 解决：数据库放到 `AppData` 或程序专用数据目录，用 `Environment.SpecialFolder.ApplicationData` 拼路径
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - **连接串常开 WAL + busy_timeout**：`Data Source=hmi.db;Mode=ReadWrite;` 首次连接后执行 `PRAGMA journal_mode=WAL;` 和 `PRAGMA busy_timeout=5000;`
+> - **高频写统一走"写入服务"**：采集线程只把数据丢进队列，一个后台写线程串行批量提交（见 `采集线程模型设计`），天然规避锁问题
+> - **表设计带索引**：按 `TimeStamp` 建索引（历史数据查询基本都按时间），`CREATE INDEX IF NOT EXISTS idx_ts ON DeviceData(TimeStamp)`
+> - **定期备份与 VACUUM**：文件库删除数据后文件不会自动变小，定期 `VACUUM` 回收空间；备份直接拷文件（先 `PRAGMA wal_checkpoint(TRUNCATE)`）
+> - **数据模型与采集流水线对齐**：存储的字段就是 `采集系统总体设计` 里统一点位模型（设备+点位+值+时间戳）的落库版
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"轻量级数据库 SQLite"实现一个上位机中的小功能模块
+> **Lv.1 运行改参数**：运行示例建库、插入、查询、删除走一遍，然后用资源管理器找到 `hmi.db` 文件——确认整个数据库真的就是一个文件
+> **Lv.2 加属性**：加一个"批量插入 1000 条"按钮：对比"不用事务逐条插入"与"事务包裹后插入"的耗时差异（秒级 vs 毫秒级）
+> **Lv.3 改造**：写一个 `HistoryDb` 服务类：`Init()`（建表+索引+WAL）、`BatchInsert(List<PointData>)`（事务批量）、`Query(DateTime from, DateTime to)`，把 `采集系统总体设计` 的模拟采集数据接进来落库
+> **Lv.4 挑战**：结合 `存储策略与数据保留`：在 SQLite 上实现"按时间保留策略"——`DELETE FROM DeviceData WHERE TimeStamp < datetime('now', '-7 day')` 每周清理，再做一个"启动时自动清理旧数据"的定时任务
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"轻量级数据库 SQLite"
-> - → 后续必学：掌握"轻量级数据库 SQLite"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：`本地文件存储jsonxmlcsv二进制`（为什么需要从文件升级到数据库）、`数据校验crc校验和等`（落库数据完整性）
+> - → 后续必学：`关系型数据库sql-servermysql`（多客户端共享时升级为服务型数据库）、`时序数据库简介`（海量高频数据选型）
+> - ⇄ 关联概念：`存储策略与数据保留`（库内数据怎么滚动清理）、`实时曲线oxyplot`（从历史库查数据画曲线）
+> - 📖 官方文档：[SQLite 官方网站](https://www.sqlite.org/)、[Microsoft.Data.Sqlite](https://learn.microsoft.com/zh-cn/dotnet/standard/data/sqlite/)、[SQLite WAL 模式](https://www.sqlite.org/wal.html)

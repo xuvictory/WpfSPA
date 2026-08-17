@@ -7,22 +7,31 @@ parent: 10.3 数据存储
 # 本地文件存储（JSON、XML、CSV、二进制）
 
 > [!plain] 白话理解
-> "本地文件存储（JSON、XML、CSV、二进制）"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"本地文件存储（JSON、XML、CSV、二进制）"是一个重要的知识点。数据是工业的灵魂。采集、处理、存储、展示——这个完整的链路就是上位机的核心价值。掌握了它，你就能更好地构建工业级上位机应用程序。
+> 把数据落盘比作**收拾家里的物品**，四种格式就是四种收纳盒：
+> - **JSON**：像**贴了标签的整理箱**——"设备名、温度、状态"一目了然，人看得懂、程序也好取用。适合配置文件和跨系统交换数据。
+> - **XML**：像**带目录树的大档案柜**——层级关系严谨（`<设备><名称>…</名称></设备>`），老系统、OPC 配置、组态软件都喜欢用它，但写着啰嗦。
+> - **CSV**：像**一行一行的记账本**——每行一条记录、逗号分列，Excel 直接打开就能看，适合表格型数据导出。
+> - **二进制**：像**密封的冷冻箱**——体积小、存取最快，但人眼看不见里面是什么，只有程序知道"先读 4 字节长度、再读字符串"的规矩。
+>
+> 一句话：**没有"最好"的格式，只有"最合适"的场景——配置用 JSON、对接老系统用 XML、给人看用 CSV、高频海量数据用二进制**。
 
 > [!def] 官方定义
-> 本地文件存储（JSON、XML、CSV、二进制）是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> - **JSON（JavaScript Object Notation）**：轻量级数据交换格式，键值对结构。.NET 官方 API 为 `System.Text.Json`（`JsonSerializer.Serialize/Deserialize`），.NET Core 3.0+ 内置，性能优于旧版 `Newtonsoft.Json`。
+> - **XML（Extensible Markup Language）**：可扩展标记语言，W3C 标准，树形层级结构。.NET API 为 `System.Xml.Linq`（`XDocument`/`XElement`）。
+> - **CSV（Comma-Separated Values）**：逗号分隔的纯文本表格格式，无官方 .NET 内置库，需自行处理转义（或用开源库 `CsvHelper`）。
+> - **二进制**：按字节序列存储，.NET API 为 `System.IO.BinaryWriter`/`BinaryReader`（配合 `FileStream`）。
+> - 📖 官方文档：[System.Text.Json](https://learn.microsoft.com/zh-cn/dotnet/standard/serialization/system-text-json/overview)、[System.Xml.Linq](https://learn.microsoft.com/zh-cn/dotnet/api/system.xml.linq.xdocument)、[BinaryWriter 类](https://learn.microsoft.com/zh-cn/dotnet/api/system.io.binarywriter)
 
 > [!origin] 由来背景
-> 本地文件存储（JSON、XML、CSV、二进制）的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：数据是工业的灵魂。采集、处理、存储、展示——这个完整的链路就是上位机的核心价值。
+> 文件存储的历史就是数据格式之争：**CSV** 源于 1970 年代早期数据库导出与表格软件（如 Lotus 1-2-3），简单到极致的纯文本表格。**XML** 由 W3C 于 1998 年定稿，为的是解决"数据带结构、跨系统交换"的问题，成为 SOA、配置文件、OPC UA 初期标准的宠儿，但冗长笨重。**JSON** 脱胎于 JavaScript 对象字面量，2006 年由 Douglas Crockford 推广为 RFC 4627 标准，以"少一半的字符、同样的信息量"迅速取代 XML 成为 Web 与物联网的默认格式。**二进制**则从未"流行"过——它一直默默存在于性能敏感的角落（高频采集、固件、图像）。上位机领域这四种格式各有阵营：组态软件配置爱用 XML，现代上位机配置爱用 JSON，报表导出爱用 CSV，实时采样落盘爱用二进制。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"本地文件存储（JSON、XML、CSV、二进制）"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **JSON 最常用于配置与交换**：`JsonSerializer.Serialize(obj, new JsonSerializerOptions { WriteIndented = true })` 输出可读的缩进格式，`Deserialize<T>` 读回
+> - **XML 用 LINQ to XML**：`XDocument`/`XElement` 链式构造树，`XAttribute` 存属性，序列化 `.Save(path)`、加载 `XDocument.Load(path)`
+> - **CSV 的坑在转义**：字段含逗号、引号、换行时必须加引号包裹并转义双引号，否则 Excel 打开错列（详见 `导出-csv`）
+> - **二进制要"自描述"**：写入时先写版本号、魔数、每条记录长度前缀，读时按同样顺序读——顺序错一位，数据全乱
+> - **路径不要裸写相对路径**：用 `AppDomain.CurrentDomain.BaseDirectory` + `System.IO.Path.Combine` 拼绝对路径
+> - **写文件要防"写一半断电"**：先写临时文件再 `File.Replace` 原子替换，避免崩溃留下半个文件（见 `存储策略与数据保留`）
 
 > [!example] 完整示例
 > **本地文件存储演示：设备记录分别以 JSON / XML / CSV / 二进制四种格式落盘并回读：**
@@ -170,37 +179,39 @@ parent: 10.3 数据存储
 >     }
 > }
 > ```
-> 
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ **JSON**：上位机配置文件（点位表、通信参数）、与 MES/Web 服务的数据交换
+> ✅ **XML**：OPC 地址空间导出、组态工程文件、与老版工业软件交换配置
+> ✅ **CSV**：导出"操作员能直接看"的报表数据、对接 ERP 数据导入
+> ✅ **二进制**：高频采集数据的本地高速落盘（几十万点/秒时 JSON/XML 完全扛不住）
+> ❌ **JSON/XML**：高频数据流（文本格式体积大、序列化慢），应交给二进制或时序库
+> ❌ **二进制**：任何需要"人直接可读"的场景，没有文档则等于天书
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
-> 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 1：**相对路径 + 未判断目录存在** → 现象：文件不知道被写到了哪里，或 `DirectoryNotFoundException` → 原因：程序工作目录随启动方式变化（VS 里运行、双击 exe、计划任务启动都不一定相同）→ 解决：统一用 `Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data")` 并 `Directory.CreateDirectory` 兜底
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 2：**CSV 字段含逗号/引号没转义** → 现象：Excel 打开数据错列、引号乱套 → 原因：CSV 规定含逗号、引号、换行的字段必须用双引号包裹且内部双引号翻倍 → 解决：用 `CsvHelper` 库，或写 `EscapeCsvField` 工具函数（详见 `导出-csv`）
+>
+> 坑 3：**二进制格式无版本控制** → 现象：程序升级后读老文件崩溃或数据错乱 → 原因：字段顺序/类型变了，老文件还是旧布局 → 解决：文件头写"魔数 + 版本号"（如 `"HMI1"` 4 字节），读到未知版本提示升级
+>
+> 坑 4：**直接覆盖写入，写一半断电** → 现象：文件损坏打不开，历史数据全丢 → 原因：`File.WriteAllText` 非原子操作 → 解决：先写 `.tmp` 再 `File.Replace(tmp, target, null)` 原子替换，配合 `数据校验crc校验和等` 做完整性校验
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - **小配置用 JSON，大历史用二进制/SQLite**：别让配置文件 JSON 去扛高频数据，选型看数据量级（见 `轻量级数据库-sqlite`）
+> - **统一文件访问入口**：封装 `StorageService`（`SaveJson<T>`/`LoadJson<T>`/`SaveBinary<T>`），所有读写走它，日志与异常处理集中管理
+> - **写文件先写临时文件再替换**：原子性换防崩溃损坏，成本极低、收益极大
+> - **模型加版本号字段**：`public int Version { get; set; } = 1;`，升级时按版本迁移
+> - **文件命名带时间戳**：历史数据按 `data_2026-08-17_08.json` 滚动，避免单文件无限增长（见 `存储策略与数据保留`）
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"本地文件存储（JSON、XML、CSV、二进制）"实现一个上位机中的小功能模块
+> **Lv.1 运行改参数**：运行示例分别点四个保存按钮，再用记事本打开四个文件对比它们的"长相"——直观感受四种格式的差异
+> **Lv.2 加属性**：给 `DeviceRecord` 加一个 `DateTime UpdateTime` 字段，重跑保存，观察 JSON/XML/CSV/二进制四种格式对同一字段的表达差异
+> **Lv.3 改造**：实现"配置持久化"：定义 `AppConfig`（采集周期、串口号、报警阈值），启动时 `LoadConfig()`、关闭时 `SaveConfig()`，用 JSON 落盘——这就是上位机的标准配置管理
+> **Lv.4 挑战**：给二进制文件加"魔数+版本号"头（如先写 `"HMI"` 3 字节 + `ushort Version`），写入时同时计算 CRC32 存文件尾（见 `数据校验crc校验和等`），读取时校验版本与完整性——交付一个可放心用于生产的存储格式
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"本地文件存储（JSON、XML、CSV、二进制）"
-> - → 后续必学：掌握"本地文件存储（JSON、XML、CSV、二进制）"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：`数据转换与工程值计算`（落盘的是换算后的工程值）、`数据校验crc校验和等`（文件完整性校验）
+> - → 后续必学：`轻量级数据库-sqlite`（数据多了从文件升级到数据库）、`存储策略与数据保留`（文件怎么滚动与淘汰）
+> - ⇄ 关联概念：`导出-csv`（CSV 的进阶应用）、`报表生成`（从存储的数据出报表）
+> - 📖 官方文档：[System.Text.Json 概述](https://learn.microsoft.com/zh-cn/dotnet/standard/serialization/system-text-json/overview)、[XDocument 类](https://learn.microsoft.com/zh-cn/dotnet/api/system.xml.linq.xdocument)、[BinaryWriter 类](https://learn.microsoft.com/zh-cn/dotnet/api/system.io.binarywriter)
