@@ -7,22 +7,22 @@ parent: 4.2 按钮类控件
 # ToggleButton 切换按钮
 
 > [!plain] 白话理解
-> "ToggleButton 切换按钮"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"ToggleButton 切换按钮"是一个重要的知识点。控件是构建界面的积木块。了解每个控件的特点，你才能在上位机开发中快速搭出专业的界面。掌握了它，你就能更好地构建工业级上位机应用程序。
+> 有些按钮不是"点一下干一件事"，而是"点一下换一个状态"：手动/自动模式的切换开关、巡检功能的开启/关闭。这种按钮需要记住"当前是开还是关"，并让界面把状态展示出来。
+> ToggleButton 就是"带开关状态"的按钮：`IsChecked` 保存当前状态（true/false），每点一次自动翻转，`Checked`/`Unchecked` 事件告诉你状态变化。它还能开启三态（`IsThreeState`），用 `null` 表示"部分选中"这类中间态。`CheckBox`、`RadioButton` 都是它的子类。
 
 > [!def] 官方定义
-> ToggleButton 切换按钮是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> ToggleButton 是"可保持选中状态"的按钮基类，位于 `System.Windows.Controls.Primitives` 命名空间，继承自 `ButtonBase`。核心属性 `IsChecked`（`bool?`：true 选中 / false 未选中 / null 不确定），`IsThreeState` 开启三态后每点一次在 true→null→false→true 间循环。状态变化触发 `Checked`、`Unchecked`、`Indeterminate` 路由事件。`CheckBox` 与 `RadioButton` 均派生自它，分别实现"多选开关"与"组内单选"语义。
+> 官方资料：https://learn.microsoft.com/zh-cn/dotnet/api/system.windows.controls.primitives.togglebutton
 
 > [!origin] 由来背景
-> ToggleButton 切换按钮的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：控件是构建界面的积木块。了解每个控件的特点，你才能在上位机开发中快速搭出专业的界面。
+> 普通 Button 是"瞬时动作"，而大量工业操作需要"状态记忆"：模式开关、通道使能、报警静音。WinForms 用 `CheckBox.Checked` 加自定义外观模拟，但"开关按钮"与"复选开关"在视觉与交互上差异明显，且状态通知不统一。WPF 提炼出 ToggleButton 基类：把"选中/未选中/不确定"三种状态与 `IsChecked` 属性、三个路由事件统一定义；`CheckBox` 与 `RadioButton` 继承它补充各自的组合规则。于是"带状态的开关"成为第一类控件，开发者只需绑定 `IsChecked` 即可。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"ToggleButton 切换按钮"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **IsChecked 三值状态**：true / false / null（`IsThreeState=true` 时出现 null 中间态）
+> - **状态事件**：`Checked`、`Unchecked`、`Indeterminate` 各自触发，无需在 Click 里判断
+> - **继承关系**：`CheckBox`、`RadioButton` 都是它的子类，理解它即理解勾选类控件的底层
+> - **三态循环**：`IsThreeState` 下点击在 true→null→false 间循环，常用于"全选/部分选/全不选"
+> - **绑定驱动**：`IsChecked` 支持双向绑定，ViewModel 修改状态即可驱动界面
 
 > [!example] 完整示例
 > **模式切换演示：两态开关 + 三态（IsThreeState）开关的使用：**
@@ -87,34 +87,37 @@ parent: 4.2 按钮类控件
 > 
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ 模式切换开关：手动/自动、本地/远程、巡检开/关等两态模式
+> ✅ 三态联动：全选/部分选/全不选的状态指示（部分子项选中时为 null）
+> ✅ 自定义开关样式：用 `ControlTemplate` 把 ToggleButton 做成拨杆开关、ON/OFF 滑块
+> ✅ 通道使能：采集通道、报警通道的逐项启用开关
+> ❌ 需要一次性动作（用「button-按钮」）
+> ❌ 需要组内互斥单选（用「radiobutton-单选按钮」）或多选独立开关（用「checkbox-复选框」）
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
-> 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 1：**三态模式下 `IsChecked` 判断只写 true/false** → 中间态(null)被漏判。原因：`bool?` 与 `bool` 不等价。解决：用 `switch`/三态判断显式处理 null，如示例中的 `is true / is false / null` 分支
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 2：**在 Click 里读 IsChecked 读到旧值** → 逻辑错位。原因：Click 在状态翻转前触发。解决：用 `Checked`/`Unchecked` 事件或在 Click 后读取；更稳妥是绑定 `IsChecked` 属性由 ViewModel 驱动
+>
+> 坑 3：**不实现 INotifyPropertyChanged 就绑定 IsChecked** → 界面状态与逻辑状态不同步。原因：双向绑定缺通知。解决：ViewModel 属性 setter 触发通知
+>
+> 坑 4：**自定义模板后开关视觉不随状态变化** → 样式无选中反馈。原因：模板未处理 `IsChecked` 视觉状态。解决：在 `ControlTemplate` 的触发器里针对 `IsChecked=true` 设置颜色/形状
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - 两态开关用 `IsChecked` 绑定，不写 Click，状态逻辑全部收敛到 ViewModel
+> - 三态"全选"联动时用 null 表示部分选中，配合子项 `Checked` 事件计算
+> - 需要 ON/OFF 视觉时，重写 `ControlTemplate` 用 `Trigger` 切换前景/背景色，保留默认交互
+> - 开关语义的控件不要用普通 Button 拼，`IsChecked` 的绑定与通知是现成的
+> - 同一界面多个 ToggleButton 按功能分组命名（PowerBtn/AutoBtn），避免状态判断混淆
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"ToggleButton 切换按钮"实现一个上位机中的小功能模块
+> **Lv.1 照猫画虎**：运行示例，分别点击两个开关和三态开关，观察 `IsChecked` 取值与显示变化
+> **Lv.2 小试牛刀**：把"手动/自动"开关改成 `IsChecked` 双向绑定：ViewModel 中修改值，界面开关同步翻转
+> **Lv.3 融会贯通**：用 `ControlTemplate` 把 ToggleButton 做成"拨杆开关"：选中时轨道变绿、圆钮右移
+> **Lv.4 挑战**：实现"通道全选"联动：5 个子通道 CheckBox，任一变化时父级 ToggleButton 自动呈现 全选/部分选/全不选 三态，且点父级可整体翻转
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"ToggleButton 切换按钮"
-> - → 后续必学：掌握"ToggleButton 切换按钮"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：「button-按钮」理解 ButtonBase 与点击事件；`IsChecked` 绑定见第 5 章「什么是数据绑定」
+> - → 后续必学：「checkbox-复选框」「radiobutton-单选按钮」是它的两大子类，分别实现多选与单选
+> - ⇄ 关联概念：「itemscontrol-条目控件」中的列表容器常与 ToggleButton 子类配合（如 ListBox 选中项）
+> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/api/system.windows.controls.primitives.togglebutton

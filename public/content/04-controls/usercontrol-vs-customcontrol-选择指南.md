@@ -7,22 +7,20 @@ parent: 4.11 用户控件与自定义控件
 # UserControl vs CustomControl 选择指南
 
 > [!plain] 白话理解
-> "UserControl vs CustomControl 选择指南"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"UserControl vs CustomControl 选择指南"是一个重要的知识点。控件是构建界面的积木块。了解每个控件的特点，你才能在上位机开发中快速搭出专业的界面。掌握了它，你就能更好地构建工业级上位机应用程序。
+> UserControl 和 CustomControl 是「打包复用控件的两种路线」：前者是把现成控件「拼」成一个新控件（快、但外观固定），后者是从零「造」一个控件（慢、但外观可任意换皮肤）。就像装修：UserControl 是把标准家具摆进房间直接住；CustomControl 是请人定制一套能变换风格的整体家具。多数上位机需求用 UserControl 就够，只有需要换主题、自绘外观时才上 CustomControl。
 
 > [!def] 官方定义
-> UserControl vs CustomControl 选择指南是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> `UserControl`（`System.Windows.Controls.UserControl`）是组合式控件：XAML 外观与代码成对，适合快速组合现有控件；`CustomControl`（通常继承 `System.Windows.Controls.Control`）是模板化控件：逻辑写在类中、外观由 `Themes/Generic.xaml` 的 `ControlTemplate` 提供，支持主题换肤。官方对比文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/controls/control-authoring-overview
 
 > [!origin] 由来背景
-> UserControl vs CustomControl 选择指南的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：控件是构建界面的积木块。了解每个控件的特点，你才能在上位机开发中快速搭出专业的界面。
+> 两种控件形态源于 WPF「外观与逻辑分离」的架构目标：UserControl 继承了 Windows Forms 时代「组合控件」的成熟思路，上手快；CustomControl 则充分发挥 ControlTemplate 能力，解决「同一逻辑、多套皮肤」的工业软件痛点。微软官方在文档中明确区分两者定位：快速组装选 UserControl，完整控件生命周期与主题支持选 CustomControl。上位机项目通常两者混用——页面级复用用 UserControl，图形监控元素用 CustomControl。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"UserControl vs CustomControl 选择指南"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - UserControl：XAML + 代码成对，继承 `UserControl`，组合现有控件，外观固定
+> - CustomControl：逻辑类 + `Themes/Generic.xaml`，继承 `Control` 等，外观可重模板
+> - UserControl 适合页面内复用；CustomControl 适合跨项目、跨主题复用
+> - UserControl 开发快、调试直观；CustomControl 学习成本高但灵活
+> - 判断标准：是否需要「换皮肤 / 自绘外观」→ 需要则 CustomControl
 
 > [!example] 完整示例
 > **同一"温度显示条"分别用两种方式实现，对比差异：UserControl 适合组合现有控件、CustomControl 适合完全自绘模板：**
@@ -142,34 +140,35 @@ parent: 4.11 用户控件与自定义控件
 > 
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ UserControl：参数行、设备状态卡、告警条目等页面内高频组合
+> ✅ CustomControl：LED 灯、仪表盘、趋势弧等图形化监控元素
+> ✅ 需要多主题换肤的控件库 → CustomControl
+> ✅ 快速交付、外观固定 → UserControl
+> ❌ 只用一次的布局（两者都不用，直接 XAML 画）
+> ❌ 需要控件参与焦点、键盘、模板绑定等完整控件行为 → 必须 CustomControl
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
+> 坑 1：**UserControl 当 CustomControl 用，换肤失效** → 现象：想给参数行换主题皮肤，改 UserControl 的 Style 发现无效果。原因：UserControl 的外观写死在 XAML 中，不支持模板替换。解决：需要换肤就改为 CustomControl，把外观移入 `Themes/Generic.xaml` 模板。
 > 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 2：**CustomControl 用 UserControl 的思路写，耦合外观** → 现象：逻辑代码里直接 new 了具体控件，换模板就崩。原因：在类中依赖了具体可视化元素。解决：遵循 `OnApplyTemplate` + `PART_` 命名约定访问模板元素，行为与外观解耦。
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 3：**选型只凭「哪个快」导致后期重构** → 现象：项目后期突然要换皮肤，几十个 UserControl 全部要改造。原因：早期没考虑主题需求。解决：设计阶段先明确「是否可能换肤 / 是否跨项目复用」，再定控件形态；通用型界面组件直接用 CustomControl 起步。
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - 选型口诀：组合现成控件、外观固定 → UserControl；自绘外观、多主题 → CustomControl
+> - 页面内部复用小部件用 UserControl；会进入控件库、跨工程复用的用 CustomControl
+> - 无论哪种，可绑定属性都用依赖属性，保证 MVVM 顺畅
+> - 从 UserControl 起步，出现「换肤 / 重模板」需求时再迁移为 CustomControl（模板逻辑已在 OnApplyTemplate 中则迁移成本低）
+> - 同一项目中两者可以共存：页面组件 UserControl + 图形元素 CustomControl
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"UserControl vs CustomControl 选择指南"实现一个上位机中的小功能模块
+> **Lv.1 照猫画虎**：运行示例代码，观察 TempBarUC（UserControl）与 TempBarCC（CustomControl）在界面上的表现差异
+> **Lv.2 小试牛刀**：分别修改 TempBarUC 的外观文件与 TempBarCC 的 Generic.xaml 模板（如改进度条颜色），体会「外观修改位置」的差异
+> **Lv.3 融会贯通**：给 TempBarUC 增加一个 `Text` 依赖属性并绑定；给 TempBarCC 增加一个 `Format` 字符串属性控制显示文本，验证两种方式暴露属性的路径不同
+> **Lv.4 挑战进阶**：把一个现有的 UserControl（如设备状态卡）改造成 CustomControl：将外观移入 `Themes/Generic.xaml`，用 `OnApplyTemplate` 装配内部元素，并对比改造前后「换皮肤」的灵活性差异
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"UserControl vs CustomControl 选择指南"
-> - → 后续必学：掌握"UserControl vs CustomControl 选择指南"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：先分别学本章「[usercontrol-用户控件](usercontrol-用户控件)」与「[customcontrol-自定义控件](customcontrol-自定义控件)」，再读本指南做选型
+> - → 后续必学：第 7 章「MVVM」中控件与 ViewModel 的命令绑定
+> - ⇄ 关联概念：内容模型见「[contentcontrol-内容控件](contentcontrol-内容控件)」，控件内组合的输入类见「[textbox-文本框](textbox-文本框)」
+> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/controls/control-authoring-overview

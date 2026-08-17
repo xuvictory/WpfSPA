@@ -7,22 +7,23 @@ parent: 4.4 选择类控件
 # ComboBox 下拉选择框
 
 > [!plain] 白话理解
-> "ComboBox 下拉选择框"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"ComboBox 下拉选择框"是一个重要的知识点。控件是构建界面的积木块。了解每个控件的特点，你才能在上位机开发中快速搭出专业的界面。掌握了它，你就能更好地构建工业级上位机应用程序。
+> 面板空间宝贵，让"串口列表、采样频率、协议类型"这些选项各自占一排太奢侈。`ComboBox` 平时只显示一行（当前选中项），点击才弹出完整列表——"收起时省空间，展开时任意选"。
+> 它支持两种数据来源：`ItemsSource` 绑定集合（配合 `DisplayMemberPath` 指定显示字段），或直接在 XAML 里放 `ComboBoxItem`。选中变化通过 `SelectionChanged` 事件或 `SelectedItem`/`SelectedIndex` 读取。上位机里"通道选择""频率档位"这类离散选项，它是最省地的答案。
 
 > [!def] 官方定义
-> ComboBox 下拉选择框是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> ComboBox 是 WPF 中"下拉单选"控件，位于 `System.Windows.Controls` 命名空间，继承自 `Selector`。它平时只展示 `SelectedItem`，点击展开 `Items` 列表（内部含 `Popup`）。核心属性：`ItemsSource`/`Items`、`SelectedItem`/`SelectedIndex`/`SelectedValue`、`DisplayMemberPath`（指定显示字段）、`IsEditable`（允许输入）。核心事件 `SelectionChanged`。
+> 官方资料：https://learn.microsoft.com/zh-cn/dotnet/api/system.windows.controls.combobox
 
 > [!origin] 由来背景
-> ComboBox 下拉选择框的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：控件是构建界面的积木块。了解每个控件的特点，你才能在上位机开发中快速搭出专业的界面。
+> "下拉选择"源自图形界面节省空间的经典设计：WinForms 的 ComboBox 已具备基本功能，但"绑定集合 + 自定义选项外观"与 ListBox 一样要绕行 DataSource/ItemTemplate 体系，且可编辑模式与选项列表耦合过深。WPF 的 ComboBox 基于 Selector/ItemsControl 统一模型：`ItemsSource` 直接绑定、`ItemTemplate` 声明式定义选项外观、`DisplayMemberPath` 一行指定显示字段；`IsEditable` 让"下拉 + 自由输入"一键切换。上位机里的协议选择、串口号、采样档位等配置项，用它对面板空间的占用远小于 RadioButton 组。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"ComboBox 下拉选择框"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **SelectedItem 取对象**：选中后直接拿到数据对象，用 `as` 强转读取字段
+> - **DisplayMemberPath**：`ItemsSource` 绑集合时指定显示哪个字段
+> - **两种填充方式**：`ItemsSource` 绑集合 或 XAML 内嵌 `ComboBoxItem`
+> - **SelectionChanged 时机**：初始化时 `SelectedIndex=0` 也会触发，注意空值判断
+> - **IsEditable 可输入**：开启后允许用户输入非列表值（需自行校验）
+> - **省空间王者**：5 个以上离散选项时优先用它而非 RadioButton
 
 > [!example] 完整示例
 > **通道选择演示：ItemsSource 绑定数据源、SelectedItem/SelectedValue 读取选中项：**
@@ -106,34 +107,37 @@ parent: 4.4 选择类控件
 > 
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ 串口/协议选择：波特率、数据位、通信协议等离散配置项
+> ✅ 采样档位：采样周期、量程、滤波等级等选项较多的选择
+> ✅ 省空间参数面板：设置区选项多，用下拉一行搞定
+> ✅ 可输入的下拉：`IsEditable` 支持自定义输入（如输入自定义设备名称）
+> ❌ 选项少（≤5）且需要常驻可见（用「radiobutton-单选按钮」组）
+> ❌ 需要常驻列表浏览/多选（用「listbox-列表框」）
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
-> 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 1：**`SelectedValue` 和 `SelectedItem` 分不清** → 取到 null 或类型不对。原因：两者语义不同（值 vs 对象）。解决：绑对象用 `SelectedItem`，绑值字段用 `SelectedValue` + `SelectedValuePath`
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 2：**初始化时 `SelectedIndex=0` 触发 SelectionChanged** → 启动就执行了副作用逻辑。原因：事件在赋值时触发。解决：事件里判空（`e.AddedItems`），或用 `IsLoaded` 标志
+>
+> 坑 3：**DisplayMemberPath 写错字段** → 每项显示类名或空白。原因：路径与数据属性不符。解决：确认集合元素字段名，`DisplayMemberPath` 只写属性名（不写 `{Binding}`）
+>
+> 坑 4：**IsEditable 后输入值不匹配任何项** → 逻辑混乱。原因：可编辑模式下值可能非列表项。解决：校验输入是否在选项内，或启用 `TextSearch` 让输入自动匹配
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - 静态选项用 `ComboBoxItem` 内嵌，动态选项用 `ItemsSource` 绑集合（配 `DisplayMemberPath`）
+> - 取选中项优先 `SelectedItem as 类型`，比 `SelectedValue` 更符合面向对象习惯
+> - 默认选中在 XAML 用 `SelectedIndex="0"` 声明，别在代码里赋值防闪烁
+> - `SelectionChanged` 事件里先判空再处理，避免初始化误触发
+> - 选项超过 10 个考虑分组（`ComboBoxItem` 内嵌 `HeaderedItemsControl`）提升查找效率
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"ComboBox 下拉选择框"实现一个上位机中的小功能模块
+> **Lv.1 照猫画虎**：运行示例，切换波特率观察 `SelectedItem` 的文本输出
+> **Lv.2 小试牛刀**：把选项改成 `ItemsSource` 绑定 `List<string>`，验证 `DisplayMemberPath` 用法
+> **Lv.3 融会贯通**：实现"协议联动"：ComboBox 选 Modbus TCP 时，下方自动显示 IP/端口输入区；选串口时显示波特率/数据位区
+> **Lv.4 挑战**：用枚举 + 数据模板实现"可搜索下拉"：选项绑定枚举列表，`IsEditable` 下输入关键字自动过滤显示匹配项
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"ComboBox 下拉选择框"
-> - → 后续必学：掌握"ComboBox 下拉选择框"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：「itemscontrol-条目控件」理解集合绑定；「listbox-列表框」是同族的常驻列表形态
+> - → 后续必学：「listview-列表视图」多列表格；「选择类控件对比指南」全局选型决策
+> - ⇄ 关联概念：「radiobutton-单选按钮」选项少的替代方案；「label-标签」`Target` 聚焦下拉框
+> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/api/system.windows.controls.combobox

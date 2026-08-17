@@ -7,22 +7,23 @@ parent: 4.3 文本类控件
 # TextBox 文本框
 
 > [!plain] 白话理解
-> "TextBox 文本框"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"TextBox 文本框"是一个重要的知识点。控件是构建界面的积木块。了解每个控件的特点，你才能在上位机开发中快速搭出专业的界面。掌握了它，你就能更好地构建工业级上位机应用程序。
+> 上位机里凡是"要输入一个值"的地方基本都用 `TextBox`：温度设定、IP 地址、配方名称、备注说明。它是最通用的单行/多行文本输入控件——用户敲键盘，程序通过 `Text` 属性读走内容。
+> 几个实战关键点：`MaxLength` 限制长度防止误输、`AcceptsReturn` 决定能不能按回车换行（多行备注用）、`TextChanged` 在输入过程中实时响应（如即时校验）。它虽不擅长"只显示"（那是 `TextBlock` 的活），但"读入-校验-下发"这条参数链路它全程参与。
 
 > [!def] 官方定义
-> TextBox 文本框是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> TextBox 是 WPF 中用于"单行或多行文本输入"的控件，位于 `System.Windows.Controls` 命名空间。核心属性：`Text`（当前文本）、`MaxLength`（最大字符数）、`AcceptsReturn`（是否接受回车换行）、`AcceptsTab`（是否接受 Tab 字符）、`TextWrapping`（换行）、`VerticalScrollBarVisibility`（多行时滚动条）。核心事件 `TextChanged`（文本变化时触发，注意它在每次输入都会触发）。支持 `Text="{Binding ...}"` 双向绑定与 `IsReadOnly` 只读模式。
+> 官方资料：https://learn.microsoft.com/zh-cn/dotnet/api/system.windows.controls.textbox
 
 > [!origin] 由来背景
-> TextBox 文本框的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：控件是构建界面的积木块。了解每个控件的特点，你才能在上位机开发中快速搭出专业的界面。
+> 文本框是所有图形界面的"万年基石"，但 WinForms 的 TextBox 功能偏基础：多行要切换 `Multiline`、换行与 Tab 行为要单独配置、字符校验全靠事件里手写。WPF 对 TextBox 做了系统性增强：`AcceptsReturn`/`AcceptsTab` 把"换行、Tab"从隐式行为变成显式开关；`TextWrapping` 与滚动条让多行文本编辑体验接近文本编辑器；`Text` 属性天然支持双向数据绑定，输入内容可直接写回 ViewModel。对上位机而言，参数下发、日志备注、连接串配置等所有"人工输入"场景统一收敛到这一个控件，配合 `MaxLength` 与校验逻辑即可满足工业规范。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"TextBox 文本框"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **Text 读写**：`Text` 是输入的核心出口，取值前务必做类型与范围校验
+> - **单行/多行**：`AcceptsReturn="True"` + `TextWrapping` + 垂直滚动条组合出多行输入
+> - **MaxLength**：限制长度是工业参数防误输的第一道闸
+> - **TextChanged 陷阱**：每次击键都触发，不要在事件里做重活或循环触发 UI 更新
+> - **双向绑定**：`Text="{Binding 参数, UpdateSourceTrigger=PropertyChanged}"` 输入即写回
+> - **只读模式**：`IsReadOnly="True"` 用于显示"不可编辑但可选中复制"的文本
 
 > [!example] 完整示例
 > **参数下发窗口演示：Text、AcceptsReturn、MaxLength、TextChanged 与输入校验：**
@@ -83,34 +84,37 @@ parent: 4.3 文本类控件
 > 
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ 参数输入：温度/压力/转速设定值、IP 地址、配方名称等单行输入
+> ✅ 多行备注：`AcceptsReturn` + `TextWrapping` 的维护记录、备注说明
+> ✅ 实时校验输入：`TextChanged` 中即时校验合法性并给出提示
+> ✅ 只读展示可复制：`IsReadOnly` 显示日志内容且允许选中复制
+> ❌ 敏感信息输入（用「passwordbox-密码框」，无明文 Text）
+> ❌ 富文本排版需求（用「richtextbox-富文本框」）
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
-> 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 1：**TextChanged 里做重活** → 每次击键都卡顿。原因：事件每键触发。解决：把校验/处理移出事件或 `Dispatcher.BeginInvoke` 延迟合并
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 2：**多行模式没开换行** → 长文字横向溢出。原因：`AcceptsReturn` 开了但 `TextWrapping` 未设置。解决：`TextWrapping="Wrap"` + 垂直滚动条
+>
+> 坑 3：**`Text` 直接拿去下发/存储** → 空串、越界值引发设备异常。原因：缺少校验。解决：取值后统一 `Trim`、类型解析（`double.TryParse`）、范围钳制
+>
+> 坑 4：**绑定更新与手动赋值互相覆盖** → 界面值和逻辑值不一致。原因：`UpdateSourceTrigger` 默认 LostFocus，手动改 Text 时绑定没同步。解决：明确设置 `UpdateSourceTrigger`（PropertyChanged 或 Explicit）
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - 数值输入配 `MaxLength` + 输入后 `double.TryParse` 校验，非法值提示并还原
+> - 业务属性用双向绑定（`UpdateSourceTrigger=PropertyChanged`），输入即写回 ViewModel
+> - 多行文本显式设置 `AcceptsReturn + TextWrapping + VerticalScrollBarVisibility` 三件套
+> - 校验逻辑放 ViewModel 属性 setter 或独立校验服务，不堆在 TextChanged 里
+> - 大文本（如日志）用 `IsReadOnly` 展示，避免误编辑，同时保留复制能力
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"TextBox 文本框"实现一个上位机中的小功能模块
+> **Lv.1 照猫画虎**：运行示例，在"温度设定"输入非法字符，观察提示与回退逻辑
+> **Lv.2 小试牛刀**：给"IP 地址"输入框加 `MaxLength=15` 和正则校验，非法时边框变红
+> **Lv.3 融会贯通**：把温度输入改成双向绑定到 ViewModel 属性，按钮读取 `Temperature` 属性下发
+> **Lv.4 挑战**：实现"数字输入专用 TextBox"：继承 TextBox，仅允许数字/小数点/负号，实时高亮非法字符，暴露 `Value` 依赖属性
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"TextBox 文本框"
-> - → 后续必学：掌握"TextBox 文本框"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：「textblock-轻量文本」区分只读/可编辑文本；第 5 章「什么是数据绑定」掌握双向绑定
+> - → 后续必学：「passwordbox-密码框」敏感输入；「richtextbox-富文本框」排版文档
+> - ⇄ 关联概念：「label-标签」`Target` 聚焦输入框；「repeatbutton-重复按钮」配合做数值微调
+> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/api/system.windows.controls.textbox

@@ -7,22 +7,20 @@ parent: 4.11 用户控件与自定义控件
 # UserControl 用户控件
 
 > [!plain] 白话理解
-> "UserControl 用户控件"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"UserControl 用户控件"是一个重要的知识点。控件是构建界面的积木块。了解每个控件的特点，你才能在上位机开发中快速搭出专业的界面。掌握了它，你就能更好地构建工业级上位机应用程序。
+> UserControl 就是「把几个现成控件打包成一个新控件」：比如「参数行」（标签 + 输入框）在界面上要重复几十次，与其每次写两行 XAML，不如做成一个 `ParamRow` 用户控件，主界面一行 `<uc:ParamRow Label="温度" Value="25.6"/>` 就搞定。它像搭积木——用已有的控件块拼出一个新形状，拼好之后还能再拼进更大的界面里。
 
 > [!def] 官方定义
-> UserControl 用户控件是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> `UserControl`（全限定名 `System.Windows.Controls.UserControl`）是一个继承自 `ContentControl` 的容器类，用于把多个现有控件组合成可复用的复合控件：它自带一个 XAML 外观文件（.xaml + .xaml.cs），通过普通属性（CLR 属性）或依赖属性（`DependencyProperty.Register`）向外部暴露参数。官方文档：https://learn.microsoft.com/zh-cn/dotnet/api/system.windows.controls.usercontrol
 
 > [!origin] 由来背景
-> UserControl 用户控件的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：控件是构建界面的积木块。了解每个控件的特点，你才能在上位机开发中快速搭出专业的界面。
+> 复合控件思想可追溯到 Windows Forms 的 `UserControl`：把「标签 + 文本框」「按钮组」等反复出现的组合抽成独立组件，避免代码重复。WPF 在 .NET Framework 3.0 中延续了这一设计，并让 UserControl 的外观（XAML）与逻辑（C#）分离、可完整支持数据绑定（需通过依赖属性暴露）。上位机中「参数行」「设备状态块」「报警条目」这类高度复用的界面单元，正是 UserControl 的主场。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"UserControl 用户控件"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - 组成：一个 `.xaml`（外观）+ `.xaml.cs`（后台逻辑）成对出现
+> - 外部属性：普通属性适用于简单赋值；需要绑定时必须用依赖属性（`DependencyProperty`）
+> - 使用方式：主窗口 XAML 中 `xmlns:uc="clr-namespace:..."` 后以标签形式使用
+> - 内部控件可用 `x:Name` 命名，后台代码直接访问
+> - 数据双向同步：`TextChanged` 事件里用 `SetCurrentValue` 回写依赖属性
 
 > [!example] 完整示例
 > **"参数行"用户控件演示：新建 UserControl 组合已有控件，通过依赖属性暴露给外部使用：**
@@ -117,34 +115,35 @@ parent: 4.11 用户控件与自定义控件
 > 
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ 「标签 + 输入框」参数行、设备状态块等重复出现的界面单元
+> ✅ 把一组控件 + 逻辑打包成业务组件（如「设备启停按钮组」）
+> ✅ 页面内多处使用、外观固定的小部件
+> ✅ 团队协作时按界面区域拆分开发任务
+> ❌ 需要在多个主题 / 皮肤间切换外观、需要控件级重模板时（改用 [customcontrol-自定义控件](customcontrol-自定义控件)）
+> ❌ 只需要一次性的布局组合时（直接在 XAML 写，别过度封装）
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
+> 坑 1：**用户控件里绑定不到外部数据** → 现象：`<uc:ParamRow Value="{Binding Temp}"/>` 绑定不生效。原因：`Value` 是普通 CLR 属性，不支持 WPF 绑定（绑定只对依赖属性生效）。解决：把要绑定的属性注册为依赖属性（`DependencyProperty.Register`）。
 > 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 2：**控件改了值，外部绑定不更新** → 现象：用户在 ParamRow 里输入，绑定的 ViewModel 属性没变化。原因：输入只改了内部 TextBox，没回写依赖属性。解决：在 `TextChanged` 事件里调用 `SetCurrentValue(ValueProperty, txtValue.Text)`。
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 3：**命名空间引用报错 / 找不到控件** → 现象：主窗口用了 `xmlns:uc="clr-namespace:HmiDemo.UserControls"` 却编译失败。原因：命名空间名拼错，或控件类未放在该命名空间下。解决：核对 `x:Class` 与 `clr-namespace` 一致，控件类用 `public` 修饰。
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - 需要绑定或复用的属性一律用依赖属性，普通属性只用于简单静态赋值
+> - UserControl 内部尽量避免直接访问外部 `DataContext`，通过依赖属性收口数据入口
+> - 命名规范：控件文件放 `UserControls/` 目录，类名语义化（ParamRow、DeviceCard）
+> - 内部控件样式与主界面深色主题统一，控件内不写死颜色，尽量用资源
+> - 一个 UserControl 只封装「一个职责」的界面单元，别把整页塞进去
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"UserControl 用户控件"实现一个上位机中的小功能模块
+> **Lv.1 照猫画虎**：运行示例代码，观察三个 ParamRow 的标签与数值显示；在 XAML 中修改 `Label` 文本观察变化
+> **Lv.2 小试牛刀**：给 ParamRow 增加一个 `Unit` 属性（单位，如 ℃），在内部显示「25.6 ℃」；新增一个带 ComboBox 的 `ModeRow` 用户控件
+> **Lv.3 融会贯通**：把 ParamRow.Value 绑定到 ViewModel 属性（温度、压力、转速），验证用户输入能同步回 ViewModel
+> **Lv.4 挑战进阶**：实现「设备状态卡」UserControl：包含设备名、LED 状态灯（复用 [customcontrol-自定义控件](customcontrol-自定义控件) 的 LedLight）、运行时长三个部分，并暴露 `DeviceName` / `IsRunning` 依赖属性，主窗口用 ItemsControl 绑定设备集合批量展示
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"UserControl 用户控件"
-> - → 后续必学：掌握"UserControl 用户控件"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：先学本章「[contentcontrol-内容控件](contentcontrol-内容控件)」理解内容模型，UserControl 是其子类
+> - → 后续必学：本章「[customcontrol-自定义控件](customcontrol-自定义控件)」对比控件级复用的另一种方式
+> - ⇄ 关联概念：选择决策见「[usercontrol-vs-customcontrol-选择指南](usercontrol-vs-customcontrol-选择指南)」，内部布局见第 3 章「布局」
+> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/api/system.windows.controls.usercontrol

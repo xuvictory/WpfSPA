@@ -7,22 +7,22 @@ parent: 4.3 文本类控件
 # RichTextBox 富文本框
 
 > [!plain] 白话理解
-> "RichTextBox 富文本框"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"RichTextBox 富文本框"是一个重要的知识点。控件是构建界面的积木块。了解每个控件的特点，你才能在上位机开发中快速搭出专业的界面。掌握了它，你就能更好地构建工业级上位机应用程序。
+> 巡检报告、交接班日志、设备维护记录——这些内容讲究"排版"：标题加粗、关键项标红、段落分明，而不仅仅是纯文本。`TextBox` 只能给出一堆纯字符，`RichTextBox` 则能承载带格式的文档。
+> 它的内容模型是 `FlowDocument`：里面可以按顺序放多个 `Paragraph`（段落），每段里再放 `Run`（文本片段）、`Bold`、`Italic` 等元素。要导出或统计时，用 `TextRange` 把整个文档的纯文本提取出来。简单说：TextBox 管"字符串"，RichTextBox 管"文档"。
 
 > [!def] 官方定义
-> RichTextBox 富文本框是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> RichTextBox 是 WPF 中用于"富文本编辑与呈现"的控件，位于 `System.Windows.Controls` 命名空间。核心是 `Document` 属性（`FlowDocument`）：由 `Blocks`（`Paragraph`、`Section` 等块级元素）与 `Inlines`（`Run`、`Bold`、`Italic`、`Hyperlink` 等行内元素）构成文档树。`TextRange`（`System.Windows.Documents`）可跨文档提取纯文本、执行查找替换。配套 `FontFamily`/`FontWeight`/`Foreground` 等 TextElement 格式化属性。
+> 官方资料：https://learn.microsoft.com/zh-cn/dotnet/api/system.windows.controls.richtextbox
 
 > [!origin] 由来背景
-> RichTextBox 富文本框的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：控件是构建界面的积木块。了解每个控件的特点，你才能在上位机开发中快速搭出专业的界面。
+> WinForms 的 RichTextBox 基于 RFT（Rich Text Format）字符串工作，格式信息与文本混在一起，编程时用 `SelectionFont`、`SelectionColor` 这类"选中即改"的中间态属性，难以精确控制一段文本的样式。WPF 引入全新的 `FlowDocument` 文档模型：把"段落""行内元素""格式化"提升为一等对象（`Paragraph`、`Run` 都是对象而非字符串标记），内容用对象树描述，可以程序化构建、模板化复用、甚至与数据绑定联动。对工业软件而言，自动生成的巡检报告（标题加粗、异常标红）用代码构建 FlowDocument 远比拼 RFT 字符串可靠。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"RichTextBox 富文本框"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **Document 承载 FlowDocument**：富文本 = 文档对象树，不是字符串
+> - **块级/行内结构**：外层 `Paragraph` 分段，内层 `Run`/`Bold`/`Italic` 管样式
+> - **TextRange 提取**：`new TextRange(Document.ContentStart, ContentEnd).Text` 拿到纯文本
+> - **程序化构建**：`doc.Blocks.Add(new Paragraph(new Run("...")))` 动态生成报告
+> - **滚动与只读**：`VerticalScrollBarVisibility="Auto"` + `IsReadOnly` 常组合成"只读日志视图"
 
 > [!example] 完整示例
 > **巡检报告编辑器演示：用 FlowDocument 装载富文本内容，TextRange 读取/导出文本：**
@@ -90,34 +90,37 @@ parent: 4.3 文本类控件
 > 
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ 交接班/巡检报告：标题加粗、关键项标红、段落清晰的可编辑文档
+> ✅ 只读日志/记录视图：`IsReadOnly` + 滚动条展示历史操作记录
+> ✅ 动态生成报表：程序化构建 FlowDocument，导出前预览
+> ✅ 富文本备注：需要字号/颜色/列表等格式的设备说明
+> ❌ 纯文本输入/输出（用「textbox-文本框」开销更小）
+> ❌ 只是显示一段只读文本（用「textblock-轻量文本」）
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
-> 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 1：**用 `TextBox` 的思维拿 `Text` 取内容** → 编译错误（无 Text 属性）。原因：内容在 `Document`（FlowDocument）里。解决：用 `new TextRange(Document.ContentStart, ContentEnd).Text` 提取纯文本
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 2：**误以为 `Document.Blocks.Add` 就能直接加字符串** → 编译错误。原因：Blocks 接收块级元素（Paragraph/Section）。解决：先包 `new Paragraph(new Run("文本"))`
+>
+> 坑 3：**只读模式仍可编辑** → 用户还能改内容。原因：仅设 `IsReadOnly` 不够，光标仍可定位。解决：加 `Focusable="False"` 或 `IsReadOnlyCaretVisible="False"` 并失焦
+>
+> 坑 4：**大量文本时卡顿** → 每次追加全量重建。原因：反复 `Blocks.Add` 导致重排。解决：批量追加用 `TextRange.Load`/`FlowDocument` 构造，或 `Dispatcher` 分帧处理
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - 取文本一律走 `TextRange`，写入用 `Paragraph + Run`，形成固定读写套路
+> - 只读视图配置 `IsReadOnly + IsReadOnlyCaretVisible="False" + VerticalScrollBarVisibility="Auto"`
+> - 动态报告构建成"模板方法"：标题段（Bold）+ 正文段（Run），字段从数据绑定生成
+> - 保存/导出用 `TextRange.Save(stream, DataFormats.Xaml)` 保留格式
+> - 无需格式的展示坚决用 TextBox/TextBlock，别为格式付性能税
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"RichTextBox 富文本框"实现一个上位机中的小功能模块
+> **Lv.1 照猫画虎**：运行示例，点击"导出纯文本"观察 `TextRange` 提取结果与控制台输出
+> **Lv.2 小试牛刀**：在报告里追加一个"异常设备"段落：设备名加粗、原因文字标红
+> **Lv.3 融会贯通**：做一个"交接班日志"：左侧 RichTextBox 可编辑，右侧预览区用 `TextRange` 同步显示纯文本版
+> **Lv.4 挑战**：实现"报告导出到文件"：动态生成含标题/表格/多段的 FlowDocument，用 `TextRange.Save` 导出为 .rtf 文件
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"RichTextBox 富文本框"
-> - → 后续必学：掌握"RichTextBox 富文本框"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：「textblock-轻量文本」理解 Inlines/Run 混排；「textbox-文本框」对照纯文本编辑
+> - → 后续必学：「itemscontrol-条目控件」结合 RichTextBox 做"多条富文本记录"列表
+> - ⇄ 关联概念：「scrollbar-滚动条」配置长文档滚动；「tooltip-工具提示」补充超长内容
+> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/api/system.windows.controls.richtextbox

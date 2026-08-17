@@ -7,22 +7,22 @@ parent: 4.3 文本类控件
 # TextBlock 轻量文本
 
 > [!plain] 白话理解
-> "TextBlock 轻量文本"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"TextBlock 轻量文本"是一个重要的知识点。控件是构建界面的积木块。了解每个控件的特点，你才能在上位机开发中快速搭出专业的界面。掌握了它，你就能更好地构建工业级上位机应用程序。
+> 上位机界面上 70% 的元素都是"一段文字"：状态指示、设备名称、报警摘要、单位说明。这些文字大多只需"显示"，不需要用户编辑。为每段文字都建一个重量级控件是浪费——WPF 为此提供了最轻量的文本元素 `TextBlock`。
+> 它不仅能显示字符串（`Text` 属性），还能用 `Inlines` 把普通文字、加粗、斜体、彩色片段混排在同一个段落里（`Run`/`Bold`/`Italic`），并支持 `TextTrimming` 超长省略号、`TextWrapping` 自动换行。数据绑定下配合 `Run` 还能做出"设备号加粗、时间变色"的实时状态行。
 
 > [!def] 官方定义
-> TextBlock 轻量文本是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> TextBlock 是 WPF 中用于"只读文本呈现"的轻量元素，位于 `System.Windows.Controls` 命名空间，直接继承自 `FrameworkElement`（非 `Control`，因此没有 ControlTemplate/背景等重负担）。它提供 `Text`（字符串）与 `Inlines`（`InlineCollection`，支持 `Run`/`Bold`/`Italic`/`Hyperlink` 等富文本片段）两种内容模式，以及 `TextWrapping`、`TextTrimming`、`TextAlignment`、`LineHeight` 等排版属性，支持 `Text="{Binding}"` 数据绑定。
+> 官方资料：https://learn.microsoft.com/zh-cn/dotnet/api/system.windows.controls.textblock
 
 > [!origin] 由来背景
-> TextBlock 轻量文本的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：控件是构建界面的积木块。了解每个控件的特点，你才能在上位机开发中快速搭出专业的界面。
+> WPF 诞生前，WinForms 的 `Label` 与 `TextBox` 在"只读文本"与"可编辑文本"之间边界模糊，显示富文本往往要引入第三方控件。WPF 把文本呈现拆成两个层次：轻量的 `TextBlock`（只读、非 Control、开销小、适合高频刷新的状态文本）与重量级的 `TextBox`/`RichTextBox`（可编辑）。同时用 `Run`/`Bold` 等内联元素取代 HTML 式的字符串拼接，让"一段文字里混排不同样式"成为声明式能力。上位机需要实时刷新温度、压力、报警行，TextBlock 正是为这类高频小段文本定制的方案。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"TextBlock 轻量文本"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **非 Control 轻量级**：无 ControlTemplate，适合大量只读文本与高频刷新
+> - **Text 与 Inlines 双模式**：简单文本用 `Text`；混排加粗/变色用 `Inlines`（`Run`/`Bold`/`Italic`）
+> - **排版三件套**：`TextWrapping`（换行）、`TextTrimming`（超长省略）、`TextAlignment`（对齐）
+> - **Inlines 可代码追加**：`textBlock.Inlines.Add(new Run(...))` 适合动态拼日志/报警行
+> - **数据绑定**：`Text="{Binding 状态}"` 让文本随数据自动更新
 
 > [!example] 完整示例
 > **状态指示与报警摘要演示：Text 属性、Inlines 混排（Run/Bold/Italic）、文本裁剪：**
@@ -94,34 +94,38 @@ parent: 4.3 文本类控件
 > 
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ 状态指示行：设备运行/停止/报警等高频刷新的单行文本（重量级控件会卡顿）
+> ✅ 标签文字：输入框旁的单位、名称等静态说明
+> ✅ 混排富文本：`Run` 加粗设备号、`Italic` 提示、`Hyperlink` 链接的一段文字
+> ✅ 日志/报警行的程序化拼接：`Inlines.Add(new Run(...))` 逐条追加
+> ✅ 文本太长自动省略：`TextTrimming` 显示"…"配合 Tooltip 全文
+> ❌ 需要用户编辑文本（用「textbox-文本框」）
+> ❌ 需要选中复制长文本的详情展示（默认不可选中，用 `Label` 或自定义模板）
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
-> 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 1：**`Text` 与 `Inlines` 混用** → 后者覆盖前者，或编译警告。原因：两者是互斥的内容模式。解决：简单文本用 `Text`，复杂混排用 `Inlines`，不要同时用
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 2：**多行文本不换行被截断** → 长文字溢出面板。原因：未设置 `TextWrapping`。解决：`TextWrapping="Wrap"`（配合 `MaxWidth`）
+>
+> 坑 3：**超长文本撑爆 Grid 行** → 布局错乱。原因：TextBlock 默认不裁剪。解决：`TextTrimming="CharacterEllipsis"` + 固定宽度 + `ToolTip` 提示全文
+>
+> 坑 4：**高频刷新时整个状态行闪烁** → 视觉抖动。原因：整段重建。解决：只更新绑定属性（`INotifyPropertyChanged`），或仅替换变化的 `Run`
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - 纯展示文本优先 TextBlock：轻量、快、好绑定，是上位机界面默认文本方案
+> - 实时状态行用 `Text` + 绑定，让数据更新驱动文本变化，避免手写刷新
+> - 混排样式用 `Inlines`（Run/Bold），比拼字符串后整体着色更精确
+> - 固定宽度区域一律配 `TextTrimming`，防溢出并加 `ToolTip` 兜底
+> - 大量同类文本（如状态列）定义共享 `Style`（字体、颜色、字号），保持视觉统一
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"TextBlock 轻量文本"实现一个上位机中的小功能模块
+> **Lv.1 照猫画虎**：运行示例，把"温度状态"的 Text 改成绑定属性，程序里改值观察自动刷新
+> **Lv.2 小试牛刀**：给设备状态行加 `Run` 混排：设备号加粗、状态"运行"绿色、"停止"红色
+> **Lv.3 融会贯通**：用 `TextTrimming` + `ToolTip` 做一个固定宽度 200 的设备描述列，超长自动省略
+> **Lv.4 挑战**：实现一个"实时日志行"：`DispatcherTimer` 每 200ms 向 TextBlock.Inlines 追加一条 Run（含时间戳），超 100 条自动移除最旧的
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"TextBlock 轻量文本"
-> - → 后续必学：掌握"TextBlock 轻量文本"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：`{Binding}` 文本绑定见第 5 章「什么是数据绑定」；「contentcontrol-内容控件」理解内容模型
+> - → 后续必学：「label-标签」是需要"关联输入框/可选中"时的选择；「textbox-文本框」是可编辑文本
+> - ⇄ 关联概念：「button-按钮」「tooltip-工具提示」内部都用 TextBlock 呈现文字
+> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/api/system.windows.controls.textblock

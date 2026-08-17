@@ -7,22 +7,23 @@ parent: 4.6 日期与信息显示控件
 # Image 图片显示
 
 > [!plain] 白话理解
-> "Image 图片显示"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"Image 图片显示"是一个重要的知识点。控件是构建界面的积木块。了解每个控件的特点，你才能在上位机开发中快速搭出专业的界面。掌握了它，你就能更好地构建工业级上位机应用程序。
+> 设备照片、状态指示灯、工艺流程图——上位机界面离不开图片。`Image` 控件负责"把一张图放进界面"，`Source` 属性决定显示哪张图，`Stretch` 决定图片怎么适配容器。
+> 三个关键点：**Source 来源**可以是项目内相对路径、`pack://` 资源路径或绝对路径；**Stretch 模式**——`Uniform` 等比缩放不变形（最常用）、`Fill` 拉伸铺满可能变形、`None` 原尺寸；**代码换图**——运行时重新给 `Source` 赋 `BitmapImage` 即可（状态灯绿↔红切换就是典型场景）。
 
 > [!def] 官方定义
-> Image 图片显示是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> Image 是 WPF 中用于"显示图片"的元素，位于 `System.Windows.Controls` 命名空间。核心属性 `Source`（`ImageSource`，常用 `BitmapImage` 加载位图，也可用 DrawingImage/视觉对象）、`Stretch`（`None`/`Uniform`/`Fill`/`UniformToFill`，控制图片缩放方式）、`StretchDirection`（缩放方向）。`BitmapImage` 可通过文件路径、URI（`pack://application:,,,/`）或字节流构造，并支持缓存策略（`CacheOption`）与解码尺寸（`DecodePixelWidth`）。
+> 官方资料：https://learn.microsoft.com/zh-cn/dotnet/api/system.windows.controls.image
 
 > [!origin] 由来背景
-> Image 图片显示的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：控件是构建界面的积木块。了解每个控件的特点，你才能在上位机开发中快速搭出专业的界面。
+> 图形界面从诞生起就需要图片，但 WinForms 的 PictureBox 在缩放质量、资源加载、内存管理上都很粗糙：大图缩放卡顿、频繁换图内存暴涨、透明与动画支持弱。WPF 的 Image 建立在新一代影像管线之上：`Stretch` 提供高质量缩放（Uniform 等比、UniformToFill 裁切填充），`BitmapImage` 支持 URI、流、内存三种加载，配合 `CacheOption` 控制解码缓存、`DecodePixelWidth` 控制解码尺寸。上位机的"设备照片墙""状态灯切换""工艺图缩放"都能流畅完成，且换图时通过 `Freeze()` 还能进一步优化性能。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"Image 图片显示"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **Source 加载方式**：相对路径（`assets/a.png`）或 `pack://application:,,,/assets/a.png` 资源路径
+> - **Stretch 模式**：`Uniform` 等比（默认）、`Fill` 铺满变形、`UniformToFill` 裁切填满、`None` 原尺寸
+> - **代码换图**：`img.Source = new BitmapImage(new Uri(...))` 动态切换
+> - **DecodePixelWidth 控制内存**：大图先解码成小尺寸，避免加载原始分辨率占满内存
+> - **CacheOption 缓存**：同一 URI 复用缓存，重复显示不重复解码
+> - **Freeze 优化**：静态图片 `Freeze()` 后跨线程/高频渲染更安全高效
 
 > [!example] 完整示例
 > **设备照片与状态图演示：Source 多种来源、Stretch 缩放模式、代码动态切换图片：**
@@ -81,34 +82,37 @@ parent: 4.6 日期与信息显示控件
 > 
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ 设备照片/产品图：档案面板展示设备外观
+> ✅ 状态指示灯：绿色/红色小图随运行状态切换（示例场景）
+> ✅ 工艺流程图：大幅工艺图缩放查看
+> ✅ 背景图/Logo：品牌与界面装饰
+> ❌ 需要交互式绘制/标注（用「inkcanvas-手写画布」）
+> ❌ 需要矢量图标随主题换色（用 `Path`/`Geometry`，见「图标按钮实现」）
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
-> 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 1：**图片不显示（空白）** → Image 占位但无图。原因：路径错误或资源未包含。解决：确认文件 Build Action 为 `Resource` 且路径正确（`assets/device.png` 或 `pack://` 形式）
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 2：**大图加载卡顿/内存暴涨** → 打开一张 5000×4000 的设备照片界面卡死。原因：解码了原始分辨率。解决：`BitmapImage.DecodePixelWidth = 500`，让 WPF 只解码显示所需尺寸
+>
+> 坑 3：**图片变形** → 方形图被拉成长条。原因：`Stretch="Fill"`。解决：用 `Uniform`（等比）或 `UniformToFill`（裁切填满）
+>
+> 坑 4：**频繁换图句柄泄漏** → 内存只增不减。原因：旧 `BitmapImage` 未释放。解决：换图时先 `BitmapCacheOption.OnLoad` 并 `Freeze()`，旧引用置空让 GC 回收
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - 界面图片资源统一放 `assets/` 并设 Build Action=Resource，用 `pack://application:,,,/` 引用
+> - 大图（>1000px）一律设 `DecodePixelWidth`，内存占用可降 90%
+> - 固定尺寸容器用 `Uniform`，避免图片变形；`UniformToFill` 用于封面裁切
+> - 状态切换图提前加载并 `Freeze()` 复用，别每次 new BitmapImage
+> - 图片路径用常量/资源字典管理，别在代码里散落字符串
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"Image 图片显示"实现一个上位机中的小功能模块
+> **Lv.1 照猫画虎**：运行示例，点击"切换运行状态"观察绿色/红色状态灯切换
+> **Lv.2 小试牛刀**：把 `Stretch` 从 `Uniform` 改成 `Fill`，加载一张非等比图片观察变形效果
+> **Lv.3 融会贯通**：实现"设备图片查看器"：Image + 缩放按钮（`ScaleTransform`），支持放大/缩小/复位
+> **Lv.4 挑战**：实现"缩略图列表"：10 张大图用 `DecodePixelWidth=100` 生成缩略图网格，切换查看大图（验证内存优化效果）
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"Image 图片显示"
-> - → 后续必学：掌握"Image 图片显示"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：「button-按钮」了解按钮内嵌图片图标；「contentcontrol-内容控件」内容模型
+> - → 后续必学：「inkcanvas-手写画布」在图片上叠加批注；「mediaelement-媒体播放器」动态内容
+> - ⇄ 关联概念：「图标按钮实现」用 Path 矢量图标替代位图；「tooltip-工具提示」给图片加说明
+> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/api/system.windows.controls.image
