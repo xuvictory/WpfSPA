@@ -154,19 +154,22 @@ parent: 7.3 View 层
 > 坑 5：**异步命令忘了处理异常** → `async void` 里抛异常直接崩溃。用 `RelayCommand` 的 async 支持包 try/catch，或框架的 `AsyncRelayCommand`
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - **接口类型 + 只读属性**：ViewModel 以 `ICommand StartCommand { get; }` 暴露命令，构造时初始化一次；测试可注入 mock，UI 侧也不会误改命令实例
+> - **业务状态即命令状态**：让 `CanExecute` 直接读业务状态（如 `_anyRunning`），状态变化后在 setter/Execute 里 `RaiseCanExecuteChanged`——不要为按钮单独维护 `IsEnabled` 副本，两条数据源必不同步
+> - **一个动作一个命令，多入口共用**：同一"启动"语义只建一个命令，菜单/工具栏/快捷键/多台设备按钮都绑它，用 `CommandParameter` 区分对象，不为每个按钮 new 一个命令
+> - **CanExecute 只读状态、零副作用**：它会被 WPF 高频调用（焦点变化、输入、失活刷新），只做快速判断；耗时逻辑与业务副作用放 `Execute`
+> - **命令依赖构造注入**：串口、PLC 客户端等从构造函数注入，测试时替换为 mock（详见「数据访问repository-模式」）
+> - **异步不裸奔 `async void`**：异步命令用 `AsyncRelayCommand` 或自包 try/catch，把异常转成界面提示而不是直接崩溃
+> - **优先 `[RelayCommand]` 源生成器**：CommunityToolkit.Mvvm 自动生成 `StartCommand`/`CanStart` 等方法，样板更少、`CanExecuteChanged` 触发由框架接管（详见「communitytoolkitmvvm推荐」）
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"Command 绑定"实现一个上位机中的小功能模块
+> **Lv.1 照猫画虎**：运行示例，点"启动 1 号机组"观察状态文本变化、急停按钮从置灰变可用；点"急停"观察按钮再次置灰，理解 `CanExecute` 与 `RaiseCanExecuteChanged` 的联动
+> **Lv.2 小试牛刀**：新增"停止 1 号机组"按钮，绑定新的 `StopCommand` 并用 `CommandParameter="1号机组"` 传参；再让停止按钮的 `CanExecute` 依赖该机组确实在运行（维护 `_runningUnit` 字段）
+> **Lv.3 融会贯通**：做一个设备列表（`ListBox` + `SelectedItem` 绑定），"删除选中设备"按钮 `CommandParameter="{Binding SelectedItem}"`、`CanExecute` 依赖 `SelectedItem != null`，未选中时按钮自动置灰
+> **Lv.4 挑战自我**：为命令写单元测试（xUnit/NUnit）：断言 `StartCommand.CanExecute(null)` 初始为真、执行后 `EStopCommand.CanExecute(null)` 变真；把命令依赖（如串口接口 `ISerialPort`）替换为 mock，验证 Execute 调用了正确的下发方法
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"Command 绑定"
-> - → 后续必学：掌握"Command 绑定"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：[icommand-实现relaycommand-系列](./icommand-实现relaycommand-系列.md)（ICommand 三成员与 RelayCommand 手写实现）；[datacontext-绑定到-viewmodel](./datacontext-绑定到-viewmodel.md)（绑定语法与 DataContext 继承机制）
+> - → 后续必学：[viewmodel-间的通信](./viewmodel-间的通信.md)（命令之间的协作与状态通知）；[viewmodel-生命周期](./viewmodel-生命周期.md)（命令与资源何时创建、释放）
+> - ⇄ 关联概念：[数据验证逻辑](./数据验证逻辑.md)（`CanExecute` 与验证规则双保险，未通过验证即不可执行）；[纯-xaml-展示](./纯-xaml-展示.md)（按钮状态完全由命令驱动，XAML 不再写 Click 事件）
+> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/advanced/commanding-overview （CommandParameter 与输入绑定小节）

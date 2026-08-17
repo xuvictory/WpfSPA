@@ -7,22 +7,30 @@ parent: 7.5 主流 MVVM 框架
 # MVVM Light Toolkit
 
 > [!plain] 白话理解
-> "MVVM Light Toolkit"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"MVVM Light Toolkit"是一个重要的知识点。MVVM 是 WPF 开发的黄金标准。学好 MVVM，你的代码将变得清晰、可测试、可维护。掌握了它，你就能更好地构建工业级上位机应用程序。
+> 手写 `INotifyPropertyChanged` 和 `ICommand` 后你会发现：**每个 ViewModel 都在重复同样的代码**——`Set<T>` 通知、`RelayCommand`、消息收发。与其每个项目抄一遍，不如把它打包成一个小工具箱：这就是 MVVM Light。
+> 类比车间：你不必每次都用铁丝现编一把螺丝刀，工具箱里有现成的，拿来就用。MVVM Light 就是 WPF 开发者的"随身工具箱"：`ViewModelBase`（通知基类）、`RelayCommand`（命令）、`Messenger`（消息广播）等开箱即用。
+> 它由 Laurent Bugnion 开源维护（非微软官方），一度是 .NET 社区使用最广的轻量 MVVM 库；如今新项目更推荐 CommunityToolkit.Mvvm（见「communitytoolkitmvvm推荐」），但它的"基类 + 命令 + Messenger"思想至今仍是理解 MVVM 框架的钥匙。
 
 > [!def] 官方定义
-> MVVM Light Toolkit是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> MVVM Light Toolkit 是 Laurent Bugnion（微软 MVP）于 2009 年发布的开源 MVVM 辅助库（**非微软官方产品**），通过 NuGet 包 `MvvmLight` / `MvvmLightLibs` 分发。核心组件：
+> - `ViewModelBase`：实现 `INotifyPropertyChanged`，提供 `Set<T>(ref T field, T value, [CallerMemberName])` 通知方法
+> - `RelayCommand` / `RelayCommand<T>`：`ICommand` 标准实现（`GalaSoft.MvvmLight.CommandWpf` 命名空间）
+> - `Messenger` / `Messenger.Default`：静态消息总线，`Send`/`Register` 广播与接收
+> - `ObservableObject`：无通知基类（供纯数据对象使用）
+> - `ViewModelLocator`：简单服务定位器，用于 View 与 ViewModel 的挂接
+> 官方文档：https://github.com/lbugnion/mvvmlight （源码与归档文档）
 
 > [!origin] 由来背景
-> MVVM Light Toolkit的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：MVVM 是 WPF 开发的黄金标准。学好 MVVM，你的代码将变得清晰、可测试、可维护。
+> MVVM Light 诞生于 WPF 早期（2008-2009 年），当时实践 MVVM 必须手写大量重复代码：`INotifyPropertyChanged` 基类、`ICommand` 实现、跨 VM 通信……Laurent Bugnion 在开发 Silverlight/WPF 应用时把这些通用部分抽出来开源，很快成为 .NET 生态最流行的 MVVM 库，2011 年左右被微软官方文档与 MVA 课程大量引用。
+> 它的定位一直是"Light"：不做导航、不做容器、不强制架构，只解决 ViewModel 层的三个痛点——属性通知、命令、消息。2017 年起项目进入维护模式，官方推荐新项目迁移到 CommunityToolkit.Mvvm；但它的类名与用法（`Set<T>`、`Messenger.Default.Send`）仍是许多老上位机项目的基础设施。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"MVVM Light Toolkit"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **三个核心件**：`ViewModelBase`（通知基类）、`RelayCommand`（命令）、`Messenger`（消息），90% 的日常只用这三个
+> - **`Set<T>` 免写样板**：`Set(ref _count, value, nameof(Count))` 一行完成"判同→赋值→通知"，返回 bool 表示是否真的变了
+> - **Messenger 是静态全局**：`Messenger.Default.Send(...)` 随处可发、`Register` 接收；用**强类型消息类**区分不同消息，而不是裸字符串
+> - **`RelayCommand<T>` 处理带参**：`CommandParameter` 从 XAML 传入，泛型版本自动转型（示例 `+10` 按钮演示）
+> - **ViewModelLocator 负责装配**：XAML 里 `DataContext="{Binding Source={StaticResource Locator}, Path=Main}"`，VM 由 Locator 统一创建（可配合 DI，见「di-在-mvvm-中的应用」）
+> - **注意：库已进入维护模式**：新项目请优先 CommunityToolkit.Mvvm（见「communitytoolkitmvvm推荐」）；老代码迁移的主要成本是命名空间与 `[ObservableProperty]` 语法
 
 > [!example] 完整示例
 > **MVVM Light 风格演示：ViewModelBase（简化版）提供 Set 通知方法，RelayCommand 支持 CanExecute，操作日志用简化 Messenger 广播到状态栏（生产环境请引入 MvvmLight 包）：**
@@ -170,34 +178,40 @@ parent: 7.5 主流 MVVM 框架
 > 
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ 存量项目的维护与迁移：老上位机代码里随处可见 `ViewModelBase`/`Messenger.Default`，理解它才能维护
+> ✅ 只需通知基类 + 命令 + 消息的轻量应用：不想引入 DI 容器/导航框架
+> ✅ 学习 MVVM 框架原理的入门读物：类少、源码简单、一眼看穿
+> ❌ 新项目从零开始：官方已推荐 CommunityToolkit.Mvvm，源生成器、弱引用消息更完善（见「communitytoolkitmvvm推荐」）
+> ❌ 需要导航/模块化/容器集成的企业级应用：Prism 更合适（见「prism-企业级框架」）
+> ❌ 需要响应式编程（Rx）的场景：ReactiveUI 是专门方案（见「reactiveui-响应式框架」）
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
-> 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 1：**`Messenger.Default` 订阅不退订 → 内存泄漏** → 静态事件永远强引用 VM。在 View 的 `Unloaded`/VM 的 `Deactivate` 里 `Unregister`（见「viewmodel-生命周期」）
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 2：**误以为 MVVM Light 是微软官方框架** → 它是第三方开源库。资料中"微软推荐"指它被官方教程引用过，并非微软出品；官方现代推荐是 CommunityToolkit.Mvvm
+>
+> 坑 3：**`RelayCommand<T>` 与无参 `RelayCommand` 混用** → 绑定的命令与 `CommandParameter` 不匹配时 `Execute((T)parameter)` 转型失败抛异常。带参就统一用泛型版本
+>
+> 坑 4：**`Set<T>` 忘传属性名** → 无 `[CallerMemberName]` 的老版本里手写字符串，属性改名后通知静默失效。始终用 `nameof()`
+>
+> 坑 5：**新旧版本 API 混用** → `MvvmLightLibs`（.NET Framework）与 `MvvmLight`（.NET Core）命名空间/程序集有差异，升级大版本时注意 breaking changes
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - **新项目默认不选它**：除非维护老代码，新开发用 CommunityToolkit.Mvvm（微软官方维护、源生成器、弱引用消息），迁移指南见官方文档
+> - **消息用强类型**：定义 `ProductCountChangedMessage` 类，而不是 `Messenger.Default.Send("count++")` 裸字符串——可读、可重构、可单测
+> - **订阅与退订成对**：构造里 `Register`，`Deactivate`/`Unloaded` 里 `Unregister`（见「viewmodel-生命周期」）
+> - **ViewModelLocator 只用做装配**：定位器里 new VM 并注入依赖，不要在定位器里写业务逻辑
+> - **利用 `Set<T>` 的 bool 返回值**：`if (Set(ref _count, value, nameof(Count))) { /* 派生属性通知 */ }`——只在真正变化时联动，避免事件风暴
+> - **迁移路线清晰化**：老代码迁移时按 `ViewModelBase`→`ObservableObject`、`RelayCommand`→`[RelayCommand]`、`Messenger`→`WeakReferenceMessenger` 三步走，逐步验证
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"MVVM Light Toolkit"实现一个上位机中的小功能模块
+> **Lv.1 复现验证**：运行示例，点"+1"看计数递增与状态栏"计数 +1"同步；点"+10"看参数如何经 `CommandParameter` 传入；计数为 0 时"清零"按钮置灰、计数 > 0 时点亮
+> **Lv.2 拓展演练**：给 `Messenger` 增加第二类强类型消息（如"设备温度报警" `AlarmMessage`），由按钮触发发送，状态栏同时显示计数与报警两类消息——验证消息类型隔离
+> **Lv.3 综合实战**：用 MVVM Light 风格改造一个真实小页面：`ViewModelBase` 派生"配方参数页"VM（配方号、下发按钮带 `CanExecute`），消息广播"配方已下发"，另一页面接收并显示
+> **Lv.4 进阶挑战**：对比迁移：把同一 ViewModel 改写成 CommunityToolkit.Mvvm 的 `[ObservableProperty]` + `[RelayCommand]` + `WeakReferenceMessenger`，对照两版样板代码行数差异，写一篇迁移笔记
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"MVVM Light Toolkit"
-> - → 后续必学：掌握"MVVM Light Toolkit"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：[icommand-实现relaycommand-系列](./icommand-实现relaycommand-系列.md)（手写命令是理解 `RelayCommand` 的基石）；[inotifypropertychanged-实现](./inotifypropertychanged-实现.md)（`Set<T>` 就是通知样板的重构）
+> - → 后续必学：[communitytoolkitmvvm推荐](./communitytoolkitmvvm推荐.md)（现代替代方案与迁移方向）；[viewmodel-间的通信](./viewmodel-间的通信.md)（Messenger 与事件聚合器是同一思想的两种实现）
+> - ⇄ 关联概念：[什么是-mvvm](./什么是-mvvm.md)（框架解决的是 MVVM 的哪部分问题）；[prism-企业级框架](./prism-企业级框架.md)（重量级框架对比）
+> - 📖 官方文档：https://github.com/lbugnion/mvvmlight （源码与归档文档）
