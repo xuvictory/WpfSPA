@@ -12,6 +12,17 @@ parent: 文件与 IO 操作
 > [!def] 官方定义
 > `System.IO.FileStream` 提供对文件的**流式**访问，支持同步和异步操作。可以精确控制读写位置（`Seek`）、缓冲区大小、文件打开方式（`FileMode`）、访问方式（`FileAccess`）和共享方式（`FileShare`）。
 
+> [!origin] 由来背景
+> 早年内存还很金贵，几百 MB 的日志文件用 `File.ReadAllBytes` 一次读进内存会直接吃光可用内存。`FileStream` 是 .NET 从 Windows API 继承下来的"流式"访问模型：底层每次只向操作系统要一小块缓冲，随读随丢，无论文件多大，内存占用都恒定。上位机里传感器日志一天能攒出上百 MB，用 `FileStream` 边写边落盘、按时间戳随机回读某一段，正是它存在的意义。
+
+> [!essentials] 核心要点
+> - `FileMode`：`Create`（新建/覆盖）、`Open`（必须存在）、`Append`（追加）、`CreateNew`（存在即报错）
+> - `FileAccess`：`Read` / `Write` / `ReadWrite`
+> - `FileShare`：`None`（独占）、`Read`（别人可读）、`ReadWrite`（别人可读写）
+> - `Seek(offset, SeekOrigin)` 与 `Position` 属性控制随机访问位置
+> - 读取必须用循环：`Read` 返回实际读取字节数，可能小于 buffer 长度
+> - 大文件与 UI 场景用 `ReadAsync`/`WriteAsync` + `FileOptions.Asynchronous`
+
 > [!example] 完整示例
 > ```csharp
 > // ====== 写入二进制数据 ======
@@ -44,6 +55,12 @@ parent: 文件与 IO 操作
 > [!scene] 适用场景
 > ✅ 大文件处理、二进制数据、协议日志
 > ✅ 需要随机访问
+
+> [!pitfall] 常见踩坑
+> 坑 1：**一次 `Read` 就当读全** → `Read` 返回的实际字节数可能小于 buffer 长度，直接把 buffer 当完整数据用会丢数据。循环读直到返回 0。
+> 坑 2：**忘 Dispose 导致文件被锁** → 句柄不释放，别的进程删不掉、改不了。用 `using` 或 try-finally 保证释放。
+> 坑 3：**`FileMode.Create` 误用覆盖数据** → 已有日志/结果被清空且不可恢复。追加用 `Append`，程序数据用 `Open` 先确认存在。
+> 坑 4：**UI 线程同步读大文件** → 界面卡死数秒。用 `ReadAsync`/`WriteAsync`。
 
 > [!best] 最佳实践
 > - `using` 确保释放

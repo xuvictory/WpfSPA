@@ -12,6 +12,9 @@ parent: 异步编程
 > [!def] 官方定义
 > `Task.Delay(int millisecondsDelay)` 创建一个在指定毫秒后完成的 `Task`。它不会阻塞调用线程，内部使用定时器（`System.Threading.Timer`）实现。重载支持 `CancellationToken`（可中途取消等待）和 `TimeSpan`。
 
+> [!origin] 由来背景
+> 早期 C# 程序想"等一会儿"只有两条路：`Thread.Sleep` 阻塞当前线程（WPF 里一睡 UI 就冻结），或 `System.Threading.Timer` 定时回调（却没法表达"等 N 毫秒后继续往下走"的线性流程）。.NET 4.5 随 async/await 带来的 `Task.Delay` 完美补位：内部用系统定时器实现，await 期间不占任何线程，让"异步流程中的等待"终于能写成一行。上位机里轮询、重试、超时三种最常见的时序需求，都建立在 `Task.Delay` 之上。
+
 > [!essentials] 核心要点
 > - `await Task.Delay(1000)`：异步等 1 秒
 > - `Task.Delay(0)` ≈ `Task.CompletedTask`（不实际等待）

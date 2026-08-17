@@ -15,6 +15,17 @@ parent: 异步编程
 > - 编译器将 `async` 方法转换为状态机
 > - `async void` 仅用于事件处理器，其他一律 `async Task`/`async Task<T>`
 
+> [!origin] 由来背景
+> 在 async/await 出现之前（.NET 4.0 之前），.NET 的异步编程靠 APM 模型的 `BeginXxx`/`EndXxx` 回调和事件模型，代码被回调拆得七零八落——"连接成功后读取、读取成功后解析"，每一步都要新开一个回调方法，被戏称为"回调地狱"，异常还容易漏。C# 5.0（.NET 4.5）引入 `async`/`await`，编译器把方法自动重写为状态机，让异步代码长得像同步代码。这对上位机意义巨大：串口、TCP、PLC 通信全是异步 IO，过去要在每个回调里"续写"逻辑，现在一行 `await` 就接上，UI 线程再也不被 `Thread.Sleep` 卡死。
+
+> [!essentials] 核心要点
+> - `async` 只声明"方法内可用 await"，不改变方法先同步执行的事实——第一个 `await` 之前的方法体仍是同步跑的
+> - `await` 等待"可等待对象"：`Task`、`Task<T>`、`ValueTask`、`IAsyncEnumerable<T>` 等
+> - 遇到未完成的 `await` 立即把控制权交还调用方，当前线程不阻塞、可继续干别的
+> - `await` 完成后默认回到原同步上下文（SynchronizationContext），WPF 里就是 UI 线程，可直接更新控件
+> - 库/服务层代码加 `ConfigureAwait(false)`，避免无谓的上下文切换
+> - 异常与同步代码一致：await 的 Task 抛异常就在 await 处捕获，`try-catch` 照常可用
+
 > [!example] 完整示例
 > ```csharp
 > // ====== async/await 基本模式 ======

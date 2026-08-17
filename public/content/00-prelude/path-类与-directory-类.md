@@ -13,6 +13,17 @@ parent: 文件与 IO 操作
 > - `System.IO.Path`：提供处理文件路径字符串的静态方法（跨平台路径分隔符兼容）
 > - `System.IO.Directory`：提供操作目录的静态方法
 
+> [!origin] 由来背景
+> 早期写路径全凭字符串拼接：`folder + "\\" + name`，Windows 用 `\`、Linux 用 `/`，目录结尾有没有分隔符、路径里有没有非法字符，全靠程序员自觉，坑不胜坑。`Path` 类把所有路径处理的脏活揽了下来：自动补分隔符、跨平台兼容、提取扩展名、判断绝对路径。`Directory` 类则把"文件夹"这个抽象补全。两者配合，上位机的"日志按日期建目录、定期清理旧日志"才能写得干净利落。
+
+> [!essentials] 核心要点
+> - `Path.Combine(a, b, ...)`：安全拼接，自动处理分隔符（替代 `+ "\\"`）
+> - `Path.GetExtension` / `GetFileNameWithoutExtension` / `GetDirectoryName`：路径三段拆分
+> - `Path.ChangeExtension`：换扩展名；`Path.GetTempPath`：系统临时目录
+> - `Directory.Exists` / `CreateDirectory`：判断存在、创建目录（多级目录自动递归创建）
+> - `Directory.GetFiles(dir, pattern)`：按通配符列举文件；`GetDirectories` 列举子目录
+> - `Directory.Delete(dir, recursive: true)`：递归删除整棵目录树
+
 > [!example] 完整示例
 > ```csharp
 > // ====== Path 工具 ======
@@ -49,6 +60,14 @@ parent: 文件与 IO 操作
 
 > [!scene] 适用场景
 > ✅ 路径拼接、文件遍历、文件夹管理
+> ✅ 日志目录按日期规划、旧日志自动清理
+> ❌ 大批量文件递归处理 → 用 `Directory.EnumerateFiles` 惰性遍历，别一次 `GetFiles` 全载入内存
+
+> [!pitfall] 常见踩坑
+> 坑 1：**路径拼接用 `+`** → 漏一个 `\` 就路径失效。一律 `Path.Combine`。
+> 坑 2：**`GetFiles` 全量载入大目录** → 上万文件吃光内存。用 `Directory.EnumerateFiles` 惰性遍历。
+> 坑 3：**`Directory.Delete` 删非空目录报错** → 需要 `recursive: true` 参数。
+> 坑 4：**相对路径依赖当前工作目录** → 以服务方式启动时工作目录会变，找不到文件。用 `AppContext.BaseDirectory` 定位程序所在目录。
 
 > [!best] 最佳实践
 > - 路径拼接用 `Path.Combine`（不用 `+ "\\" +`）

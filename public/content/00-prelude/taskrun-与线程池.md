@@ -12,6 +12,9 @@ parent: 异步编程
 > [!def] 官方定义
 > `Task.Run(Action)` 将任务排入线程池（ThreadPool），在线程池线程上异步执行。返回 `Task` 或 `Task<TResult>`，可被 await。适用于将 CPU 密集型工作移出 UI 线程，避免界面卡顿。内部使用 `TaskScheduler.Default`。
 
+> [!origin] 由来背景
+> 早期 WPF 程序遇到耗时计算，最朴素的写法是 `new Thread(() => { ... }).Start()` 手工起线程，但线程创建开销大、数量不可控，开多了系统调度反而变慢，还要自己处理"算完了怎么通知 UI"。.NET 的线程池（ThreadPool）为"短小的工作项"提供了复用机制，但直接 `ThreadPool.QueueUserWorkItem` 拿不到结果、异常也不好处理。`Task.Run`（.NET 4.5 起）把两者结合：把工作项排入线程池，同时返回可 await 的 `Task<T>`，结果、异常、取消全部走统一的任务模型。上位机里的批量数据转换、Modbus CRC 校验这类 CPU 活，交给它正合适。
+
 > [!essentials] 核心要点
 > - `Task.Run(() => DoWork())` 跑在线程池线程
 > - 返回 `Task<T>`，用 `await` 取结果回到 UI 线程

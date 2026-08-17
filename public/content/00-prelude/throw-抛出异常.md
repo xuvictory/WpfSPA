@@ -64,6 +64,11 @@ parent: 异常处理
 > ✅ 不支持的操作
 > ❌ 可预期的业务流程控制
 
+> [!pitfall] 常见踩坑
+> 坑 1：**`throw ex;` 重置堆栈** → catch 块里 `throw ex;` 会把异常堆栈起点改成 catch 所在行，原始抛出处丢失，故障排查无从下手。一律用 `throw;` 保留原始堆栈。
+> 坑 2：**抛出笼统的 `new Exception(...)`** → 上层只能 catch 到 Exception 再解析字符串，无法按类型精确处理。抛具体异常（`ArgumentOutOfRangeException`、`InvalidOperationException` 或自定义异常）。
+> 坑 3：**把 throw 当流程控制** → 用异常模拟 if-else（如"读到 -1 就抛异常"）既慢又难读，还会干扰调试器。可预期的业务分支用返回值、枚举或结果对象。
+
 > [!best] 最佳实践
 > - 抛具体异常，不是 `Exception`
 > - 异常消息包含关键上下文信息

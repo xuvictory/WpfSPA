@@ -12,6 +12,9 @@ parent: 异步编程
 > [!def] 官方定义
 > `System.Threading.Tasks.Task` 和 `Task<T>` 是 .NET 任务并行库（TPL）的核心类，表示一个异步操作。Task 代表无返回值的操作，`Task<T>` 代表返回 `T` 的操作。状态：`Running`/`Completed`/`Faulted`/`Canceled`。
 
+> [!origin] 由来背景
+> 在 .NET 4.0 之前，.NET 的多线程编程以 `Thread` 和 `ThreadPool.QueueUserWorkItem` 为主：手工 `new Thread` 创建开销大、数量不可控、生命周期难管理；`ThreadPool` 虽复用线程，却又拿不到结果、异常也无处安放。微软在 .NET 4.0 发布任务并行库（TPL），`Task` 由此诞生——它把"要执行的工作"抽象成可组合、可等待、可取消的对象，由线程池统一调度。上位机里"同时轮询 3 台 PLC"过去要自己写线程集合、自己处理锁，现在一个 `Task.WhenAll` 就搞定。
+
 > [!essentials] 核心要点
 > - 创建：`Task.Run(() => { })`、`new Task(...)`、`Task.FromResult(value)`
 > - `task.Status`：状态
@@ -63,7 +66,17 @@ parent: 异步编程
 > ```
 
 > [!scene] 适用场景
-> ✅ 所有异步操作
+> ✅ 所有异步操作（设备轮询、通信收发、文件读写）
+> ✅ 多个独立任务并行执行（`Task.WhenAll`）
+> ✅ 取最快响应/超时控制（`Task.WhenAny`）
+> ❌ 大量 CPU 密集计算 → 用 `Task.Run` 交线程池执行
+> ❌ 长时间阻塞的任务 → 单独线程，别占线程池
+
+> [!pitfall] 常见踩坑
+> 坑 1：**UI 线程调用 `task.Wait()` / `task.Result`** → 任务内部若又回到 UI 线程等待（未 `ConfigureAwait(false)`），形成经典死锁。UI 线程一律用 `await`。
+> 坑 2：**任务抛异常却不 await** → 成为"未观察异常"静默丢失（只触发 `UnobservedTaskException`）。务必 `await`，或在任务内自行 try-catch。
+> 坑 3：**`Task.Run` 包裹 IO 操作** → 无谓占用线程池线程，IO 应直接用 `XxxAsync` 原生异步方法。
+> 坑 4：**把任务对象当"线程"反复重跑** → `Task` 只能执行一次，重跑需重新创建。
 
 > [!best] 最佳实践
 > - `Task.Run` 用于 CPU 密集型

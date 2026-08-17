@@ -14,6 +14,9 @@ parent: 委托与事件
 > - `Func<TResult>`：有返回值的委托（0~16个参数+1个返回值），`Func<T1,T2,...,TResult>`（最后一个类型参数总是返回类型）
 > - 都是 `System` 命名空间内置泛型委托，不需要自定义 `delegate`
 
+> [!origin] 由来背景
+> 早期 C# 里"把一段行为传给方法"必须先声明委托类型：`public delegate int MyCalc(int a, int b);`——用一次声明一次，代码里到处是委托定义。.NET 3.5 引入 LINQ 时，微软发现到处都需要"带 0~N 个参数的方法引用"，于是内置了 `Action`（无返回值）和 `Func`（有返回值）两组泛型委托，配合 Lambda 表达式让"行为即数据"成为日常。上位机里传感器校准函数、温度格式化、告警回调，都用它们注入策略，不再需要自定义委托。
+
 > [!essentials] 核心要点
 > - `Action<string> log = msg => Console.WriteLine(msg);`
 > - `Func<int, int, int> add = (a, b) => a + b;`
@@ -62,6 +65,12 @@ parent: 委托与事件
 > ✅ 回调、转换器、事件处理器
 > ✅ LINQ（内容全是 `Func`）
 > ✅ 配置对象的行为（而非继承）
+
+> [!pitfall] 常见踩坑
+> 坑 1：**`Func` 的类型参数位置搞反** → 返回值永远在最后一个类型参数：`Func<int, string>` 是"入 int 出 string"，`Func<int, int, string>` 才是"入两个 int 出 string"。
+> 坑 2：**Lambda 捕获循环变量** → `for` 循环里 `list.Add(() => Use(i))` 捕获的是同一个 `i`，循环结束后所有委托看到的都是最终值。需要局部副本 `int j = i;`（foreach 在 C# 5+ 已安全）。
+> 坑 3：**委托长期捕获大对象** → 闭包会强引用捕获的所有变量，导致大对象无法被 GC。用完及时将委托置空或避免捕获。
+> 坑 4：**在 `Action` 里做同步阻塞** → 回调里别放 `Thread.Sleep`/同步 IO，会卡住调用方线程。耗时工作交给 `Task.Run`。
 
 > [!best] 最佳实践
 > - 优先 `Action`/`Func`，不要再自定义 `delegate`
