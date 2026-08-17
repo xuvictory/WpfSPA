@@ -7,22 +7,20 @@ parent: 12.5 配置文件管理
 # 传统 App.config 方式
 
 > [!plain] 白话理解
-> "传统 App.config 方式"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"传统 App.config 方式"是一个重要的知识点。当项目从几百行代码增长到几万行、几十万行时，没有架构的代码会变成一团乱麻。掌握了它，你就能更好地构建工业级上位机应用程序。
+> `App.config` 是 WPF 的**"老式配置文件"**：把串口、IP、阈值写进 XML 的 `<appSettings>` 里，代码用 `ConfigurationManager.AppSettings["ComPort"]` 读出来。老项目都在用它，维护老上位机时你得会读会改；但新项目别再学它了——写起来繁琐、不能强类型绑定、`Settings.settings` 那套还容易踩坑。理解它是为了"接住历史代码"。
 
 > [!def] 官方定义
-> 传统 App.config 方式是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> `App.config` 是 .NET Framework 时代的标准配置文件，编译后输出为 `<程序名>.exe.config`，由 **System.Configuration** 体系（`ConfigurationManager`，`System.Configuration.ConfigurationManager` NuGet 包）读取。配置项写于 `<appSettings>`（键值对）与 `<connectionStrings>`（连接字符串）等节，运行时可读可写：https://learn.microsoft.com/zh-cn/dotnet/framework/configure-apps/ 。WPF 项目还常配合 `Settings.settings`（强类型设置，命名空间 `Properties.Settings`）使用。它是 .NET Framework 官方方案；.NET Core/.NET 5+ 中 `ConfigurationManager` 包仍可用，但官方推荐新项目改用 `appsettings.json`（见 `appsettingsjson推荐方案`）。
 
 > [!origin] 由来背景
-> 传统 App.config 方式的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：当项目从几百行代码增长到几万行、几十万行时，没有架构的代码会变成一团乱麻。
+> `App.config` 源自 .NET Framework 1.0（2002 年）——当时 XML 是微软配置的事实标准（Web.config、machine.config 一脉相承），配置以"节（section）"为单元由 `ConfigurationManager` 统一管理，配合 `Settings.settings` 在 VS 里可视化编辑。二十年间积累了海量存量代码。2016 年 .NET Core 引入 JSON 配置体系后，`App.config` 逐步退居"兼容模式"；但在 WPF 老项目、需要 `ConfigurationManager` 兼容层、某些第三方库（如老版日志框架）的场合依然活跃。上位机行业大量老设备软件仍基于 .NET Framework + App.config，因此"会看会改"是必须技能。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"传统 App.config 方式"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **核心 API**：`ConfigurationManager.AppSettings["Key"]`（读）、`.AppSettings["Key"] = value` + `.Save()`（写运行时配置）
+> - **连接字符串**：`ConfigurationManager.ConnectionStrings["LocalDb"].ConnectionString`（`<connectionStrings>` 节）
+> - **节类型**：`<appSettings>` 键值对、`<connectionStrings>`、自定义 `configSections`（复杂配置）
+> - **编译产物**：`App.config` → 发布时自动改名 `<程序名>.exe.config` 复制到输出目录
+> - **新老对比**：无强类型绑定、JSON 更友好 → 新项目用 `appsettingsjson推荐方案`，老项目维护用本篇
 
 > [!example] 完整示例
 > **App.config 读取演示：ConfigurationManager 读取 appSettings 里的串口参数（波特率、数据位），并显示在界面上：**
@@ -86,34 +84,35 @@ parent: 12.5 配置文件管理
 > 
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ 维护 .NET Framework 老上位机：存量代码用 `App.config` 存串口、连接字符串
+> ✅ 需要 `Settings.settings` 强类型设置的旧项目：VS 可视化编辑
+> ✅ 第三方库要求 `ConfigurationManager`（老版日志/缓存库）：App.config 是其默认读取源
+> ✅ 快速读写"少量键值"的小程序：`AppSettings["Key"]` 简单直接
+> ❌ 新项目首选：JSON + 强类型绑定更优，见 `appsettingsjson推荐方案`
+> ❌ 复杂层级配置：XML 写嵌套配置繁琐易错，JSON 更适合
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
+> 坑 1：**改 `App.config` 却看不到效果** → 现象：改了配置重启没变化 → 原因：发布目录里改的是 `.exe.config`，VS 里改的是项目 `App.config`，二者不同步 → 解决：发布后改输出目录的 `<程序名>.exe.config`；源码里改 `App.config` 后重新生成
 > 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 2：**`AppSettings` 键不存在返回 null** → 现象：`Convert.ToInt32(AppSettings["BaudRate"])` 抛空引用 → 原因：键拼错或没配 → 解决：读取后判空/`TryParse`，配置缺失给默认值并打日志（见 `serilog-结构化日志`）
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 3：**运行时写配置被权限拒绝** → 现象：`Save()` 抛 `ConfigurationErrorsException` → 原因：安装目录只读（Program Files）或无写权限 → 解决：可写配置放 `%AppData%`/程序数据目录，`App.config` 保持只读部署
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - 读取统一封装：写 `ConfigHelper.GetSetting(key, default)`，键名常量集中，避免魔法字符串
+> - 键值集中规划：命名 `Device:Com`、`Alarm:Threshold`（冒号分层），与 JSON 风格一致便于日后迁移
+> - 值类型显式转换：`TryParse` + 默认值，别裸用 `Convert`
+> - 敏感信息不进配置：连接字符串含密码时用 `ProtectedData`/连接字符串加密（见 `配置加密与运行时修改`）
+> - 新老项目迁移：老代码在接入 `appsettingsjson推荐方案` 后可保留 `App.config` 作兼容层，逐步过渡
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"传统 App.config 方式"实现一个上位机中的小功能模块
+> **Lv.1 照猫画虎**：运行示例代码，修改 `<appSettings>` 里串口号并重启，观察界面显示新值
+> **Lv.2 小试牛刀**：在 `<appSettings>` 新增"报警阈值"键并读取显示，验证 `GetSetting` 封装可用
+> **Lv.3 融会贯通**：把示例改成读取 `<connectionStrings>` 里的数据库连接串并显示服务器名，理解两类配置节的差异
+> **Lv.4 拆层挑战**：用 `appsettingsjson推荐方案` 重写示例的配置读取（保留同样的键名语义），对比两种写法的差异并总结迁移步骤
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"传统 App.config 方式"
-> - → 后续必学：掌握"传统 App.config 方式"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：`架构设计重要性与类型`（配置属基础架构）、`配置加密与运行时修改`
+> - → 后续必学：`appsettingsjson推荐方案`（新方案）、`serilog-结构化日志`（配置加载日志）
+> - ⇄ 关联概念：`单例模式`（配置中心单例）、12.7 `clickonce-部署与更新`（部署后配置路径变化）
+> - 📖 官方文档：.NET Framework 配置：https://learn.microsoft.com/zh-cn/dotnet/framework/configure-apps/ ；ConfigurationManager：https://learn.microsoft.com/zh-cn/dotnet/api/system.configuration.configurationmanager

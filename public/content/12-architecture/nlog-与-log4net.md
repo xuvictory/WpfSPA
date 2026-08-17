@@ -7,22 +7,20 @@ parent: 12.6 日志系统
 # NLog 与 Log4Net
 
 > [!plain] 白话理解
-> "NLog 与 Log4Net"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"NLog 与 Log4Net"是一个重要的知识点。当项目从几百行代码增长到几万行、几十万行时，没有架构的代码会变成一团乱麻。掌握了它，你就能更好地构建工业级上位机应用程序。
+> NLog 和 log4net 是 .NET 界的**"两个老牌日志仓库"**：老项目（尤其 .NET Framework 上位机）里遍地都是。它们都支持"级别 + 输出目标（文件/控制台/数据库）+ 格式"三段式配置。NLog 灵活现代、上手快；log4net 稳定老旧、Java log4j 血统。你维护老上位机时大概率碰到其中一个——会配置会迁移即可，新项目优先 Serilog（见 `serilog-结构化日志`）。
 
 > [!def] 官方定义
-> NLog 与 Log4Net是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> **NLog** 是开源 .NET 日志库（NuGet：`NLog`、`NLog.Extensions.Logging`），以高性能、灵活路由（rules）、自动归档著称，支持 `LogManager.GetCurrentClassLogger()` 与结构化日志：https://nlog-project.org/ 。**log4net** 是 Apache Log4j 的 .NET 移植版（NuGet：`log4net`），采用"Logger + Appender + Layout"三件套，通过 `log4net.Config.XmlConfigurator.Configure()` 从配置文件（`log4net` 节）初始化：https://logging.apache.org/log4net/ 。两者都可接入 `Microsoft.Extensions.Logging` 桥接包。它们属第三方开源库，非微软官方组件。
 
 > [!origin] 由来背景
-> NLog 与 Log4Net的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：当项目从几百行代码增长到几万行、几十万行时，没有架构的代码会变成一团乱麻。
+> 日志框架的现代形态始于 Java 的 **Log4j 1.x（2001 年，Ceki Gülcü 发起）**——"级别/Appender/Layout"三要素与 XML 配置由此成为业界标准。**log4net** 于 2004 年移植到 .NET，是 .NET 最早成熟的日志库；**NLog** 2004 年由 Jarek Kowalski 创建，目标更轻量高效，支持 C# 内联配置与文件规则。两者称雄 .NET Framework 十余年，大量工业上位机、传统 Web 项目使用至今。2013 年 Serilog 带来结构化日志，2019 年微软统一 `Microsoft.Extensions.Logging` 抽象，新项目逐渐转向 Serilog/抽象接口，但存量代码与老文档中 NLog/log4net 仍极常见。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"NLog 与 Log4Net"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **NLog 用法**：`var logger = LogManager.GetCurrentClassLogger();` + `logger.Info("...")`；`NLog.config` 里配 targets（文件/控制台）与 rules（级别路由）
+> - **log4net 用法**：`XmlConfigurator.Configure()` + `LogManager.GetLogger(typeof(X))`；`log4net` 配置节里配 appender/layout
+> - **共同概念**：Level（级别）、Target/Appender（输出）、Layout（格式：`%date %level %logger %message`）
+> - **文件归档**：按大小/日期滚动：NLog `archiveEvery="Day"`、log4net `RollingFileAppender`（`RollingStyle="Date"`）
+> - **选择建议**：老 .NET Framework 项目 NLog 优先（活跃维护）；新项目直接用 `serilog-结构化日志`
 
 > [!example] 完整示例
 > **NLog 使用演示：安装 NLog 包后，通过 Logger 输出不同级别日志，可同时写到控制台与文件（此处用内置文本日志器模拟 NLog 的 API 风格）：**
@@ -93,34 +91,35 @@ parent: 12.6 日志系统
 > 
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ 维护 .NET Framework 老上位机：项目已在用 NLog/log4net，升级成本高
+> ✅ 老代码 + 老配置：已有 `NLog.config`/`log4net` 节与大量 `logger.Info` 调用
+> ✅ 需要轻量文本日志且不想引大框架：NLog 配置简单、体积小
+> ✅ 团队习惯 NLog 语法：性能与 Serilog 相当，文本日志完全够用
+> ❌ 新项目首选结构化：需要字段查询/对接平台用 Serilog（见 `serilog-结构化日志`）
+> ❌ 需要跨平台现代 .NET 生态的强集成：老库对新 API 支持滞后
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
+> 坑 1：**NLog 配置了但没加载** → 现象：日志不输出，代码静默空转 → 原因：没把 `NLog.config` 设为"内容复制到输出目录"，或忘调 `LogManager.Setup().LoadConfigurationFromFile()` → 解决：VS 里右键 `NLog.config` → 属性 → 复制到输出目录；启动时确认配置加载并打一条测试日志
 > 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 2：**log4net 未 `XmlConfigurator.Configure()`** → 现象：`GetLogger` 返回但什么都不写 → 原因：没执行初始化 → 解决：程序入口调用一次 `log4net.Config.XmlConfigurator.Configure(ConfigFile: "log4net.config")`（可用 `[assembly: log4net.Config.XmlConfigurator(Watch = true)]` 特性自动配置）
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 3：**Appender 路径用相对路径丢失** → 现象：发布后找不到日志文件 → 原因：相对路径基于工作目录 → 解决：NLog `basedir`（`${basedir}/logs/hmi.log`）；log4net 用 `AppDomain.CurrentDomain.BaseDirectory` 拼接
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - 老项目保持原框架，新模块也不混用：日志库统一，避免 NLog + Serilog 双写两套文件
+> - 配置文件复制到输出目录：`NLog.config`/`log4net.config` 属性设为"始终复制"
+> - 按天滚动 + 保留策略：NLog `archiveEvery="Day" maxArchiveFiles="30"`；log4net `RollingStyle="Date" maxSizeRollBackups`
+> - 用 `ILogger<T>` 抽象隔离：即使底层是 NLog/log4net，业务代码也走抽象，将来可换（见 `为什么要用日志`）
+> - 迁移到 Serilog 时保留字段语义：`${logger}`→模板 `{SourceContext}`，文本转结构化是渐进过程
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"NLog 与 Log4Net"实现一个上位机中的小功能模块
+> **Lv.1 照猫画虎**：运行示例代码，观察 NLog 与 log4net 各自输出到控制台/文件，比较两种配置文件的写法
+> **Lv.2 小试牛刀**：给 NLog 配置加"按天归档"：`archiveEvery="Day"` + `maxArchiveFiles="7"`，连续运行/改系统日期验证归档
+> **Lv.3 融会贯通**：把 log4net 的 Appender 改成"数据库"（`AdoNetAppender`，连接 SQLite），日志写入表，验证可查询
+> **Lv.4 拆层挑战**：为两种框架写统一封装 `ILogService`（`Info/Error` 方法），底层分别用 NLog/log4net 实现，切换实现验证业务代码零修改
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"NLog 与 Log4Net"
-> - → 后续必学：掌握"NLog 与 Log4Net"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：`为什么要用日志`（日志基础概念）、`传统-appconfig-方式`（老配置体系）
+> - → 后续必学：`serilog-结构化日志`（现代替代方案）
+> - ⇄ 关联概念：`全局异常捕获与记录`（异常进 NLog/log4net）、`上位机日志场景`（分类落地）
+> - 📖 官方文档：NLog：https://nlog-project.org/ ；Apache log4net：https://logging.apache.org/log4net/

@@ -7,22 +7,21 @@ parent: 12.3 插件化架构
 # MEF 与 Prism Modules
 
 > [!plain] 白话理解
-> "MEF 与 Prism Modules"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"MEF 与 Prism Modules"是一个重要的知识点。当项目从几百行代码增长到几万行、几十万行时，没有架构的代码会变成一团乱麻。掌握了它，你就能更好地构建工业级上位机应用程序。
+> 插件化架构是"理论"，MEF 和 Prism Modules 是"官方现成的插槽零件"。**MEF** 像插座板：你用 `[Export]` 声明"我这个类能提供 XX 服务"，用 `[Import]` 声明"我需要 XX 服务"，MEF 容器自动帮你配对插好，零手工接线。**Prism Modules** 则是 Prism 框架自带的"模块间"——把界面和功能打包成独立 Module，由框架按目录加载注册。示例用 MEF 的 `[Export]`/`[ImportMany]` 演示：容器一组合，报警、趋势两个模块自动注入宿主。
 
 > [!def] 官方定义
-> MEF 与 Prism Modules是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> **MEF（Managed Extensibility Framework）** 是微软随 .NET Framework 4.0 提供的官方扩展框架，基于**特性化编程**：用 `[Export]` 标注可提供的部件（Part），用 `[Import]`/`[ImportMany]` 声明需求，`CompositionContainer` + `DirectoryCatalog`/`AssemblyCatalog` 完成发现与组合。官方文档：https://learn.microsoft.com/zh-cn/dotnet/framework/mef/ 。
+> **Prism** 是微软 Patterns & Practices 团队（现为社区维护）的 WPF/XAML 框架，其 **Module（模块化）** 特性允许把独立功能打包为 Module 类，由 `ModuleCatalog` 注册、`ModuleInitializer` 按需加载，并常与 MEF 或 Unity 容器配合完成依赖注入。文档：https://prismlibrary.github.io/docs/wpf/Modularity.html 。
 
 > [!origin] 由来背景
-> MEF 与 Prism Modules的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：当项目从几百行代码增长到几万行、几十万行时，没有架构的代码会变成一团乱麻。
+> MEF 诞生背景：2000 年代微软在 Visual Studio、Office 等大型产品中发现"扩展点越加越乱"，需要一个统一的扩展机制，于是 2008-2010 年间开发 MEF（.NET 4.0 正式发布），使宿主无需预先知道扩展就能发现并组合部件。Prism 则源自微软 Prism 框架（2008 年起，为复合 WPF 应用而设计），其 Modularity 目标与 MEF 类似但面向"MVVM 大应用分模块开发"，二者常配合使用（MEF 做组合容器、Prism 做导航与模块生命周期）。至今 .NET 生态又出现 `System.Composition`（MEF Core，跨平台）与社区 DI 容器，但 MEF 思想仍是标准参考。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"MEF 与 Prism Modules"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **MEF 三个核心**：`[Export]`（我能提供）、`[Import]/[ImportMany]`（我需要）、`CompositionContainer`（组合装配）
+> - **MEF 目录**：`AssemblyCatalog`（当前程序集）、`DirectoryCatalog`（插件目录）、`AggregateCatalog`（合并）
+> - **Prism Module**：`IModule` 接口 + `RegisterTypes()`/`OnInitialized()`，`ModuleCatalog` 按名/按路径注册
+> - **组合时机**：容器 `ComposeParts(this)` 一次性填充所有 `[Import]`；重复组合会抛 `CompositionException`
+> - **搭配 MVVM**：Prism 负责 Region/导航/Module 生命周期，MEF 或 Unity 负责实例装配（见第 7 章 `prism-企业级框架`、`什么是依赖注入`）
 
 > [!example] 完整示例
 > **MEF 用法演示：用 System.ComponentModel.Composition 的特性（[Export]/[Import]）实现插件组合——容器自动把已导出的模块注入到宿主，模拟 MEF 的发现与组合机制：**
@@ -117,34 +116,35 @@ parent: 12.3 插件化架构
 > 
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ 上位机功能模块化：报警、趋势、报表各自一个 Module，按需加载
+> ✅ 团队并行开发：每个开发者只写自己的 `[Export]` 部件，容器自动装配
+> ✅ 按配置加载插件：`DirectoryCatalog` 扫插件目录，新协议/新界面即放即用
+> ✅ Prism 复合应用：Region + Module 组合导航与视图，适合大型上位机
+> ❌ 只有两三个类的项目：MEF 的反射组合反而带来启动开销
+> ❌ 需要精细生命周期控制（卸载/回收）：MEF 默认组合不卸载，需额外设计
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
+> 坑 1：**`[Import]` 没被填充就使用** → 现象：运行到模块调用时抛 `NullReferenceException` → 原因：忘了 `ComposeParts(this)` 或组合顺序不对 → 解决：启动时统一 `container.ComposeParts(this)`，用 `[Import(RequiredCreationPolicy = CreationPolicy.Shared)]` 明确共享
 > 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 2：**循环依赖导致组合失败** → 现象：`ComposeParts` 抛 `CompositionException`，A 部件 import B、B 又 import A → 原因：部件互相依赖 → 解决：通过宿主中转或把依赖方向收敛到单向（见 `各层职责与交互` 依赖规则）
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 3：**误把 `[ImportMany]` 当 `[Import]`** → 现象：只期望一个部件，结果容器注入全部匹配项 → 原因：语义混用 → 解决：多实例用 `[ImportMany]` 并逐个遍历；单实例用 `[Import]` 并保证唯一导出
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - 契约放独立程序集：`Contracts.dll` 只放接口，宿主与插件都引用它，避免程序集强耦合
+> - 用 `DirectoryCatalog` 做插件目录：新增插件 dll 放进目录即被发现，主程序零改动
+> - 组合失败早暴露：启动即 `ComposeParts`，配日志输出 `CompositionException` 明细（见 12.6 `全局异常捕获与记录`）
+> - Prism 场景：Module 的 `RegisterTypes` 用容器注册服务，`OnInitialized` 里注册 Region 视图
+> - 版本与兼容性管理：契约接口变更走"新增方法"而非"修改签名"，旧插件不崩（见 12.7 `增量更新与版本管理`）
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"MEF 与 Prism Modules"实现一个上位机中的小功能模块
+> **Lv.1 照猫画虎**：运行示例代码，新增一个 `[Export(typeof(IHmiModule))]` 的"配方模块"，容器自动发现并组合
+> **Lv.2 小试牛刀**：改用 `DirectoryCatalog` 加载 `Plugins` 目录：把模块类放进单独项目编译成 dll 放目录，验证即放即用
+> **Lv.3 融会贯通**：给模块接口加 `[Import]` 的日志服务依赖，观察 MEF 如何把日志自动注入模块
+> **Lv.4 拆层挑战**：用 Prism 搭一个空壳：`ModuleCatalog` 注册两个 Module，每个 Module 在 `OnInitialized` 向 Region 注册一个 View，完成"模块化界面"
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"MEF 与 Prism Modules"
-> - → 后续必学：掌握"MEF 与 Prism Modules"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：`什么是插件化架构`（原理）、第 7 章 `什么是依赖注入`（容器思想）
+> - → 后续必学：`上位机插件化场景`（上位机落地案例）
+> - ⇄ 关联概念：`工厂模式`（按需创建部件）、12.8 `单元测试xunitmoq`（契约接口便于 Mock）
+> - 📖 官方文档：MEF（System.ComponentModel.Composition）：https://learn.microsoft.com/zh-cn/dotnet/framework/mef/ ；Prism Modularity：https://prismlibrary.github.io/docs/wpf/Modularity.html
