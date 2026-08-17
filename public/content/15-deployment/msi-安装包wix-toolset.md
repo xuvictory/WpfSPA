@@ -7,22 +7,20 @@ parent: 15.1 发布方式
 # MSI 安装包（WiX Toolset）
 
 > [!plain] 白话理解
-> "MSI 安装包（WiX Toolset）"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"MSI 安装包（WiX Toolset）"是一个重要的知识点。写好的程序怎么给客户用？部署与发布是把你的心血交付到用户手中的最后一步。掌握了它，你就能更好地构建工业级上位机应用程序。
+> MSI 安装包像"正规军部署"：它不只把文件复制过去，还登记注册表、创建开始菜单、支持卸载和修复，Windows 会把它当"正式居民"管理。而 WiX 就是用来"写 MSI 施工图纸"的工具——你用 XML 描述"要装哪些文件、装到哪、写哪些注册表项"，WiX 把它编译成标准 MSI。上位机软件出厂交付，客户要"双击 setup 就能装、控制面板里能卸载"，MSI 就是满足这个诉求的成熟方案。
 
 > [!def] 官方定义
-> MSI 安装包（WiX Toolset）是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> **Windows Installer（MSI）** 是 Windows 官方的**安装服务引擎**，以 `.msi` 数据库文件描述安装内容与规则，支持无人值守安装（`msiexec /i app.msi /qn`）、修复、卸载与权限提升。**WiX Toolset**（Windows Installer XML）是微软 2004 年开源的**工具集**：用 XML 编写安装定义（`.wxs` 源文件），经 `candle`（编译为 .wixobj）与 `light`（链接为 .msi）两步生成安装包；配套 `heat` 从目录自动抓取文件清单，`WixUIExtension` 提供标准安装向导界面。官方文档：https://learn.microsoft.com/zh-cn/windows/win32/msi/windows-installer-portal
 
 > [!origin] 由来背景
-> MSI 安装包（WiX Toolset）的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：写好的程序怎么给客户用？部署与发布是把你的心血交付到用户手中的最后一步。
+> 1990 年代 Windows 软件安装混乱不堪：各家用私有格式，卸载不干净、没有修复机制。微软 1999 年推出 Windows Installer 统一安装标准，2004 年又开源了自家的 WiX 工具集（微软最早的开源项目之一），让开发者能用文本化、可版本控制的 XML 定义安装包，替代拖拽式安装制作工具。2010 年代 WiX 成为 Windows 生态生成 MSI 的事实标准，Visual Studio 项目也能通过 WiX 工程一键产出安装包；后来微软推出更现代的 MSIX 打包格式，但 WiX/MSI 在企业批量部署中仍是主流。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"MSI 安装包（WiX Toolset）"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **产品三角**：WiX 的核心结构是 `Product`（一个产品）→ `Feature`（可选功能组）→ `Component`（最小安装单元，含文件/注册表/服务），每个 Component 必须有唯一 GUID
+> - **两步构建**：`.wxs` 源文件 → `candle.exe` 编译成 `.wixobj` → `light.exe` 链接出 `.msi`；VS 的 WiX 工程在生成时自动完成
+> - **文件收集**：`heat` 工具扫描目录自动生成 Component 定义，避免手写上百条文件项
+> - **安装行为**：`InstallScope`（perMachine 需管理员 / perUser 免提权）、`UpgradeCode`（跨版本升级识别码，必须保持不变）、`MajorUpgrade`（覆盖安装旧版本）
+> - **UI 与本地化**：`WixUIExtension` 提供安装向导；`WixUI_InstallDir` 实现安装目录选择页
 
 > [!example] 完整示例
 > **MSI 安装信息读取器：遍历 Uninstall 注册表项读取 DisplayName/DisplayVersion/InstallLocation、选中项回显详情：**
@@ -123,34 +121,35 @@ parent: 15.1 发布方式
 > 
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ 需要"正规安装体验"的出厂交付：客户要求双击 setup 安装、控制面板里能卸载修复，MSI 是标配
+> ✅ 大批量静默部署：`msiexec /i HmiSetup.msi /qn` 无界面安装，可配合组策略/脚本推到几十台机器
+> ✅ 要写注册表、装 Windows 服务、建快捷方式的软件：WiX 的 Component 可定义注册表项、服务与文件关联
+> ✅ 升级与覆盖安装管控：用 `UpgradeCode` + `MajorUpgrade` 保证旧版本被干净替换
+> ❌ 每天多次更新迭代的内网小工具：MSI 的构建与升级流程重，用 `clickonce-发布` 更轻
+> ❌ 纯绿色拷贝就能跑的便携工具：打包成本高于收益，直接 XCopy 或 `独立发布与单文件发布` 即可
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
-> 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 1：**版本号格式不对导致"无法升级"** → 现象：`MajorUpgrade` 不生效，新旧版本共存甚至安装失败 → 原因：MSI 要求版本号为三段数字（如 `1.0.0`），且每段 ≤ 255，填 `1.0` 或带字母后缀都会被拒绝 → 解决：`Product/@Version` 用三段式，并与应用版本号保持一致
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 2：**Component GUID 变了导致卸载不干净** → 现象：升级后旧文件残留、卸载报错 → 原因：每个 Component 的 GUID 必须终身不变，Windows Installer 凭它识别组件，改了就会被当成新组件 → 解决：把 GUID 当"身份证"，复制模板后务必修改，只在新增/删除文件时才动它
+>
+> 坑 3：**InstallScope 配错导致权限问题** → 现象：perUser 安装换用户后程序"消失"，或 perMachine 在无管理员权限的机器上装不上 → 原因：安装范围与目标环境用户权限不匹配 → 解决：车间机统一管理员账户用 `perMachine`（需提权 UAC），无管理员场景用 `perUser`
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - 用 heat 自动收集文件：上百个 dll 与资源别手写 Component，heat 扫描生成后微调即可
+> - `UpgradeCode` 写死、`ProductCode` 每次发布换新：前者是产品跨版本"身份证"，后者区分安装实例
+> - 安装目录用 `INSTALLFOLDER` 标准属性：后续要加"选择安装目录"界面（`WixUI_InstallDir`）不用重构
+> - 发布前用 Orca / lessmsi 检查生成的 MSI：核对文件列表、注册表项、快捷方式是否齐全
+> - 安装包文件名带版本号：`HmiSetup-2.1.0.msi` 归档保存，避免现场拿错包、回溯困难
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"MSI 安装包（WiX Toolset）"实现一个上位机中的小功能模块
+> **Lv.1 照猫画虎**：在 VS 里新建"WiX Setup Project"，用 heat 收集示例项目输出，生成并安装一个最简 MSI
+> **Lv.2 小试牛刀**：给 MSI 加开始菜单快捷方式和一个注册表项（如 `HKLM\Software\HmiDemo` 写入安装路径），安装后检查生效
+> **Lv.3 融会贯通**：配置 `UpgradeCode` 与 `MajorUpgrade`，先装 `1.0.0` 再装 `1.1.0`，验证覆盖安装后"控制面板"里只有一条记录
+> **Lv.4 拆层挑战**：用 `msiexec /i HmiSetup.msi /qn` 做静默安装、`msiexec /x HmiSetup.msi /qn` 静默卸载，写一个批量部署到多台车间机的脚本
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"MSI 安装包（WiX Toolset）"
-> - → 后续必学：掌握"MSI 安装包（WiX Toolset）"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：`独立发布与单文件发布`（先确定发布形态，再决定安装包内容）
+> - → 后续必学：`目标机器-net-runtime-检查`（非自包含 MSI 安装前确认目标机运行时）
+> - ⇄ 关联概念：`clickonce-发布`（轻量更新分发，与 MSI 互补）、`框架依赖-vs-独立部署比较`（MSI 里要不要带运行时）
+> - 📖 官方文档：Windows Installer 概述：https://learn.microsoft.com/zh-cn/windows/win32/msi/windows-installer-portal ；WiX Toolset 文档：https://docs.firegiant.com/wix/
