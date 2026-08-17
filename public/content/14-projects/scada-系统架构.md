@@ -25,10 +25,106 @@ parent: 14.7 项目七：SCADA 综合监控系统（高级）
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
-> ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> **SCADA 系统架构演示：自上而下展示"监控层 → 实时库层 → 采集层 → 现场层"四层架构，并用实时数据库点位表展示"点名 + 当前值 + 质量戳"这一 SCADA 数据流核心：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="SCADA 系统架构" Height="460" Width="580"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="SCADA 经典分层架构" Foreground="#58A6FF" FontSize="14"
+>                    FontWeight="Bold" Margin="0,0,0,10"/>
+>         <!-- 层次示意 -->
+>         <StackPanel Grid.Row="1">
+>             <Border Background="#161B22" CornerRadius="6" Padding="8" Margin="0,2">
+>                 <TextBlock Text="监控层：组态画面 / 报警 / 报表" Foreground="#58A6FF"/>
+>             </Border>
+>             <Border Background="#161B22" CornerRadius="6" Padding="8" Margin="0,2">
+>                 <TextBlock Text="实时库层：点位表 + 数据刷新" Foreground="#8B949E"/>
+>             </Border>
+>             <Border Background="#161B22" CornerRadius="6" Padding="8" Margin="0,2">
+>                 <TextBlock Text="采集层：OPC UA / Modbus 驱动" Foreground="#8B949E"/>
+>             </Border>
+>             <Border Background="#161B22" CornerRadius="6" Padding="8" Margin="0,2">
+>                 <TextBlock Text="现场层：PLC / 传感器 / 仪表" Foreground="#8B949E"/>
+>             </Border>
+>         </StackPanel>
+>         <!-- 实时库点位表 -->
+>         <DataGrid Grid.Row="2" x:Name="TagGrid" AutoGenerateColumns="False" IsReadOnly="True"
+>                   Background="#161B22" Foreground="#8B949E" BorderThickness="0" Margin="0,10"
+>                   HeadersVisibility="Column" RowHeight="26">
+>             <DataGrid.Columns>
+>                 <DataGridTextColumn Header="点名" Binding="{Binding Tag}" Width="*"/>
+>                 <DataGridTextColumn Header="当前值" Binding="{Binding Value}" Width="*"/>
+>                 <DataGridTextColumn Header="质量戳" Binding="{Binding Quality}" Width="*"/>
+>             </DataGrid.Columns>
+>         </DataGrid>
+>         <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,6,0,0">
+>             <Button Content="模拟点位刷新" Click="OnRefresh" Padding="8"
+>                     Background="#21262D" Foreground="White"/>
+>             <TextBlock x:Name="StatusText" Text="就绪" Foreground="#8B949E"
+>                        VerticalAlignment="Center" Margin="12,0,0,0"/>
+>         </StackPanel>
+>     </Grid>
+> </Window>
 > ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
+> ```csharp
+> using System;
+> using System.Collections.ObjectModel;
+> using System.Windows;
+> using System.Windows.Media;
+>
+> namespace HmiDemo
+> {
+>     // 实时数据库点位：SCADA 的数据核心模型（点名 / 值 / 质量戳）
+>     public class TagPoint
+>     {
+>         public string Tag { get; set; }
+>         public string Value { get; set; }
+>         public string Quality { get; set; }
+>     }
+>
+>     public partial class MainWindow : Window
+>     {
+>         private readonly Random _rand = new Random();
+>         private readonly ObservableCollection<TagPoint> _tags = new ObservableCollection<TagPoint>();
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             // 初始化点位表：实际项目由组态工具定义，采集层驱动写入
+>             _tags.Add(new TagPoint { Tag = "TEMP-1 反应釜温度", Value = "75.2 ℃", Quality = "Good" });
+>             _tags.Add(new TagPoint { Tag = "PRESS-2 管道压力", Value = "5.8 MPa", Quality = "Good" });
+>             _tags.Add(new TagPoint { Tag = "FLOW-3 进料流量", Value = "120.5 m³/h", Quality = "Good" });
+>             TagGrid.ItemsSource = _tags;
+>         }
+>
+>         // 模拟采集层写入实时库：值变化 + 质量戳刷新（ObservableCollection 自动更新 UI）
+>         private void OnRefresh(object sender, RoutedEventArgs e)
+>         {
+>             _tags[0].Value = $"{70 + _rand.NextDouble() * 10:F1} ℃";
+>             _tags[1].Value = $"{5 + _rand.NextDouble() * 2:F1} MPa";
+>             _tags[2].Value = $"{100 + _rand.NextDouble() * 40:F1} m³/h";
+>             // 偶尔模拟坏质量（通信中断时质量戳应为 Bad）
+>             _tags[1].Quality = _rand.Next(5) == 0 ? "Bad" : "Good";
+>             StatusText.Text = $"实时库刷新 {DateTime.Now:HH:mm:ss}";
+>             StatusText.Foreground = new SolidColorBrush(Color.FromRgb(0x8B, 0x94, 0x9E));
+>         }
+>     }
+> }
+> ```
+> 
 > 
 
 > [!scene] 适用场景

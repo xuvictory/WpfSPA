@@ -25,10 +25,141 @@ parent: 14.3 项目三：产线设备状态监控平台（进阶级）
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
-> ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> **OEE 指标计算演示：输入计划运行时间、实际运行时间、理论产量、实际产量、合格产量，点击计算得到可用率、性能率、合格率与综合 OEE，并按色块显示评级：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="通信管理与 OEE 计算" Height="480" Width="460"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="OEE 综合设备效率计算" Foreground="#58A6FF" FontSize="14"
+>                    FontWeight="Bold" Margin="0,0,0,10"/>
+>         <StackPanel Grid.Row="1" Margin="0,0,0,10">
+>             <Grid>
+>                 <Grid.ColumnDefinitions>
+>                     <ColumnDefinition Width="130"/>
+>                     <ColumnDefinition Width="*"/>
+>                 </Grid.ColumnDefinitions>
+>                 <TextBlock Text="计划运行时间 (h)" Foreground="#8B949E" VerticalAlignment="Center"/>
+>                 <TextBox x:Name="PlanBox" Grid.Column="1" Text="8" Background="#161B22"
+>                          Foreground="#58A6FF" Padding="4"/>
+>             </Grid>
+>             <Grid Margin="0,6,0,0">
+>                 <Grid.ColumnDefinitions>
+>                     <ColumnDefinition Width="130"/>
+>                     <ColumnDefinition Width="*"/>
+>                 </Grid.ColumnDefinitions>
+>                 <TextBlock Text="实际运行时间 (h)" Foreground="#8B949E" VerticalAlignment="Center"/>
+>                 <TextBox x:Name="RunBox" Grid.Column="1" Text="6.5" Background="#161B22"
+>                          Foreground="#58A6FF" Padding="4"/>
+>             </Grid>
+>             <Grid Margin="0,6,0,0">
+>                 <Grid.ColumnDefinitions>
+>                     <ColumnDefinition Width="130"/>
+>                     <ColumnDefinition Width="*"/>
+>                 </Grid.ColumnDefinitions>
+>                 <TextBlock Text="理论产量 (件)" Foreground="#8B949E" VerticalAlignment="Center"/>
+>                 <TextBox x:Name="TheoBox" Grid.Column="1" Text="800" Background="#161B22"
+>                          Foreground="#58A6FF" Padding="4"/>
+>             </Grid>
+>             <Grid Margin="0,6,0,0">
+>                 <Grid.ColumnDefinitions>
+>                     <ColumnDefinition Width="130"/>
+>                     <ColumnDefinition Width="*"/>
+>                 </Grid.ColumnDefinitions>
+>                 <TextBlock Text="实际产量 (件)" Foreground="#8B949E" VerticalAlignment="Center"/>
+>                 <TextBox x:Name="OutBox" Grid.Column="1" Text="620" Background="#161B22"
+>                          Foreground="#58A6FF" Padding="4"/>
+>             </Grid>
+>             <Grid Margin="0,6,0,0">
+>                 <Grid.ColumnDefinitions>
+>                     <ColumnDefinition Width="130"/>
+>                     <ColumnDefinition Width="*"/>
+>                 </Grid.ColumnDefinitions>
+>                 <TextBlock Text="合格产量 (件)" Foreground="#8B949E" VerticalAlignment="Center"/>
+>                 <TextBox x:Name="GoodBox" Grid.Column="1" Text="600" Background="#161B22"
+>                          Foreground="#58A6FF" Padding="4"/>
+>             </Grid>
+>         </StackPanel>
+>         <Border Grid.Row="2" Background="#161B22" CornerRadius="6" Padding="12">
+>             <StackPanel>
+>                 <TextBlock Text="计算结果" Foreground="#58A6FF" FontWeight="Bold" Margin="0,0,0,6"/>
+>                 <TextBlock x:Name="ResultText" Text="点击下方按钮计算…" Foreground="#8B949E"
+>                            FontFamily="Consolas" TextWrapping="Wrap"/>
+>                 <Border x:Name="OeeBadge" Background="#21262D" CornerRadius="4" Padding="8,4"
+>                         Margin="0,10,0,0" HorizontalAlignment="Left">
+>                     <TextBlock x:Name="OeeLevelText" Text="--" Foreground="#8B949E"/>
+>                 </Border>
+>             </StackPanel>
+>         </Border>
+>         <Button Grid.Row="3" Content="计算 OEE" Click="OnCalc" Margin="0,12,0,0" Padding="10"
+>                 Background="#21262D" Foreground="White" HorizontalAlignment="Left"/>
+>     </Grid>
+> </Window>
 > ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
+> ```csharp
+> using System;
+> using System.Windows;
+> using System.Windows.Media;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnCalc(object sender, RoutedEventArgs e)
+>         {
+>             // 输入合法性校验
+>             if (!double.TryParse(PlanBox.Text, out double plan) || plan <= 0 ||
+>                 !double.TryParse(RunBox.Text, out double run) || run <= 0 ||
+>                 !double.TryParse(TheoBox.Text, out double theo) || theo <= 0 ||
+>                 !double.TryParse(OutBox.Text, out double output) || output <= 0 ||
+>                 !double.TryParse(GoodBox.Text, out double good) || good <= 0)
+>             {
+>                 ResultText.Text = "请输入合法的正数！";
+>                 return;
+>             }
+>
+>             // OEE 三要素：可用率 × 性能率 × 合格率
+>             double availability = run / plan;                                  // 可用率
+>             double performance = (output / run) / (theo / plan);               // 性能率
+>             double quality = good / output;                                    // 合格率
+>             double oee = availability * performance * quality;                 // 综合 OEE
+>
+>             ResultText.Text =
+>                 $"可用率 = {availability:P1}\n" +
+>                 $"性能率 = {performance:P1}\n" +
+>                 $"合格率 = {quality:P1}\n" +
+>                 $"OEE   = {oee:P1}";
+>
+>             // 国际惯例分级：>85% 世界级，70~85% 良好，<70% 需改善
+>             if (oee >= 0.85) SetOeeLevel("世界级", Color.FromRgb(0x23, 0x86, 0x36));
+>             else if (oee >= 0.70) SetOeeLevel("良好", Color.FromRgb(0x58, 0xA6, 0xFF));
+>             else SetOeeLevel("需改善", Color.FromRgb(0xDA, 0x36, 0x33));
+>         }
+>
+>         private void SetOeeLevel(string text, Color color)
+>         {
+>             OeeLevelText.Text = text;
+>             OeeBadge.Background = new SolidColorBrush(color);
+>             OeeLevelText.Foreground = Brushes.White;
+>         }
+>     }
+> }
+> ```
+> 
 > 
 
 > [!scene] 适用场景

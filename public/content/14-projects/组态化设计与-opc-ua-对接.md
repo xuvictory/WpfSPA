@@ -25,10 +25,125 @@ parent: 14.7 项目七：SCADA 综合监控系统（高级）
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
-> ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> **组态化设计与 OPC UA 对接演示：模拟 OPC UA 服务器发布三个点位，客户端订阅后每秒推送数据刷新组态画面控件；底部展示"控件 ← OPC UA 点位"的组态绑定关系：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="组态化设计与 OPC UA 对接" Height="440" Width="560"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="组态点位绑定与 OPC UA 订阅" Foreground="#58A6FF" FontSize="14"
+>                    FontWeight="Bold" Margin="0,0,0,10"/>
+>         <!-- 组态画面（点位绑定控件） -->
+>         <Border Grid.Row="1" Background="#161B22" CornerRadius="6" Padding="12">
+>             <StackPanel>
+>                 <TextBlock Text="组态画面（点位绑定控件）" Foreground="#8B949E" Margin="0,0,0,8"/>
+>                 <Grid>
+>                     <Grid.ColumnDefinitions>
+>                         <ColumnDefinition Width="*"/>
+>                         <ColumnDefinition Width="*"/>
+>                         <ColumnDefinition Width="*"/>
+>                     </Grid.ColumnDefinitions>
+>                     <StackPanel>
+>                         <TextBlock Text="温度" Foreground="#8B949E" HorizontalAlignment="Center"/>
+>                         <TextBlock x:Name="Tag1Text" Text="--" Foreground="#58A6FF" FontSize="22"
+>                                    FontWeight="Bold" HorizontalAlignment="Center"/>
+>                     </StackPanel>
+>                     <StackPanel Grid.Column="1">
+>                         <TextBlock Text="压力" Foreground="#8B949E" HorizontalAlignment="Center"/>
+>                         <TextBlock x:Name="Tag2Text" Text="--" Foreground="#238636" FontSize="22"
+>                                    FontWeight="Bold" HorizontalAlignment="Center"/>
+>                     </StackPanel>
+>                     <StackPanel Grid.Column="2">
+>                         <TextBlock Text="流量" Foreground="#8B949E" HorizontalAlignment="Center"/>
+>                         <TextBlock x:Name="Tag3Text" Text="--" Foreground="#58A6FF" FontSize="22"
+>                                    FontWeight="Bold" HorizontalAlignment="Center"/>
+>                     </StackPanel>
+>                 </Grid>
+>             </StackPanel>
+>         </Border>
+>         <!-- 绑定关系表 -->
+>         <Border Grid.Row="2" Background="#161B22" CornerRadius="6" Padding="10" Margin="0,10">
+>             <StackPanel>
+>                 <TextBlock Text="组态绑定关系（控件 ← OPC UA 点位）" Foreground="#58A6FF"
+>                            FontWeight="Bold" Margin="0,0,0,6"/>
+>                 <ListBox x:Name="BindList" Background="#21262D" Foreground="#8B949E"
+>                          BorderThickness="0" FontFamily="Consolas" Height="120">
+>                     <ListBoxItem Content="温度显示 ← ns=2;s=Reactor.Temp"/>
+>                     <ListBoxItem Content="压力显示 ← ns=2;s=Reactor.Press"/>
+>                     <ListBoxItem Content="流量显示 ← ns=2;s=Reactor.Flow"/>
+>                 </ListBox>
+>             </StackPanel>
+>         </Border>
+>         <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,8,0,0">
+>             <Button x:Name="SubBtn" Content="开始订阅 OPC UA 数据" Click="OnToggle"
+>                     Padding="10" Background="#21262D" Foreground="White"/>
+>             <TextBlock x:Name="StatusText" Text="未连接" Foreground="#8B949E"
+>                        VerticalAlignment="Center" Margin="12,0,0,0"/>
+>         </StackPanel>
+>     </Grid>
+> </Window>
 > ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
+> ```csharp
+> using System;
+> using System.Windows;
+> using System.Windows.Media;
+> using System.Windows.Threading;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private readonly DispatcherTimer _timer = new DispatcherTimer();
+>         private readonly Random _rand = new Random();
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             _timer.Interval = TimeSpan.FromSeconds(1);
+>             _timer.Tick += OnDataChanged;
+>         }
+>
+>         private void OnToggle(object sender, RoutedEventArgs e)
+>         {
+>             if (_timer.IsEnabled)
+>             {
+>                 _timer.Stop();
+>                 SubBtn.Content = "开始订阅 OPC UA 数据";
+>                 StatusText.Text = "订阅已取消";
+>             }
+>             else
+>             {
+>                 _timer.Start();
+>                 SubBtn.Content = "取消订阅";
+>                 StatusText.Text = "已连接 opc.tcp://plc01:4840";
+>                 StatusText.Foreground = Brushes.LimeGreen;
+>             }
+>         }
+>
+>         // 模拟 OPC UA 订阅回调：服务端数据变化推送给客户端（发布/订阅模式）
+>         private void OnDataChanged(object sender, EventArgs e)
+>         {
+>             // 实际项目：Opc.Ua.Client 建立 Subscription，在 DataChange 回调中更新绑定控件
+>             Tag1Text.Text = $"{70 + _rand.NextDouble() * 10:F1} ℃";
+>             Tag2Text.Text = $"{5 + _rand.NextDouble() * 2:F1} MPa";
+>             Tag3Text.Text = $"{100 + _rand.NextDouble() * 40:F1} m³/h";
+>         }
+>     }
+> }
+> ```
+> 
 > 
 
 > [!scene] 适用场景

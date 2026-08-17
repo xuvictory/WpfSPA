@@ -25,10 +25,142 @@ parent: 14.4 项目四：智能仓储管理系统 WMS（中高级）
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
-> ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> **库存管理与 RFID 集成演示：模拟 RFID 读卡器扫码货品标签，输入数量后执行入库 / 出库，库存台账实时刷新；库存不足时出库会被拦截并提示：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="库存管理与 RFID 集成" Height="460" Width="520"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="RFID 扫码出入库" Foreground="#58A6FF" FontSize="14"
+>                    FontWeight="Bold" Margin="0,0,0,10"/>
+>         <Border Grid.Row="1" Background="#161B22" CornerRadius="6" Padding="10">
+>             <StackPanel>
+>                 <TextBlock Text="RFID 扫码结果" Foreground="#8B949E"/>
+>                 <TextBlock x:Name="RfidText" Text="请扫描货品 RFID…" Foreground="#58A6FF"
+>                            FontFamily="Consolas" Margin="0,4,0,0"/>
+>                 <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+>                     <TextBox x:Name="CodeBox" Text="TAG-6204" Width="120" Background="#21262D"
+>                              Foreground="#58A6FF" Padding="4"/>
+>                     <TextBox x:Name="QtyBox" Text="10" Width="60" Background="#21262D"
+>                              Foreground="#58A6FF" Padding="4" Margin="8,0,0,0"/>
+>                     <Button Content="入库" Click="OnIn" Margin="8,0,0,0" Padding="10"
+>                             Background="#238636" Foreground="White"/>
+>                     <Button Content="出库" Click="OnOut" Margin="8,0,0,0" Padding="10"
+>                             Background="#DA3633" Foreground="White"/>
+>                 </StackPanel>
+>             </StackPanel>
+>         </Border>
+>         <Border Grid.Row="2" Background="#161B22" CornerRadius="6" Padding="10" Margin="0,10">
+>             <StackPanel>
+>                 <TextBlock Text="库存台账" Foreground="#58A6FF" FontWeight="Bold" Margin="0,0,0,6"/>
+>                 <ListBox x:Name="StockList" Background="#21262D" Foreground="#8B949E"
+>                          BorderThickness="0" FontFamily="Consolas" Height="180"/>
+>             </StackPanel>
+>         </Border>
+>         <TextBlock Grid.Row="3" x:Name="StatusText" Text="就绪" Foreground="#8B949E" Margin="0,6,0,0"/>
+>     </Grid>
+> </Window>
 > ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
+> ```csharp
+> using System;
+> using System.Collections.Generic;
+> using System.Windows;
+> using System.Windows.Media;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         // 库存字典：标签 → (货品名, 数量)。真实项目存储于数据库
+>         private readonly Dictionary<string, (string Name, int Qty)> _stock =
+>             new Dictionary<string, (string, int)>
+>             {
+>                 { "TAG-6204", ("轴承 6204", 120) },
+>                 { "TAG-750W", ("电机 750W", 30) },
+>                 { "TAG-M8",   ("螺栓 M8", 1000) }
+>             };
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             RefreshStock();
+>         }
+>
+>         // 模拟 RFID 扫码：实际为读卡器触发读码事件后查表
+>         private void SimulateScan(string tag)
+>         {
+>             RfidText.Text = $"标签 {tag}  →  货品：{_stock[tag].Name}";
+>         }
+>
+>         private void OnIn(object sender, RoutedEventArgs e)
+>         {
+>             if (!TryResolve(out string tag, out int qty)) return;
+>             var item = _stock[tag];
+>             _stock[tag] = (item.Name, item.Qty + qty);
+>             StatusText.Text = $"入库成功：{item.Name} +{qty}";
+>             StatusText.Foreground = Brushes.LimeGreen;
+>             RefreshStock();
+>         }
+>
+>         private void OnOut(object sender, RoutedEventArgs e)
+>         {
+>             if (!TryResolve(out string tag, out int qty)) return;
+>             var item = _stock[tag];
+>             if (item.Qty < qty) // 库存不足拦截出库
+>             {
+>                 StatusText.Text = $"出库失败：{item.Name} 库存不足（当前 {item.Qty}）";
+>                 StatusText.Foreground = Brushes.OrangeRed;
+>                 return;
+>             }
+>             _stock[tag] = (item.Name, item.Qty - qty);
+>             StatusText.Text = $"出库成功：{item.Name} -{qty}";
+>             StatusText.Foreground = Brushes.Orange;
+>             RefreshStock();
+>         }
+>
+>         // 统一校验：标签是否存在 + 数量是否合法
+>         private bool TryResolve(out string tag, out int qty)
+>         {
+>             tag = CodeBox.Text.Trim();
+>             qty = 0;
+>             if (!_stock.ContainsKey(tag))
+>             {
+>                 StatusText.Text = "未识别的 RFID 标签！";
+>                 StatusText.Foreground = Brushes.OrangeRed;
+>                 return false;
+>             }
+>             if (!int.TryParse(QtyBox.Text, out qty) || qty <= 0)
+>             {
+>                 StatusText.Text = "数量不合法！";
+>                 StatusText.Foreground = Brushes.OrangeRed;
+>                 return false;
+>             }
+>             SimulateScan(tag);
+>             return true;
+>         }
+>
+>         private void RefreshStock()
+>         {
+>             StockList.Items.Clear();
+>             foreach (var kv in _stock)
+>                 StockList.Items.Add($"{kv.Key,-10} {kv.Value.Name,-8} 库存 {kv.Value.Qty}");
+>         }
+>     }
+> }
+> ```
+> 
 > 
 
 > [!scene] 适用场景

@@ -25,10 +25,79 @@ parent: 14.4 项目四：智能仓储管理系统 WMS（中高级）
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
-> ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> **Prism 模块化划分演示：用 TabControl 模拟 WMS 的三个功能模块（仓储管理 / 出入库作业 / 统计报表），每个 Tab 即一个模块视图，底部状态栏实时显示当前激活模块，体现"按功能拆分、独立注册、按需导航"的模块化思想：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="Prism 模块划分" Height="380" Width="540"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="WMS 模块化划分（Tab 模拟 Prism 模块导航）" Foreground="#58A6FF"
+>                    FontSize="14" FontWeight="Bold" Margin="0,0,0,10"/>
+>         <TabControl Grid.Row="1" x:Name="TabHost" SelectionChanged="OnTabChanged"
+>                     Background="#161B22" BorderThickness="0">
+>             <TabItem Header="仓储管理">
+>                 <StackPanel Margin="14">
+>                     <TextBlock Text="库位 / 货品基础数据维护" Foreground="#8B949E"/>
+>                     <TextBlock Text="Module: WarehouseModule" Foreground="#58A6FF"
+>                                FontFamily="Consolas" Margin="0,10,0,0"/>
+>                 </StackPanel>
+>             </TabItem>
+>             <TabItem Header="出入库作业">
+>                 <StackPanel Margin="14">
+>                     <TextBlock Text="RFID 扫描、入库 / 出库登记" Foreground="#8B949E"/>
+>                     <TextBlock Text="Module: OperationModule" Foreground="#58A6FF"
+>                                FontFamily="Consolas" Margin="0,10,0,0"/>
+>                 </StackPanel>
+>             </TabItem>
+>             <TabItem Header="统计报表">
+>                 <StackPanel Margin="14">
+>                     <TextBlock Text="库存台账 / 周转率报表" Foreground="#8B949E"/>
+>                     <TextBlock Text="Module: ReportModule" Foreground="#58A6FF"
+>                                FontFamily="Consolas" Margin="0,10,0,0"/>
+>                 </StackPanel>
+>             </TabItem>
+>         </TabControl>
+>         <TextBlock Grid.Row="2" x:Name="StatusText" Text="当前模块：仓储管理"
+>                    Foreground="#8B949E" Margin="0,10,0,0"/>
+>     </Grid>
+> </Window>
 > ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
+> ```csharp
+> using System.Windows;
+> using System.Windows.Controls;
+> using System.Windows.Media;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         // 模块切换：Prism 中通过 RegionManager 在区域中切换 ModuleView
+>         private void OnTabChanged(object sender, SelectionChangedEventArgs e)
+>         {
+>             if (TabHost.SelectedItem is TabItem tab)
+>             {
+>                 StatusText.Text = $"当前模块：{tab.Header}";
+>                 // 每个模块独立编译、独立维护，互不耦合
+>                 StatusText.Foreground = new SolidColorBrush(Color.FromRgb(0x8B, 0x94, 0x9E));
+>             }
+>         }
+>     }
+> }
+> ```
+> 
 > 
 
 > [!scene] 适用场景

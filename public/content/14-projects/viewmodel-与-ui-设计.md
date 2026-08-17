@@ -25,10 +25,119 @@ parent: 14.1 项目一：温湿度监控系统（入门级）
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
-> ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> **MVVM 双向绑定演示：定义 TemperatureViewModel（实现 INotifyPropertyChanged），界面通过 Binding 与 ViewModel 属性双向绑定，模拟刷新温度或修改报警上限时，UI 与联动状态文本自动同步：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="ViewModel 与 UI 设计" Height="360" Width="440"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="MVVM：ViewModel 驱动界面" Foreground="#58A6FF" FontSize="14"
+>                    FontWeight="Bold" Margin="0,0,0,12"/>
+>         <!-- 温度输入：UpdateSourceTrigger=PropertyChanged 实现输入即更新 -->
+>         <Grid Grid.Row="1">
+>             <Grid.ColumnDefinitions>
+>                 <ColumnDefinition Width="90"/>
+>                 <ColumnDefinition Width="*"/>
+>                 <ColumnDefinition Width="60"/>
+>             </Grid.ColumnDefinitions>
+>             <TextBlock Text="当前温度" Foreground="#8B949E" VerticalAlignment="Center"/>
+>             <TextBox Grid.Column="1" Text="{Binding CurrentTemp, UpdateSourceTrigger=PropertyChanged}"
+>                      Background="#161B22" Foreground="#58A6FF" Padding="6"/>
+>             <TextBlock Grid.Column="2" Text="℃" Foreground="#8B949E"
+>                        VerticalAlignment="Center" Margin="8,0,0,0"/>
+>         </Grid>
+>         <Grid Grid.Row="2" Margin="0,12,0,0">
+>             <Grid.ColumnDefinitions>
+>                 <ColumnDefinition Width="90"/>
+>                 <ColumnDefinition Width="*"/>
+>                 <ColumnDefinition Width="60"/>
+>             </Grid.ColumnDefinitions>
+>             <TextBlock Text="报警上限" Foreground="#8B949E" VerticalAlignment="Center"/>
+>             <TextBox Grid.Column="1" Text="{Binding AlarmLimit, UpdateSourceTrigger=PropertyChanged}"
+>                      Background="#161B22" Foreground="#DA3633" Padding="6"/>
+>             <TextBlock Grid.Column="2" Text="℃" Foreground="#8B949E"
+>                        VerticalAlignment="Center" Margin="8,0,0,0"/>
+>         </Grid>
+>         <!-- 联动状态：绑定计算属性，任一输入变化自动刷新 -->
+>         <Border Grid.Row="3" Background="#161B22" CornerRadius="6" Margin="0,16,0,0" Padding="10">
+>             <TextBlock Text="{Binding StateText}" Foreground="#8B949E" TextWrapping="Wrap"/>
+>         </Border>
+>     </Grid>
+> </Window>
 > ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
+> ```csharp
+> using System.ComponentModel;
+> using System.Runtime.CompilerServices;
+> using System.Windows;
+> using System.Windows.Threading;
+>
+> namespace HmiDemo
+> {
+>     // 1) ViewModel：实现 INotifyPropertyChanged，属性变化自动通知 UI 刷新
+>     public class TemperatureViewModel : INotifyPropertyChanged
+>     {
+>         private string _currentTemp = "25.0";
+>         private string _alarmLimit = "28.0";
+>
+>         public string CurrentTemp
+>         {
+>             get => _currentTemp;
+>             set { _currentTemp = value; OnPropertyChanged(); OnPropertyChanged(nameof(StateText)); }
+>         }
+>         public string AlarmLimit
+>         {
+>             get => _alarmLimit;
+>             set { _alarmLimit = value; OnPropertyChanged(); OnPropertyChanged(nameof(StateText)); }
+>         }
+>
+>         // 联动计算属性：两个输入任一变化都会触发重新计算
+>         public string StateText
+>         {
+>             get
+>             {
+>                 if (double.TryParse(CurrentTemp, out double t)
+>                     && double.TryParse(AlarmLimit, out double a))
+>                     return t > a ? $"当前 {t}℃ 已超过上限 {a}℃ → 触发报警！" : $"温度 {t}℃ 正常";
+>                 return "请输入合法的数值";
+>             }
+>         }
+>
+>         public event PropertyChangedEventHandler PropertyChanged;
+>         private void OnPropertyChanged([CallerMemberName] string name = null)
+>             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+>     }
+>
+>     public partial class MainWindow : Window
+>     {
+>         private readonly TemperatureViewModel _vm = new TemperatureViewModel();
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             DataContext = _vm; // 2) 设置 DataContext，XAML 的 Binding 才有数据源
+>
+>             // 3) 模拟实时采集：每秒刷新温度值，绑定让 UI 自动更新
+>             var timer = new DispatcherTimer { Interval = System.TimeSpan.FromSeconds(1) };
+>             timer.Tick += (s, e) => _vm.CurrentTemp =
+>                 (20 + new System.Random().NextDouble() * 10).ToString("F1");
+>             timer.Start();
+>         }
+>     }
+> }
+> ```
+> 
 > 
 
 > [!scene] 适用场景

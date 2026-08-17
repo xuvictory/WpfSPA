@@ -25,10 +25,122 @@ parent: 14.2 项目二：Modbus PLC 数据采集看板（进阶级）
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
-> ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> **Modbus 数据看板演示：每 1 秒轮询模拟 PLC 的 4 路寄存器并在看板卡片上实时刷新，点击"写入 40001"将设定值下发给 PLC，体现看板 UI 的"读展示 + 写控制"一体化设计：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="Modbus 数据看板" Height="420" Width="540"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="PLC 数据看板（实时刷新 + 读写）" Foreground="#58A6FF"
+>                    FontSize="14" FontWeight="Bold" Margin="0,0,0,10"/>
+>         <!-- 4 路寄存器卡片 -->
+>         <UniformGrid Grid.Row="1" Columns="4">
+>             <Border Background="#161B22" CornerRadius="6" Padding="8" Margin="2">
+>                 <StackPanel>
+>                     <TextBlock Text="40001 温度" Foreground="#8B949E" FontSize="11" HorizontalAlignment="Center"/>
+>                     <TextBlock x:Name="Reg1Text" Text="0" Foreground="#58A6FF" FontSize="22"
+>                                FontWeight="Bold" HorizontalAlignment="Center"/>
+>                 </StackPanel>
+>             </Border>
+>             <Border Background="#161B22" CornerRadius="6" Padding="8" Margin="2">
+>                 <StackPanel>
+>                     <TextBlock Text="40002 压力" Foreground="#8B949E" FontSize="11" HorizontalAlignment="Center"/>
+>                     <TextBlock x:Name="Reg2Text" Text="0" Foreground="#238636" FontSize="22"
+>                                FontWeight="Bold" HorizontalAlignment="Center"/>
+>                 </StackPanel>
+>             </Border>
+>             <Border Background="#161B22" CornerRadius="6" Padding="8" Margin="2">
+>                 <StackPanel>
+>                     <TextBlock Text="40003 速度" Foreground="#8B949E" FontSize="11" HorizontalAlignment="Center"/>
+>                     <TextBlock x:Name="Reg3Text" Text="0" Foreground="#58A6FF" FontSize="22"
+>                                FontWeight="Bold" HorizontalAlignment="Center"/>
+>                 </StackPanel>
+>             </Border>
+>             <Border Background="#161B22" CornerRadius="6" Padding="8" Margin="2">
+>                 <StackPanel>
+>                     <TextBlock Text="40004 产量" Foreground="#8B949E" FontSize="11" HorizontalAlignment="Center"/>
+>                     <TextBlock x:Name="Reg4Text" Text="0" Foreground="#238636" FontSize="22"
+>                                FontWeight="Bold" HorizontalAlignment="Center"/>
+>                 </StackPanel>
+>             </Border>
+>         </UniformGrid>
+>         <Border Grid.Row="2" Background="#161B22" CornerRadius="6" Padding="10" Margin="0,10">
+>             <StackPanel>
+>                 <TextBlock Text="写入寄存器（设置温度目标值）" Foreground="#58A6FF"
+>                            FontWeight="Bold" Margin="0,0,0,6"/>
+>                 <StackPanel Orientation="Horizontal">
+>                     <TextBox x:Name="WriteBox" Text="25" Width="80" Background="#21262D"
+>                              Foreground="#58A6FF" Padding="4"/>
+>                     <Button Content="写入 40001" Click="OnWrite" Margin="8,0,0,0" Padding="8"
+>                             Background="#21262D" Foreground="White"/>
+>                     <TextBlock x:Name="StatusText" Text="就绪" Foreground="#8B949E"
+>                                VerticalAlignment="Center" Margin="12,0,0,0"/>
+>                 </StackPanel>
+>             </StackPanel>
+>         </Border>
+>     </Grid>
+> </Window>
 > ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
+> ```csharp
+> using System;
+> using System.Windows;
+> using System.Windows.Media;
+> using System.Windows.Threading;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private readonly DispatcherTimer _timer = new DispatcherTimer();
+>         private readonly Random _rand = new Random();
+>         private readonly ushort[] _regs = new ushort[4];
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             _timer.Interval = TimeSpan.FromSeconds(1);
+>             _timer.Tick += OnPoll;
+>             _timer.Start();
+>         }
+>
+>         // 周期性轮询刷新看板（实际项目：ModbusClient.ReadHoldingRegisters）
+>         private void OnPoll(object sender, EventArgs e)
+>         {
+>             for (int i = 0; i < _regs.Length; i++)
+>                 _regs[i] = (ushort)(100 + _rand.Next(900));
+>             Reg1Text.Text = _regs[0].ToString();
+>             Reg2Text.Text = _regs[1].ToString();
+>             Reg3Text.Text = _regs[2].ToString();
+>             Reg4Text.Text = _regs[3].ToString();
+>             StatusText.Text = $"最近刷新 {DateTime.Now:HH:mm:ss}";
+>             StatusText.Foreground = new SolidColorBrush(Color.FromRgb(0x8B, 0x94, 0x9E));
+>         }
+>
+>         // 写入功能：把输入框设定值下发给 40001，并回显到看板
+>         private void OnWrite(object sender, RoutedEventArgs e)
+>         {
+>             if (!ushort.TryParse(WriteBox.Text, out ushort value)) return;
+>             _regs[0] = value;
+>             Reg1Text.Text = value.ToString();
+>             StatusText.Text = $"已写入 40001 = {value}";
+>             StatusText.Foreground = Brushes.LimeGreen;
+>         }
+>     }
+> }
+> ```
+> 
 > 
 
 > [!scene] 适用场景
