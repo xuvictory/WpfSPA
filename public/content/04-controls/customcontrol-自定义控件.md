@@ -25,9 +25,106 @@ parent: 4.11 用户控件与自定义控件
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **"LED 状态灯"自定义控件演示：CustomControl + Themes/Generic.xaml 默认样式 + OnApplyTemplate 模板装配：**
+>
+> **Controls/LedLight.cs（控件类，继承 Control）：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Controls;
+> using System.Windows.Media;
+>
+> namespace HmiDemo.Controls
+> {
+>     public class LedLight : Control
+>     {
+>         static LedLight()
+>         {
+>             // 指定默认样式在 Themes/Generic.xaml 中查找
+>             DefaultStyleKeyProperty.OverrideMetadata(
+>                 typeof(LedLight),
+>                 new FrameworkPropertyMetadata(typeof(LedLight)));
+>         }
+>
+>         // 依赖属性：灯的颜色（红/绿/黄）
+>         public static readonly DependencyProperty ColorProperty =
+>             DependencyProperty.Register(nameof(Color), typeof(Brush),
+>                 typeof(LedLight), new PropertyMetadata(Brushes.Gray));
+>
+>         public Brush Color
+>         {
+>             get { return (Brush)GetValue(ColorProperty); }
+>             set { SetValue(ColorProperty, value); }
+>         }
+>
+>         // 模板加载完成后，给椭圆填充颜色
+>         public override void OnApplyTemplate()
+>         {
+>             base.OnApplyTemplate();
+>             if (GetTemplateChild("PART_Led") is System.Windows.Shapes.Ellipse led)
+>             {
+>                 led.Fill = Color;
+>             }
+>         }
+>     }
+> }
+> ```
+>
+> **Themes/Generic.xaml（默认样式与模板）：**
+> ```xml
+> <ResourceDictionary
+>     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>     xmlns:controls="clr-namespace:HmiDemo.Controls">
+>     <Style TargetType="{x:Type controls:LedLight}">
+>         <Setter Property="Width" Value="24"/>
+>         <Setter Property="Height" Value="24"/>
+>         <Setter Property="Template">
+>             <Setter.Value>
+>                 <ControlTemplate TargetType="{x:Type controls:LedLight}">
+>                     <Ellipse x:Name="PART_Led" Fill="Gray"/>
+>                 </ControlTemplate>
+>             </Setter.Value>
+>         </Setter>
+>     </Style>
+> </ResourceDictionary>
+> ```
+>
+> **MainWindow.xaml（使用自定义控件）：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         xmlns:ctrls="clr-namespace:HmiDemo.Controls"
+>         Title="自定义控件 - LedLight" Height="280" Width="420"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="20">
+>         <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+>             <ctrls:LedLight Color="LimeGreen" VerticalAlignment="Center"/>
+>             <TextBlock Text=" 运行正常" Foreground="White" VerticalAlignment="Center"/>
+>         </StackPanel>
+>         <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+>             <ctrls:LedLight Color="Orange" VerticalAlignment="Center"/>
+>             <TextBlock Text=" 温度偏高" Foreground="White" VerticalAlignment="Center"/>
+>         </StackPanel>
+>         <StackPanel Orientation="Horizontal">
+>             <ctrls:LedLight Color="Red" VerticalAlignment="Center"/>
+>             <TextBlock Text=" 设备故障" Foreground="White" VerticalAlignment="Center"/>
+>         </StackPanel>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
+> ```csharp
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>     }
+> }
 > ```
 > 
 

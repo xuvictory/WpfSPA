@@ -25,9 +25,86 @@ parent: 4.6 日期与信息显示控件
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **设备状态提示演示：字符串 ToolTip、富内容 ToolTip（含图片/面板）、代码动态修改提示：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="工具提示 - ToolTip" Height="320" Width="520"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15" Width="420">
+>         <!-- 1. 简单字符串提示 -->
+>         <Button Content="启动设备（悬停看提示）" Padding="10" Margin="0,0,0,12"
+>                 HorizontalContentAlignment="Left" Background="#21262D"
+>                 Foreground="White"
+>                 ToolTip="点击后启动设备 M-101，耗时约 3 秒"/>
+>
+>         <!-- 2. 富内容 ToolTip：自定义面板 -->
+>         <Button x:Name="btnDetail" Content="查看设备详情（悬停看富提示）" Padding="10"
+>                 HorizontalContentAlignment="Left" Background="#21262D"
+>                 Foreground="White">
+>             <Button.ToolTip>
+>                 <ToolTip Placement="Right">
+>                     <Border Background="#161B22" BorderBrush="#2A4A6C"
+>                             BorderThickness="1" Padding="10" MinWidth="200">
+>                         <StackPanel>
+>                             <TextBlock Text="电机 M-101" FontWeight="Bold" Foreground="White"/>
+>                             <TextBlock Text="转速：1500 RPM" Foreground="#8B949E" Margin="0,4,0,0"/>
+>                             <TextBlock Text="温度：65 ℃（正常）" Foreground="#3FB950"/>
+>                         </StackPanel>
+>                     </Border>
+>                 </ToolTip>
+>             </Button.ToolTip>
+>         </Button>
+>
+>         <!-- 3. 代码动态设置 ToolTip -->
+>         <Button x:Name="btnDynamic" Content="动态提示按钮" Padding="10" Margin="0,12,0,0"
+>                 Click="OnUpdateTip" HorizontalContentAlignment="Left"
+>                 Background="#21262D" Foreground="White"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Controls;
+> using System.Windows.Media;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnUpdateTip(object sender, RoutedEventArgs e)
+>         {
+>             // 代码中动态构造富内容提示
+>             btnDynamic.ToolTip = new ToolTip
+>             {
+>                 Content = new StackPanel
+>                 {
+>                     Children =
+>                     {
+>                         new TextBlock
+>                         {
+>                             Text = "运行统计",
+>                             FontWeight = FontWeights.Bold,
+>                             Foreground = Brushes.White
+>                         },
+>                         new TextBlock
+>                         {
+>                             Text = "今日运行 7.5 小时",
+>                             Foreground = Brushes.LightGreen
+>                         }
+>                     }
+>                 }
+>             };
+>         }
+>     }
+> }
 > ```
 > 
 

@@ -25,9 +25,63 @@ parent: 4.10 对话框与交互
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **报警确认与操作提示演示：MessageBox 常用重载、按钮/图标组合、返回值判断：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="消息弹窗 - MessageBox" Height="360" Width="420"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15" Width="340">
+>         <Button Content="确认操作（OK/Cancel）" Click="OnConfirm" Padding="8" Margin="0,0,0,8"/>
+>         <Button Content="保存提示（Yes/No）" Click="OnSave" Padding="8" Margin="0,0,0,8"/>
+>         <Button Content="错误警告（图标）" Click="OnError" Padding="8" Margin="0,0,0,8"/>
+>         <TextBlock x:Name="tipText" Foreground="#8B949E" Margin="0,10,0,0" TextWrapping="Wrap"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnConfirm(object sender, RoutedEventArgs e)
+>         {
+>             // 返回值 MessageBoxResult 判断用户点的是哪个按钮
+>             var result = MessageBox.Show("确认要启动设备 M-101 吗？", "操作确认",
+>                                          MessageBoxButton.OKCancel,
+>                                          MessageBoxImage.Question);
+>             tipText.Text = result == MessageBoxResult.OK ? "已确认，设备启动中…" : "已取消";
+>         }
+>
+>         private void OnSave(object sender, RoutedEventArgs e)
+>         {
+>             var result = MessageBox.Show("当前数据未保存，是否保存？", "提示",
+>                                          MessageBoxButton.YesNoCancel,
+>                                          MessageBoxImage.Warning);
+>             tipText.Text = result switch
+>             {
+>                 MessageBoxResult.Yes => "已保存",
+>                 MessageBoxResult.No => "不保存，继续",
+>                 _ => "取消操作"
+>             };
+>         }
+>
+>         private void OnError(object sender, RoutedEventArgs e)
+>         {
+>             MessageBox.Show("通信超时，请检查网线连接！", "通信错误",
+>                             MessageBoxButton.OK, MessageBoxImage.Error);
+>         }
+>     }
+> }
 > ```
 > 
 

@@ -25,9 +25,64 @@ parent: 4.2 按钮类控件
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **模式切换演示：两态开关 + 三态（IsThreeState）开关的使用：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="模式切换 - ToggleButton" Height="360" Width="380"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <!-- 两态：选中/未选中 -->
+>         <ToggleButton x:Name="PowerBtn" Content="手动模式 OFF" Click="OnPowerToggle"
+>                       Padding="10" Margin="5" Background="#21262D" Foreground="White"/>
+>         <ToggleButton x:Name="AutoBtn" Content="自动巡检 OFF" Click="OnAutoToggle"
+>                       Padding="10" Margin="5" Background="#21262D" Foreground="White"/>
+>         <!-- 三态：未选中 / 选中 / 不确定（IsChecked == null） -->
+>         <ToggleButton x:Name="TriBtn" IsThreeState="True" Click="OnTriToggle"
+>                       Content="三态：全不选" Padding="10" Margin="5"
+>                       Background="#21262D" Foreground="White"/>
+>         <TextBlock x:Name="StateText" Foreground="#8B949E" Margin="5" TextWrapping="Wrap"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnPowerToggle(object sender, RoutedEventArgs e)
+>         {
+>             var isOn = PowerBtn.IsChecked == true;
+>             PowerBtn.Content = isOn ? "手动模式 ON" : "手动模式 OFF";
+>             StateText.Text = isOn ? "已切入手动模式，可单台启停" : "已切回自动模式";
+>         }
+>
+>         private void OnAutoToggle(object sender, RoutedEventArgs e)
+>         {
+>             AutoBtn.Content = AutoBtn.IsChecked == true ? "自动巡检 ON" : "自动巡检 OFF";
+>         }
+>
+>         private void OnTriToggle(object sender, RoutedEventArgs e)
+>         {
+>             // 三态判断：true / false / null（不确定）
+>             TriBtn.Content = TriBtn.IsChecked switch
+>             {
+>                 true => "三态：全选",
+>                 false => "三态：全不选",
+>                 null => "三态：不确定（部分通道）"
+>             };
+>         }
+>     }
+> }
 > ```
 > 
 

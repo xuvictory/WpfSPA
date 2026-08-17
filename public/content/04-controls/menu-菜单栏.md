@@ -25,9 +25,62 @@ parent: 4.8 菜单与工具栏
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **主菜单演示：MenuItem 层级、Icon 图标、InputGestureText 快捷键提示、Click 事件：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="主菜单 - Menu" Height="400" Width="600"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <DockPanel>
+>         <Menu DockPanel.Dock="Top" Background="#161B22" Foreground="White">
+>             <MenuItem Header="_文件">
+>                 <MenuItem Header="打开工程" Click="OnOpen" InputGestureText="Ctrl+O"/>
+>                 <MenuItem Header="保存工程" Click="OnSave" InputGestureText="Ctrl+S"/>
+>                 <Separator/>
+>                 <MenuItem Header="退出" Click="OnExit" InputGestureText="Alt+F4"/>
+>             </MenuItem>
+>             <MenuItem Header="_操作">
+>                 <!-- 带图标（Emoji 简单示意） -->
+>                 <MenuItem Header="启动采集" Click="OnStart">
+>                     <MenuItem.Icon><TextBlock Text="▶"/></MenuItem.Icon>
+>                 </MenuItem>
+>                 <MenuItem Header="停止采集" Click="OnStop">
+>                     <MenuItem.Icon><TextBlock Text="■"/></MenuItem.Icon>
+>                 </MenuItem>
+>             </MenuItem>
+>             <MenuItem Header="帮_助">
+>                 <MenuItem Header="关于" Click="OnAbout"/>
+>             </MenuItem>
+>         </Menu>
+>
+>         <TextBlock x:Name="tipText" Foreground="#8B949E" Margin="15" TextWrapping="Wrap"
+>                    VerticalAlignment="Top"/>
+>     </DockPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnOpen(object sender, RoutedEventArgs e) => tipText.Text = "打开工程…";
+>         private void OnSave(object sender, RoutedEventArgs e) => tipText.Text = "工程已保存";
+>         private void OnStart(object sender, RoutedEventArgs e) => tipText.Text = "数据采集已启动";
+>         private void OnStop(object sender, RoutedEventArgs e) => tipText.Text = "数据采集已停止";
+>         private void OnExit(object sender, RoutedEventArgs e) => Close();
+>         private void OnAbout(object sender, RoutedEventArgs e)
+>             => tipText.Text = "设备监控系统 V1.0";
+>     }
+> }
 > ```
 > 
 

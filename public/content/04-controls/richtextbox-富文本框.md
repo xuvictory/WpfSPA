@@ -25,9 +25,67 @@ parent: 4.3 文本类控件
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **巡检报告编辑器演示：用 FlowDocument 装载富文本内容，TextRange 读取/导出文本：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="巡检报告 - RichTextBox" Height="480" Width="640"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <DockPanel Margin="10">
+>         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
+>             <Button Content="载入报告" Click="OnLoad" Padding="8,4" Margin="0,0,8,0"/>
+>             <Button Content="统计内容" Click="OnExport" Padding="8,4"/>
+>         </StackPanel>
+>         <RichTextBox x:Name="rtbReport" Background="#161B22" Foreground="White"
+>                      BorderBrush="#2A4A6C" BorderThickness="1" Padding="10"
+>                      VerticalScrollBarVisibility="Auto"/>
+>     </DockPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Documents;
+> using System.Windows.Media;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnLoad(object sender, RoutedEventArgs e)
+>         {
+>             // 富文本由 FlowDocument 承载：段落、加粗、颜色随意组合
+>             var doc = new FlowDocument();
+>             doc.Blocks.Add(new Paragraph(new Run("2026-08-17 设备巡检报告"))
+>             {
+>                 FontWeight = FontWeights.Bold,
+>                 FontSize = 18
+>             });
+>             doc.Blocks.Add(new Paragraph(new Run("温度：正常 25.6 ℃")));
+>             doc.Blocks.Add(new Paragraph(new Run("振动：偏高，建议复测"))
+>             {
+>                 Foreground = Brushes.OrangeRed
+>             });
+>             rtbReport.Document = doc;
+>         }
+>
+>         private void OnExport(object sender, RoutedEventArgs e)
+>         {
+>             // TextRange 可提取富文本内的纯文本，用于统计/保存
+>             var range = new TextRange(rtbReport.Document.ContentStart,
+>                                       rtbReport.Document.ContentEnd);
+>             MessageBox.Show(range.Text.Length > 0
+>                 ? $"报告内容共 {range.Text.Length} 个字符"
+>                 : "报告为空，请先载入", "统计");
+>         }
+>     }
+> }
 > ```
 > 
 

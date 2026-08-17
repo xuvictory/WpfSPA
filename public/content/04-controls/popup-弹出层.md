@@ -25,9 +25,62 @@ parent: 4.6 日期与信息显示控件
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **设备快捷操作弹层演示：Popup 放置位置、IsOpen 控制显示/隐藏、不遮挡主窗口：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="快捷操作 - Popup" Height="360" Width="520"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="点击下方按钮，弹出快捷操作面板：" Foreground="White"/>
+>         <Button x:Name="btnShow" Content="设备 M-101 快捷操作" Click="OnTogglePopup"
+>                 Padding="10" Margin="0,10,0,0" HorizontalAlignment="Left"
+>                 Background="#21262D" Foreground="White"/>
+>
+>         <!-- Popup 独立于主窗口内容之外，可任意定位 -->
+>         <Popup x:Name="pop" IsOpen="False" Placement="Bottom" AllowsTransparency="True"
+>                PlacementTarget="{Binding ElementName=btnShow}" StaysOpen="False">
+>             <Border Background="#161B22" BorderBrush="#2A4A6C" BorderThickness="1"
+>                     CornerRadius="6" Padding="12">
+>                 <StackPanel MinWidth="160">
+>                     <TextBlock Text="快捷操作" FontWeight="Bold" Foreground="White" Margin="0,0,0,8"/>
+>                     <Button Content="启动" Click="OnQuickStart" Padding="8" Margin="0,2"/>
+>                     <Button Content="停止" Click="OnQuickStop" Padding="8" Margin="0,2"/>
+>                     <Button Content="复位" Click="OnQuickReset" Padding="8" Margin="0,2"/>
+>                 </StackPanel>
+>             </Border>
+>         </Popup>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Controls.Primitives;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnTogglePopup(object sender, RoutedEventArgs e)
+>         {
+>             // 点击外部区域自动关闭（StaysOpen=False）
+>             pop.IsOpen = !pop.IsOpen;
+>         }
+>
+>         private void OnQuickStart(object sender, RoutedEventArgs e) => pop.IsOpen = false;
+>
+>         private void OnQuickStop(object sender, RoutedEventArgs e) => pop.IsOpen = false;
+>
+>         private void OnQuickReset(object sender, RoutedEventArgs e) => pop.IsOpen = false;
+>     }
+> }
 > ```
 > 
 

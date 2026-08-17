@@ -25,9 +25,65 @@ parent: 4.5 范围类控件
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **自定义滚动条演示：直接使用 ScrollBar 做"比例缩放"滑杆 + 控制 ScrollViewer 滚动：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="滚动条 - ScrollBar" Height="420" Width="520"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <DockPanel Margin="12">
+>         <!-- 右侧：独立垂直 ScrollBar 控制下面的滚动区域 -->
+>         <ScrollBar x:Name="sb" DockPanel.Dock="Right" Orientation="Vertical"
+>                    Minimum="0" Maximum="1000" LargeChange="100" SmallChange="20"
+>                    Scroll="OnScroll" Width="18" Margin="6,0,0,0"/>
+>
+>         <!-- 真正承载滚动内容的区域（隐藏自带滚动条，由 sb 接管） -->
+>         <ScrollViewer x:Name="sv" HorizontalScrollBarVisibility="Disabled"
+>                       VerticalScrollBarVisibility="Hidden">
+>             <TextBlock x:Name="logText" TextWrapping="Wrap" Foreground="#C9D1D9" LineHeight="22"/>
+>         </ScrollViewer>
+>     </DockPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Text;
+> using System.Windows;
+> using System.Windows.Controls;
+> using System.Windows.Controls.Primitives;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>
+>             // 模拟设备上报日志
+>             var sb2 = new StringBuilder();
+>             for (int i = 1; i <= 80; i++)
+>             {
+>                 sb2.AppendLine($"[{i,3}] 设备状态帧 {i}：温度 {20 + i % 15}.{i % 10} ℃");
+>             }
+>             logText.Text = sb2.ToString();
+>
+>             // 布局完成后才能拿到真实高度，用 Loaded 事件映射滚动条范围
+>             Loaded += (s, e) => sb.Maximum = Math.Max(1, logText.ActualHeight);
+>         }
+>
+>         private void OnScroll(object sender, ScrollEventArgs e)
+>         {
+>             // 手动同步 ScrollViewer 的垂直偏移
+>             sv.ScrollToVerticalOffset(e.NewValue);
+>         }
+>     }
+> }
 > ```
 > 
 

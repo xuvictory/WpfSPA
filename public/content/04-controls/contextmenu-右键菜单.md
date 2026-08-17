@@ -25,9 +25,78 @@ parent: 4.8 菜单与工具栏
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **数据表格右键菜单演示：ContextMenu 绑定到控件、识别右键对象执行操作：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="右键菜单 - ContextMenu" Height="440" Width="600"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <DockPanel Margin="12">
+>         <TextBlock DockPanel.Dock="Top" Text="在设备列表上单击右键试试："
+>                    Foreground="#8B949E" Margin="0,0,0,8"/>
+>
+>         <ListBox x:Name="lstDevices" DisplayMemberPath="Name"
+>                  Background="#161B22" Foreground="White" BorderBrush="#2A4A6C"
+>                  BorderThickness="1">
+>             <!-- ContextMenu 是 ListBox 的属性，所有条目共用 -->
+>             <ListBox.ContextMenu>
+>                 <ContextMenu>
+>                     <MenuItem Header="启动设备" Click="OnStart"/>
+>                     <MenuItem Header="停止设备" Click="OnStop"/>
+>                     <Separator/>
+>                     <MenuItem Header="删除设备" Click="OnDelete"/>
+>                 </ContextMenu>
+>             </ListBox.ContextMenu>
+>         </ListBox>
+>         <TextBlock x:Name="tipText" Foreground="#8B949E" Margin="0,10,0,0"/>
+>     </DockPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Collections.Generic;
+> using System.Windows;
+> using System.Windows.Controls;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             lstDevices.ItemsSource = new List<string> { "电机 M-101", "变频器 V-202", "传感器 S-303" };
+>         }
+>
+>         // 通过 ListBox.SelectedItem 判断右键针对哪一项
+>         private void OnStart(object sender, RoutedEventArgs e)
+>         {
+>             tipText.Text = lstDevices.SelectedItem == null
+>                 ? "请先选中设备"
+>                 : $"已启动 {lstDevices.SelectedItem}";
+>         }
+>
+>         private void OnStop(object sender, RoutedEventArgs e)
+>         {
+>             tipText.Text = lstDevices.SelectedItem == null
+>                 ? "请先选中设备"
+>                 : $"已停止 {lstDevices.SelectedItem}";
+>         }
+>
+>         private void OnDelete(object sender, RoutedEventArgs e)
+>         {
+>             if (lstDevices.SelectedItem is string name)
+>             {
+>                 lstDevices.Items.Remove(name);
+>                 tipText.Text = $"已删除 {name}";
+>             }
+>         }
+>     }
+> }
 > ```
 > 
 

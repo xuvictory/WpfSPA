@@ -25,9 +25,61 @@ parent: 4.7 容器与分组控件
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **设备配置页演示：多 TabItem 分区、代码动态切换选中页、读取当前页：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="设备配置 - TabControl" Height="420" Width="560"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <TabControl x:Name="tabs" Margin="12">
+>         <!-- 基本信息页 -->
+>         <TabItem Header="基本信息">
+>             <StackPanel Margin="15">
+>                 <TextBlock Text="设备名称：主电机 M-101" Foreground="White" Margin="0,0,0,6"/>
+>                 <TextBlock Text="额定功率：45 kW" Foreground="White" Margin="0,0,0,6"/>
+>                 <TextBlock Text="投运日期：2024-03-12" Foreground="White"/>
+>             </StackPanel>
+>         </TabItem>
+>         <!-- 运行参数页 -->
+>         <TabItem Header="运行参数">
+>             <StackPanel Margin="15">
+>                 <TextBlock Text="当前转速：1500 RPM" Foreground="White" Margin="0,0,0,6"/>
+>                 <TextBlock Text="当前温度：65 ℃" Foreground="White" Margin="0,0,0,6"/>
+>                 <TextBlock Text="累计运行：128 小时" Foreground="White"/>
+>             </StackPanel>
+>         </TabItem>
+>         <!-- 报警记录页 -->
+>         <TabItem Header="报警记录">
+>             <ListBox Background="#161B22" Foreground="#C9D1D9" BorderThickness="0">
+>                 <ListBoxItem Content="[10:12] 电机过热报警"/>
+>                 <ListBoxItem Content="[11:05] 通信中断恢复"/>
+>             </ListBox>
+>         </TabItem>
+>     </TabControl>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Controls;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>
+>             // 程序启动默认定位到"运行参数"页
+>             tabs.SelectedIndex = 1;
+>         }
+>     }
+> }
 > ```
 > 
 

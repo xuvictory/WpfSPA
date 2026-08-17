@@ -25,9 +25,58 @@ parent: 4.8 菜单与工具栏
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **状态栏演示：StatusBarItem 分区显示运行状态、通信状态、当前时间（定时刷新）：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="状态栏 - StatusBar" Height="360" Width="680"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <DockPanel>
+>         <TextBlock DockPanel.Dock="Top" Text="主内容区（示例）" Foreground="#8B949E"
+>                    Margin="15" FontSize="20"/>
+>
+>         <!-- StatusBar 固定在窗口底部 -->
+>         <StatusBar DockPanel.Dock="Bottom" Background="#161B22" Foreground="White">
+>             <StatusBarItem>
+>                 <TextBlock x:Name="lblRunState" Text="● 系统运行中" Foreground="#3FB950"/>
+>             </StatusBarItem>
+>             <Separator/>
+>             <StatusBarItem>
+>                 <TextBlock x:Name="lblComm" Text="通信：已连接" Foreground="#3FB950"/>
+>             </StatusBarItem>
+>             <Separator/>
+>             <StatusBarItem HorizontalAlignment="Right">
+>                 <TextBlock x:Name="lblTime"/>
+>             </StatusBarItem>
+>         </StatusBar>
+>     </DockPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Windows;
+> using System.Windows.Threading;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>
+>             // 每秒刷新状态栏时间（真实项目会随采集状态更新通信文本）
+>             var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+>             timer.Tick += (s, e) => lblTime.Text = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+>             timer.Start();
+>         }
+>     }
+> }
 > ```
 > 
 

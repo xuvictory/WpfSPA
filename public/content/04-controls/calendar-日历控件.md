@@ -25,9 +25,69 @@ parent: 4.6 日期与信息显示控件
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **排产日历演示：DisplayDateStart/End 限定可显示范围、SelectedDates 多选、标记日期样式：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="排产日历 - Calendar" Height="480" Width="620"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15" Orientation="Horizontal">
+>         <Calendar x:Name="cal" SelectionMode="MultipleRange"
+>                   SelectedDatesChanged="OnSelectedDatesChanged"
+>                   Background="#161B22" Foreground="White"/>
+>         <TextBlock x:Name="tipText" Foreground="#8B949E" Width="220"
+>                    Margin="20,0,0,0" TextWrapping="Wrap" VerticalAlignment="Top"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Windows;
+> using System.Windows.Controls;
+> using System.Windows.Controls.Primitives;
+> using System.Windows.Media;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>
+>             // 只允许查看/选择近两个月
+>             cal.DisplayDateStart = DateTime.Today;
+>             cal.DisplayDateEnd = DateTime.Today.AddMonths(2);
+>
+>             // 预先标记最近三天为"已排产"日期
+>             for (int i = 0; i < 3; i++)
+>             {
+>                 cal.SelectedDates.Add(DateTime.Today.AddDays(i));
+>             }
+>
+>             // 通过样式高亮周末（示例：周六日背景）
+>             cal.CalendarDayButtonStyle = CreateDayStyle();
+>         }
+>
+>         private Style CreateDayStyle()
+>         {
+>             var style = new Style(typeof(CalendarDayButton));
+>             style.Setters.Add(new Setter(Control.ForegroundProperty, Brushes.White));
+>             return style;
+>         }
+>
+>         private void OnSelectedDatesChanged(object sender, SelectionChangedEventArgs e)
+>         {
+>             tipText.Text = $"已选择 {cal.SelectedDates.Count} 天：\n" +
+>                            string.Join("\n", cal.SelectedDates);
+>         }
+>     }
+> }
 > ```
 > 
 

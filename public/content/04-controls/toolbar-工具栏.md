@@ -25,9 +25,56 @@ parent: 4.8 菜单与工具栏
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **工具栏演示：ToolBarTray 承载多组 ToolBar、工具栏按钮 + 分隔条 + 开关控件：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="工具栏 - ToolBar" Height="380" Width="680"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <DockPanel>
+>         <!-- ToolBarTray 可以容纳多组 ToolBar，并支持拖动换行 -->
+>         <ToolBarTray DockPanel.Dock="Top" Background="#161B22">
+>             <ToolBar>
+>                 <Button Content="开始采集" Click="OnStart"/>
+>                 <Button Content="停止采集" Click="OnStop"/>
+>                 <Separator/>
+>                 <Button Content="导出数据" Click="OnExport"/>
+>             </ToolBar>
+>             <ToolBar>
+>                 <!-- 工具栏里也能放 ToggleButton / ComboBox 等控件 -->
+>                 <ToggleButton x:Name="chkAlarm" Content="报警静音"/>
+>                 <Separator/>
+>                 <ComboBox Width="90" SelectedIndex="0" IsEditable="False">
+>                     <ComboBoxItem Content="1 秒"/>
+>                     <ComboBoxItem Content="5 秒"/>
+>                     <ComboBoxItem Content="10 秒"/>
+>                 </ComboBox>
+>             </ToolBar>
+>         </ToolBarTray>
+>
+>         <TextBlock x:Name="tipText" Foreground="#8B949E" Margin="15" TextWrapping="Wrap"/>
+>     </DockPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnStart(object sender, RoutedEventArgs e) => tipText.Text = "采集已启动";
+>         private void OnStop(object sender, RoutedEventArgs e) => tipText.Text = "采集已停止";
+>         private void OnExport(object sender, RoutedEventArgs e) => tipText.Text = "正在导出数据…";
+>     }
+> }
 > ```
 > 
 

@@ -25,9 +25,57 @@ parent: 4.9 装饰与辅助控件
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **菜单与工具栏中的分隔线演示：Separator 在菜单分组、工具栏分组中的使用：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="分隔线 - Separator" Height="360" Width="600"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <DockPanel>
+>         <StackPanel DockPanel.Dock="Top" Background="#161B22">
+>             <Menu Background="Transparent" Foreground="White">
+>                 <MenuItem Header="文件">
+>                     <MenuItem Header="打开"/>
+>                     <MenuItem Header="保存"/>
+>                     <!-- 菜单中的分隔线 -->
+>                     <Separator/>
+>                     <MenuItem Header="退出"/>
+>                 </MenuItem>
+>             </Menu>
+>             <!-- 工具栏与菜单之间的横向分隔线 -->
+>             <Separator Background="#2A4A6C" Height="1" Margin="0,2"/>
+>             <ToolBarTray Background="Transparent">
+>                 <ToolBar>
+>                     <Button Content="新建"/>
+>                     <Button Content="打开"/>
+>                     <!-- 工具栏中的竖向分隔线 -->
+>                     <Separator/>
+>                     <Button Content="剪切"/>
+>                     <Button Content="复制"/>
+>                 </ToolBar>
+>             </ToolBarTray>
+>         </StackPanel>
+>
+>         <TextBlock Text="分隔线用于把功能分组，提升界面可读性。" Foreground="#8B949E"
+>                    Margin="15" VerticalAlignment="Top"/>
+>     </DockPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>     }
+> }
 > ```
 > 
 

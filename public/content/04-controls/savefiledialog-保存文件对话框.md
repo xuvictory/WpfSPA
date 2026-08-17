@@ -25,9 +25,64 @@ parent: 4.10 对话框与交互
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **导出数据演示：SaveFileDialog 的 FileName 默认名、AddExtension 自动补扩展名、OverwritePrompt 覆盖提示：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="导出数据 - SaveFileDialog" Height="300" Width="440"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15" Width="380">
+>         <Button Content="导出运行数据到 CSV…" Click="OnExport" Padding="10"
+>                 HorizontalAlignment="Left" Background="#238636" Foreground="White"/>
+>         <TextBlock x:Name="tipText" Foreground="#8B949E" Margin="0,12,0,0" TextWrapping="Wrap"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.IO;
+> using System.Text;
+> using System.Windows;
+> using Microsoft.Win32;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnExport(object sender, RoutedEventArgs e)
+>         {
+>             var dlg = new SaveFileDialog
+>             {
+>                 Filter = "CSV 文件 (*.csv)|*.csv|Excel 文件 (*.xlsx)|*.xlsx|所有文件 (*.*)|*.*",
+>                 FileName = $"运行数据_{System.DateTime.Now:yyyyMMdd}",
+>                 DefaultExt = ".csv",
+>                 AddExtension = true,      // 未写扩展名时自动补齐
+>                 OverwritePrompt = true    // 覆盖已有文件前先询问
+>             };
+>
+>             if (dlg.ShowDialog() == true)
+>             {
+>                 // 模拟写入导出的数据
+>                 var sb = new StringBuilder();
+>                 sb.AppendLine("时间,温度,压力");
+>                 sb.AppendLine("08:00,25.6,0.42");
+>                 sb.AppendLine("08:05,25.8,0.45");
+>                 File.WriteAllText(dlg.FileName, sb.ToString(), Encoding.UTF8);
+>                 tipText.Text = $"导出成功：{dlg.FileName}";
+>             }
+>             else
+>             {
+>                 tipText.Text = "已取消导出";
+>             }
+>         }
+>     }
+> }
 > ```
 > 
 

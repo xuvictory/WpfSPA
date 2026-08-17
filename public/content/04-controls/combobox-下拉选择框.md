@@ -25,9 +25,83 @@ parent: 4.4 选择类控件
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **通道选择演示：ItemsSource 绑定数据源、SelectedItem/SelectedValue 读取选中项：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="通道选择 - ComboBox" Height="340" Width="420"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15" Width="340">
+>         <TextBlock Text="选择采集通道：" Foreground="White"/>
+>         <!-- DisplayMemberPath 决定下拉显示哪个属性 -->
+>         <ComboBox x:Name="cmbChannel" DisplayMemberPath="Name"
+>                   SelectionChanged="OnChannelChanged"
+>                   Margin="0,6,0,12" Padding="6" Background="#161B22"
+>                   Foreground="White"/>
+>
+>         <TextBlock Text="选择采样频率：" Foreground="White"/>
+>         <ComboBox x:Name="cmbRate" Margin="0,6,0,12" Padding="6"
+>                   Background="#161B22" Foreground="White">
+>             <ComboBoxItem Content="1 Hz"/>
+>             <ComboBoxItem Content="10 Hz" IsSelected="True"/>
+>             <ComboBoxItem Content="100 Hz"/>
+>         </ComboBox>
+>
+>         <Button Content="开始采集" Click="OnStart" Padding="8"
+>                 Background="#238636" Foreground="White"/>
+>         <TextBlock x:Name="tipText" Foreground="#8B949E" Margin="0,10,0,0" TextWrapping="Wrap"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Collections.Generic;
+> using System.Windows;
+> using System.Windows.Controls;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>
+>             // ItemsSource 绑定集合；也可用 Items.Add 逐个添加
+>             cmbChannel.ItemsSource = new List<Channel>
+>             {
+>                 new Channel { Id = 1, Name = "温度通道 T1" },
+>                 new Channel { Id = 2, Name = "压力通道 P1" },
+>                 new Channel { Id = 3, Name = "流量通道 F1" }
+>             };
+>             cmbChannel.SelectedIndex = 0;
+>         }
+>
+>         private void OnChannelChanged(object sender, SelectionChangedEventArgs e)
+>         {
+>             if (cmbChannel.SelectedItem is Channel c)
+>             {
+>                 tipText.Text = $"已选择通道：{c.Name}（ID={c.Id}）";
+>             }
+>         }
+>
+>         private void OnStart(object sender, RoutedEventArgs e)
+>         {
+>             string rate = (cmbRate.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "10 Hz";
+>             tipText.Text = $"开始采集，频率 {rate}";
+>         }
+>     }
+>
+>     public class Channel
+>     {
+>         public int Id { get; set; }
+>         public string Name { get; set; }
+>     }
+> }
 > ```
 > 
 

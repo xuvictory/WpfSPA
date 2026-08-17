@@ -25,9 +25,66 @@ parent: 4.9 装饰与辅助控件
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **内嵌设备 Web 页面演示：WebBrowser 加载本地 HTML 与导航控制（注意依赖 WebBrowser 内核）：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="内嵌浏览器 - WebBrowser" Height="500" Width="760"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <DockPanel Margin="10">
+>         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
+>             <Button Content="设备监控页" Click="OnLoadDevice" Padding="10,4" Margin="0,0,6,0"/>
+>             <Button Content="使用帮助页" Click="OnLoadHelp" Padding="10,4" Margin="0,0,6,0"/>
+>             <Button Content="后退" Click="OnBack" Padding="10,4" Margin="0,0,6,0"/>
+>             <Button Content="刷新" Click="OnRefresh" Padding="10,4"/>
+>         </StackPanel>
+>
+>         <!-- WebBrowser 显示网页；WPF 中该控件依赖系统 WebBrowser(IE) 内核 -->
+>         <WebBrowser x:Name="web" />
+>     </DockPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             OnLoadDevice(null, null);
+>         }
+>
+>         private void OnLoadDevice(object sender, RoutedEventArgs e)
+>         {
+>             // Navigate 支持 URL 或本地文件路径
+>             web.Navigate(new Uri("https://example.com/device-monitor"));
+>         }
+>
+>         private void OnLoadHelp(object sender, RoutedEventArgs e)
+>         {
+>             // 也可以直接显示 HTML 字符串（DocumentText 属性）
+>             web.NavigateToString(
+>                 "<html><body style='background:#161B22;color:#fff;font-family:sans-serif'>" +
+>                 "<h2>设备使用帮助</h2><p>请先连接设备，再查看实时数据。</p></body></html>");
+>         }
+>
+>         private void OnBack(object sender, RoutedEventArgs e)
+>         {
+>             if (web.CanGoBack) web.GoBack();
+>         }
+>
+>         private void OnRefresh(object sender, RoutedEventArgs e) => web.Refresh();
+>     }
+> }
 > ```
 > 
 

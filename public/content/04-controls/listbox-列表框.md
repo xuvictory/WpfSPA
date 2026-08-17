@@ -25,9 +25,77 @@ parent: 4.4 选择类控件
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **报警通道列表演示：SelectionMode 多选、SelectedItem 读取选中项、ItemTemplate 定制外观：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="报警通道 - ListBox" Height="460" Width="460"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="选中要确认的报警（可多选）：" Foreground="White" Margin="0,0,0,6"/>
+>         <!-- SelectionMode=Extended 支持 Ctrl/Shift 多选 -->
+>         <ListBox x:Name="lstAlarms" SelectionMode="Extended"
+>                  Height="220" Background="#161B22" BorderBrush="#2A4A6C"
+>                  BorderThickness="1" Foreground="White">
+>             <ListBox.ItemTemplate>
+>                 <DataTemplate>
+>                     <StackPanel Orientation="Horizontal">
+>                         <TextBlock Text="{Binding Time}" Foreground="#8B949E" Width="70"/>
+>                         <TextBlock Text="{Binding Level}" Foreground="#F85149" Width="50"/>
+>                         <TextBlock Text="{Binding Message}" Foreground="#C9D1D9"/>
+>                     </StackPanel>
+>                 </DataTemplate>
+>             </ListBox.ItemTemplate>
+>         </ListBox>
+>         <Button Content="批量确认" Click="OnConfirm" Padding="8" Margin="0,12,0,0"
+>                 HorizontalAlignment="Left" Background="#238636" Foreground="White"/>
+>         <TextBlock x:Name="tipText" Foreground="#8B949E" Margin="0,10,0,0" TextWrapping="Wrap"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Collections.Generic;
+> using System.Windows;
+> using System.Windows.Controls;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>
+>             lstAlarms.ItemsSource = new List<Alarm>
+>             {
+>                 new Alarm { Time = "10:12", Level = "紧急", Message = "电机 M-101 过热" },
+>                 new Alarm { Time = "10:30", Level = "严重", Message = "压力 P1 过高" },
+>                 new Alarm { Time = "11:05", Level = "一般", Message = "通信中断恢复" }
+>             };
+>         }
+>
+>         private void OnConfirm(object sender, RoutedEventArgs e)
+>         {
+>             // SelectedItems 是多选集合；SelectedItem 是当前焦点项
+>             int count = lstAlarms.SelectedItems.Count;
+>             tipText.Text = count > 0
+>                 ? $"已确认 {count} 条报警"
+>                 : "请先选中要确认的报警";
+>         }
+>     }
+>
+>     public class Alarm
+>     {
+>         public string Time { get; set; }
+>         public string Level { get; set; }
+>         public string Message { get; set; }
+>     }
+> }
 > ```
 > 
 

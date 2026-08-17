@@ -25,9 +25,59 @@ parent: 4.10 对话框与交互
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **导入配置文件演示：OpenFileDialog 的 Filter 过滤、InitialDirectory 初始目录、ShowDialog 返回值：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="导入配置 - OpenFileDialog" Height="300" Width="440"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15" Width="380">
+>         <Button Content="导入设备配置文件…" Click="OnImport" Padding="10"
+>                 HorizontalAlignment="Left" Background="#238636" Foreground="White"/>
+>         <TextBlock x:Name="tipText" Foreground="#8B949E" Margin="0,12,0,0" TextWrapping="Wrap"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.IO;
+> using System.Windows;
+> using Microsoft.Win32;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnImport(object sender, RoutedEventArgs e)
+>         {
+>             var dlg = new OpenFileDialog
+>             {
+>                 // 文件类型过滤：描述|扩展名（分号分隔多种）
+>                 Filter = "配置文件 (*.cfg;*.ini)|*.cfg;*.ini|文本文件 (*.txt)|*.txt|所有文件 (*.*)|*.*",
+>                 InitialDirectory = @"D:\HmiProjects",
+>                 Title = "选择设备配置文件",
+>                 CheckFileExists = true
+>             };
+>
+>             // ShowDialog() 返回 bool?：true=确定，false=取消
+>             if (dlg.ShowDialog() == true)
+>             {
+>                 tipText.Text = $"已选择：{dlg.FileName}\n大小：{new FileInfo(dlg.FileName).Length} 字节";
+>                 // 后续可读取文件内容解析参数…
+>             }
+>             else
+>             {
+>                 tipText.Text = "已取消导入";
+>             }
+>         }
+>     }
+> }
 > ```
 > 
 

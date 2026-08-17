@@ -25,9 +25,58 @@ parent: 4.5 范围类控件
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **转速调节演示：Minimum/Maximum/Value、TickFrequency 刻度、IsSnapToTickEnabled 对齐：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="转速调节 - Slider" Height="320" Width="520"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="20">
+>         <DockPanel>
+>             <TextBlock DockPanel.Dock="Left" Text="目标转速（RPM）：" Foreground="White"/>
+>             <TextBlock DockPanel.Dock="Right" x:Name="lblValue" Text="1500"
+>                        Foreground="#FF6B35" FontWeight="Bold"/>
+>         </DockPanel>
+>
+>         <!-- 滑块：范围 0~3000，步进 100，显示刻度并吸附 -->
+>         <Slider x:Name="slider" Minimum="0" Maximum="3000" Value="1500"
+>                 TickFrequency="100" IsSnapToTickEnabled="True"
+>                 TickPlacement="BottomRight" ValueChanged="OnValueChanged"
+>                 Margin="0,10,0,0" Foreground="#2A4A6C"/>
+>
+>         <Button Content="下发转速" Click="OnApply" Padding="8" Margin="0,15,0,0"
+>                 HorizontalAlignment="Left" Background="#238636" Foreground="White"/>
+>         <TextBlock x:Name="tipText" Foreground="#8B949E" Margin="0,10,0,0"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Controls;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+>         {
+>             // Value 变化时实时回显
+>             lblValue.Text = slider.Value.ToString("F0");
+>         }
+>
+>         private void OnApply(object sender, RoutedEventArgs e)
+>         {
+>             tipText.Text = $"已下发转速 {slider.Value:F0} RPM 到变频器";
+>         }
+>     }
+> }
 > ```
 > 
 

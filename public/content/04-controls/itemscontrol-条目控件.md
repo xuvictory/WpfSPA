@@ -25,9 +25,63 @@ parent: 4.1 控件内容模型
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **设备清单演示：ItemsSource 绑定数据源 + DataTemplate 定制每条目外观：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="设备清单 - ItemsControl" Height="450" Width="700"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="设备清单" FontWeight="Bold" Foreground="White" Margin="0,0,0,8"/>
+>
+>         <ItemsControl x:Name="DeviceList">
+>             <ItemsControl.ItemTemplate>
+>                 <DataTemplate>
+>                     <Border Margin="0,4" Padding="8" Background="#21262D" CornerRadius="4">
+>                         <StackPanel Orientation="Horizontal">
+>                             <TextBlock Text="{Binding Name}" Foreground="White" Width="160"/>
+>                             <TextBlock Text="{Binding Status}" Foreground="#3FB950"/>
+>                         </StackPanel>
+>                     </Border>
+>                 </DataTemplate>
+>             </ItemsControl.ItemTemplate>
+>         </ItemsControl>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Collections.Generic;
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>
+>             // ItemsControl 负责"遍历数据 + 套用模板"，数据源可以是任意集合
+>             DeviceList.ItemsSource = new List<Device>
+>             {
+>                 new Device { Name = "电机 M-101", Status = "运行中" },
+>                 new Device { Name = "变频器 V-202", Status = "运行中" },
+>                 new Device { Name = "传感器 S-303", Status = "待机" }
+>             };
+>         }
+>     }
+>
+>     public class Device
+>     {
+>         public string Name { get; set; }
+>         public string Status { get; set; }
+>     }
+> }
 > ```
 > 
 

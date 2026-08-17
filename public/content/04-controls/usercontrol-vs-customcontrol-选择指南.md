@@ -25,9 +25,119 @@ parent: 4.11 用户控件与自定义控件
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **同一"温度显示条"分别用两种方式实现，对比差异：UserControl 适合组合现有控件、CustomControl 适合完全自绘模板：**
+>
+> **方式一：UserControl（组合式，开发快，样式跟随外观文件）**
+>
+> **Controls/TempBarUC.xaml：**
+> ```xml
+> <UserControl x:Class="HmiDemo.Controls.TempBarUC"
+>              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+>     <Grid>
+>         <ProgressBar x:Name="bar" Minimum="0" Maximum="100" Height="18"/>
+>         <TextBlock x:Name="txt" Foreground="White" HorizontalAlignment="Center"
+>                    VerticalAlignment="Center" FontSize="12"/>
+>     </Grid>
+> </UserControl>
+> ```
+>
+> **Controls/TempBarUC.xaml.cs：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Controls;
+>
+> namespace HmiDemo.Controls
+> {
+>     public partial class TempBarUC : UserControl
+>     {
+>         public TempBarUC() => InitializeComponent();
+>
+>         public double Value
+>         {
+>             get { return bar.Value; }
+>             set
+>             {
+>                 bar.Value = value;
+>                 txt.Text = $"{value:F0} ℃";
+>             }
+>         }
+>     }
+> }
+> ```
+>
+> **方式二：CustomControl（自绘模板，外观可在多个主题间切换）**
+>
+> **Controls/TempBarCC.cs：**
+> ```csharp
+> using System.Windows;
+> using System.Windows.Controls;
+> using System.Windows.Controls.Primitives;
+>
+> namespace HmiDemo.Controls
+> {
+>     public class TempBarCC : RangeBase
+>     {
+>         static TempBarCC()
+>         {
+>             DefaultStyleKeyProperty.OverrideMetadata(typeof(TempBarCC),
+>                 new FrameworkPropertyMetadata(typeof(TempBarCC)));
+>         }
+>
+>         // RangeBase 已经带了 Minimum/Maximum/Value 依赖属性
+>     }
+> }
+> ```
+>
+> **Themes/Generic.xaml（为其定义模板）：**
+> ```xml
+> <ResourceDictionary
+>     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>     xmlns:controls="clr-namespace:HmiDemo.Controls">
+>     <Style TargetType="{x:Type controls:TempBarCC}">
+>         <Setter Property="Height" Value="18"/>
+>         <Setter Property="Template">
+>             <Setter.Value>
+>                 <ControlTemplate TargetType="{x:Type controls:TempBarCC}">
+>                     <ProgressBar Minimum="{TemplateBinding Minimum}"
+>                                  Maximum="{TemplateBinding Maximum}"
+>                                  Value="{TemplateBinding Value}" Height="18"/>
+>                 </ControlTemplate>
+>             </Setter.Value>
+>         </Setter>
+>     </Style>
+> </ResourceDictionary>
+> ```
+>
+> **MainWindow.xaml（两种控件并列使用）：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         xmlns:ctrls="clr-namespace:HmiDemo.Controls"
+>         Title="两种实现对比" Height="280" Width="460"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="20">
+>         <TextBlock Text="UserControl 实现：" Foreground="#8B949E"/>
+>         <ctrls:TempBarUC x:Name="ucBar" Value="65" Margin="0,4,0,16"/>
+>         <TextBlock Text="CustomControl 实现：" Foreground="#8B949E"/>
+>         <ctrls:TempBarCC x:Name="ccBar" Minimum="0" Maximum="100" Value="65"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
+> ```csharp
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>     }
+> }
 > ```
 > 
 

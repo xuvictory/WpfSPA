@@ -25,9 +25,94 @@ parent: 4.11 用户控件与自定义控件
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **"参数行"用户控件演示：新建 UserControl 组合已有控件，通过依赖属性暴露给外部使用：**
+>
+> **UserControls/ParamRow.xaml（用户控件外观）：**
+> ```xml
+> <UserControl x:Class="HmiDemo.UserControls.ParamRow"
+>              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+>     <Grid>
+>         <Grid.ColumnDefinitions>
+>             <ColumnDefinition Width="Auto"/>
+>             <ColumnDefinition Width="*"/>
+>         </Grid.ColumnDefinitions>
+>         <TextBlock x:Name="lblName" Foreground="#C9D1D9" VerticalAlignment="Center" Width="100"/>
+>         <TextBox x:Name="txtValue" Grid.Column="1" Padding="4" Background="#161B22"
+>                  Foreground="White" TextChanged="OnTextChanged"/>
+>     </Grid>
+> </UserControl>
+> ```
+>
+> **UserControls/ParamRow.xaml.cs（用户控件后台，暴露依赖属性）：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Controls;
+>
+> namespace HmiDemo.UserControls
+> {
+>     public partial class ParamRow : UserControl
+>     {
+>         public ParamRow() => InitializeComponent();
+>
+>         // 参数名属性：供 XAML 直接赋值 <param:ParamRow Label="温度"/>
+>         public string Label
+>         {
+>             get { return lblName.Text; }
+>             set { lblName.Text = value; }
+>         }
+>
+>         // 参数值依赖属性：支持绑定 {Binding Value}
+>         public static readonly DependencyProperty ValueProperty =
+>             DependencyProperty.Register(nameof(Value), typeof(string), typeof(ParamRow),
+>                 new PropertyMetadata("", OnValueChanged));
+>
+>         public string Value
+>         {
+>             get { return (string)GetValue(ValueProperty); }
+>             set { SetValue(ValueProperty, value); }
+>         }
+>
+>         private static void OnValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+>         {
+>             ((ParamRow)d).txtValue.Text = e.NewValue as string;
+>         }
+>
+>         private void OnTextChanged(object sender, TextChangedEventArgs e)
+>         {
+>             SetCurrentValue(ValueProperty, txtValue.Text);
+>         }
+>     }
+> }
+> ```
+>
+> **MainWindow.xaml（主窗口使用用户控件）：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         xmlns:uc="clr-namespace:HmiDemo.UserControls"
+>         Title="用户控件 - UserControl" Height="300" Width="420"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <uc:ParamRow Label="温度（℃）" Value="25.6" Margin="0,0,0,8"/>
+>         <uc:ParamRow Label="压力（MPa）" Value="0.42" Margin="0,0,0,8"/>
+>         <uc:ParamRow Label="转速（RPM）" Value="1500"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
+> ```csharp
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>     }
+> }
 > ```
 > 
 

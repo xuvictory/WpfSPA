@@ -25,9 +25,55 @@ parent: 4.3 文本类控件
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **操作员登录窗口演示：PasswordChar 掩码、SecurePassword 安全取密、用后即清：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="操作员登录 - PasswordBox" Height="320" Width="380"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117"
+>         ResizeMode="NoResize">
+>     <StackPanel Margin="20" Width="300">
+>         <TextBlock Text="用户名：" Foreground="White"/>
+>         <TextBox x:Name="txtUser" Margin="0,4,0,12" Padding="6"/>
+>
+>         <TextBlock Text="密码：" Foreground="White"/>
+>         <!-- PasswordChar 指定掩码字符；MaxLength 限制输入长度 -->
+>         <PasswordBox x:Name="pwdBox" PasswordChar="●" MaxLength="16"
+>                      Margin="0,4,0,12" Padding="6"/>
+>
+>         <Button Content="登录" Click="OnLogin" Padding="8"
+>                 Background="#238636" Foreground="White"/>
+>         <TextBlock x:Name="tipText" Foreground="#8B949E" Margin="0,10,0,0"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Security;
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnLogin(object sender, RoutedEventArgs e)
+>         {
+>             // 安全做法：用 SecurePassword 而不是 Password（避免明文常驻内存）
+>             using (SecureString sec = pwdBox.SecurePassword)
+>             {
+>                 bool ok = txtUser.Text == "admin" && sec.Length == 6;
+>                 tipText.Text = ok ? "登录成功，欢迎进入监控系统" : "用户名或密码错误";
+>             }
+>             pwdBox.Clear(); // 校验完成后立即清空，降低泄露风险
+>         }
+>     }
+> }
 > ```
 > 
 

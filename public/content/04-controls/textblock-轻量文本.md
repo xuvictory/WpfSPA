@@ -25,9 +25,71 @@ parent: 4.3 文本类控件
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **状态指示与报警摘要演示：Text 属性、Inlines 混排（Run/Bold/Italic）、文本裁剪：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="状态指示 - TextBlock" Height="340" Width="480"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <!-- Text 属性：简单直接 -->
+>         <TextBlock Text="● 系统运行正常" Foreground="#3FB950"
+>                    FontSize="16" FontWeight="Bold"/>
+>
+>         <!-- Inlines 混排：Run / Bold / Italic 组合 -->
+>         <TextBlock TextWrapping="Wrap" Margin="0,12,0,0"
+>                    Foreground="#C9D1D9" LineHeight="22">
+>             <Run Text="设备 "/>
+>             <Bold><Run Text="M-101"/></Bold>
+>             <Run Text=" 于 "/>
+>             <Run Text="08:32:15" Foreground="#FF6B35"/>
+>             <Run Text=" 上报异常，建议立即检查 "/>
+>             <Italic><Run Text="冷却系统"/></Italic>
+>             <Run Text="。"/>
+>         </TextBlock>
+>
+>         <!-- 超宽自动省略号：TextTrimming -->
+>         <TextBlock Text="这是一段非常长的报警描述文本，超出设定宽度后会自动以省略号截断显示"
+>                    TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" Width="300"
+>                    Margin="0,12,0,0" Foreground="#8B949E"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Controls;
+> using System.Windows.Documents;
+> using System.Windows.Media;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>
+>             // 代码中动态拼装 Inlines：适合实时拼接日志/报警文本
+>             var log = new TextBlock { Margin = new Thickness(0, 12, 0, 0) };
+>             log.Inlines.Add(new Run("当前压力："));
+>             log.Inlines.Add(new Run("4.2 MPa")
+>             {
+>                 Foreground = Brushes.Orange,
+>                 FontWeight = FontWeights.Bold
+>             });
+>             log.Inlines.Add(new Run("（正常范围 0 ~ 6 MPa）")
+>             {
+>                 Foreground = Brushes.Gray
+>             });
+>             ((StackPanel)Content).Children.Add(log);
+>         }
+>     }
+> }
 > ```
 > 
 

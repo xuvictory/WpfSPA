@@ -25,9 +25,60 @@ parent: 4.3 文本类控件
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **带下划线助记符的菜单/按钮演示：_ 标记的字母按 Alt 键可触发：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="助记符 - AccessText" Height="320" Width="420"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15" Width="360">
+>         <!-- 普通文本中的助记符 -->
+>         <TextBlock Foreground="White" FontSize="15">
+>             <AccessText Text="_File 文件" />
+>         </TextBlock>
+>
+>         <!-- 按钮内的助记符：按 Alt+S 触发点击 -->
+>         <Button Padding="8" Margin="0,10,0,0" HorizontalContentAlignment="Left"
+>                 Click="OnSave" Background="#21262D" Foreground="White">
+>             <AccessText Text="_保存配置（Alt+S）" />
+>         </Button>
+>
+>         <Button Padding="8" Margin="0,10,0,0" HorizontalContentAlignment="Left"
+>                 Click="OnExit" Background="#21262D" Foreground="White">
+>             <AccessText Text="_退出系统（Alt+X）" />
+>         </Button>
+>
+>         <TextBlock Foreground="#8B949E" Margin="0,16,0,0" TextWrapping="Wrap">
+>             <AccessText Text="提示：下划线助记符用 _ 标记，按下 Alt 键可看到下划线高亮。" />
+>         </TextBlock>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnSave(object sender, RoutedEventArgs e)
+>         {
+>             MessageBox.Show("配置已保存", "提示");
+>         }
+>
+>         private void OnExit(object sender, RoutedEventArgs e)
+>         {
+>             Close();
+>         }
+>     }
+> }
 > ```
 > 
 

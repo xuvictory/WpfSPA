@@ -25,9 +25,64 @@ parent: 4.7 容器与分组控件
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **高级设置折叠面板演示：Expander 展开/收起、IsExpanded 状态控制与事件：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="折叠面板 - Expander" Height="420" Width="520"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <!-- 基本设置：默认展开 -->
+>         <Expander Header="基本设置" IsExpanded="True" ExpandDirection="Down"
+>                   Background="#161B22" Foreground="White" Margin="0,0,0,10"
+>                   BorderBrush="#2A4A6C" BorderThickness="1">
+>             <StackPanel Margin="12">
+>                 <CheckBox Content="开机自启动采集" IsChecked="True" Margin="0,2" Foreground="#C9D1D9"/>
+>                 <CheckBox Content="声光报警" IsChecked="True" Margin="0,2" Foreground="#C9D1D9"/>
+>             </StackPanel>
+>         </Expander>
+>
+>         <!-- 高级设置：默认收起，展开时才显示 -->
+>         <Expander Header="高级设置（专家模式）" ExpandDirection="Down"
+>                   Expanded="OnExpanded" Collapsed="OnCollapsed"
+>                   Background="#161B22" Foreground="White"
+>                   BorderBrush="#2A4A6C" BorderThickness="1">
+>             <StackPanel Margin="12">
+>                 <TextBlock Text="采样间隔（ms）：" Foreground="#8B949E"/>
+>                 <TextBox x:Name="txtInterval" Text="1000" Margin="0,4,0,0" Padding="4"/>
+>                 <TextBlock x:Name="tipText" Foreground="#FF6B35" Margin="0,8,0,0"
+>                            TextWrapping="Wrap"/>
+>             </StackPanel>
+>         </Expander>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Controls;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnExpanded(object sender, RoutedEventArgs e)
+>         {
+>             tipText.Text = "提示：高级参数修改后需要重启采集任务生效";
+>         }
+>
+>         private void OnCollapsed(object sender, RoutedEventArgs e)
+>         {
+>             tipText.Text = "";
+>         }
+>     }
+> }
 > ```
 > 
 

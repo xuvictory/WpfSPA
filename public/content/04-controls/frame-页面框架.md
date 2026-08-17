@@ -25,9 +25,64 @@ parent: 4.7 容器与分组控件
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **多页面导航演示：Frame 承载不同 Page、Navigate 跳转、Journal 前进后退：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="导航 - Frame" Height="460" Width="640"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <DockPanel>
+>         <!-- 顶部导航按钮 -->
+>         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="10">
+>             <Button Content="首页" Click="OnHome" Padding="10,5" Margin="0,0,6,0"/>
+>             <Button Content="设备监控" Click="OnMonitor" Padding="10,5" Margin="0,0,6,0"/>
+>             <Button Content="数据报表" Click="OnReport" Padding="10,5" Margin="0,0,6,0"/>
+>             <Button Content="返回" Click="OnBack" Padding="10,5" Margin="0,0,6,0"/>
+>             <Button Content="前进" Click="OnForward" Padding="10,5"/>
+>         </StackPanel>
+>
+>         <!-- Frame 承载被导航的 Page -->
+>         <Frame x:Name="mainFrame" Margin="10" BorderBrush="#2A4A6C"
+>                BorderThickness="1" Background="#161B22"/>
+>     </DockPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Controls;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             mainFrame.Navigate(new Page1()); // 启动时加载首页
+>         }
+>
+>         private void OnHome(object sender, RoutedEventArgs e) => mainFrame.Navigate(new Page1());
+>
+>         private void OnMonitor(object sender, RoutedEventArgs e) => mainFrame.Navigate(new Page2());
+>
+>         private void OnReport(object sender, RoutedEventArgs e) => mainFrame.Navigate(new Page3());
+>
+>         // 前进/后退由 Frame 的导航历史（Journal）管理
+>         private void OnBack(object sender, RoutedEventArgs e) => mainFrame.GoBack();
+>
+>         private void OnForward(object sender, RoutedEventArgs e) => mainFrame.GoForward();
+>     }
+>
+>     // 三个简单 Page（真实项目各自独立文件）
+>     public class Page1 : Page { public Page1() { Content = new TextBlock { Text = "首页：欢迎使用设备监控系统", Foreground = System.Windows.Media.Brushes.White }; } }
+>     public class Page2 : Page { public Page2() { Content = new TextBlock { Text = "设备监控：实时数据看板", Foreground = System.Windows.Media.Brushes.White }; } }
+>     public class Page3 : Page { public Page3() { Content = new TextBlock { Text = "数据报表：趋势曲线与统计", Foreground = System.Windows.Media.Brushes.White }; } }
+> }
 > ```
 > 
 

@@ -25,9 +25,65 @@ parent: 4.1 控件内容模型
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **设备详情卡片演示：Content 属性可以是字符串、UIElement，甚至任意对象：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="设备详情卡片 - ContentControl" Height="450" Width="700"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <!-- 内容1：Content 可以是纯文本 -->
+>         <ContentControl Content="设备状态：运行中" Margin="5" Foreground="#3FB950"/>
+>
+>         <!-- 内容2：Content 可以是任意面板（UIElement） -->
+>         <ContentControl Margin="5">
+>             <Border Background="#161B22" CornerRadius="6" Padding="12"
+>                     BorderBrush="#2A4A6C" BorderThickness="1">
+>                 <StackPanel>
+>                     <TextBlock Text="电机 M-101" FontWeight="Bold" Foreground="White"/>
+>                     <TextBlock Text="当前转速：1500 RPM" Foreground="#8B949E" Margin="0,4,0,0"/>
+>                     <TextBlock Text="运行时长：128 小时" Foreground="#8B949E"/>
+>                 </StackPanel>
+>             </Border>
+>         </ContentControl>
+>
+>         <!-- 内容3：Content 留待后台代码动态赋值 -->
+>         <ContentControl x:Name="DeviceInfoBox" Margin="5"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Controls;
+> using System.Windows.Media;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>
+>             // Content 可以是任意对象：字符串、UIElement，甚至是数据对象
+>             DeviceInfoBox.Content = new Border
+>             {
+>                 Background = Brushes.Transparent,
+>                 Padding = new Thickness(10),
+>                 Child = new TextBlock
+>                 {
+>                     Text = "设备编号：DEV-001\n控制器：西门子 S7-1200",
+>                     Foreground = Brushes.White
+>                 }
+>             };
+>         }
+>     }
+> }
 > ```
 > 
 

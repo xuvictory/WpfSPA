@@ -25,9 +25,63 @@ parent: 4.3 文本类控件
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **参数录入表单演示：Label 的 Target 属性把下划线助记符（Alt+字母）关联到输入框：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="参数录入 - Label" Height="300" Width="420"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.ColumnDefinitions>
+>             <ColumnDefinition Width="Auto"/>
+>             <ColumnDefinition Width="*"/>
+>         </Grid.ColumnDefinitions>
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>
+>         <!-- Target 绑定到输入框：按 Alt+T 会聚焦到 txtTemp -->
+>         <Label Content="_温度设定：" Target="{Binding ElementName=txtTemp}"
+>                Foreground="White" VerticalAlignment="Center"
+>                Grid.Row="0" Grid.Column="0"/>
+>         <TextBox x:Name="txtTemp" Grid.Row="0" Grid.Column="1"
+>                  Text="25.0" Margin="5" Padding="4"/>
+>
+>         <Label Content="_采样周期（ms）：" Target="{Binding ElementName=txtPeriod}"
+>                Foreground="White" VerticalAlignment="Center"
+>                Grid.Row="1" Grid.Column="0"/>
+>         <TextBox x:Name="txtPeriod" Grid.Row="1" Grid.Column="1"
+>                  Text="1000" Margin="5" Padding="4"/>
+>
+>         <Button Content="应用参数" Click="OnApply" Grid.Row="2" Grid.Column="1"
+>                 Padding="8" Margin="5,10,5,0" HorizontalAlignment="Left"
+>                 Background="#238636" Foreground="White"/>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnApply(object sender, RoutedEventArgs e)
+>         {
+>             MessageBox.Show($"温度 {txtTemp.Text} ℃，采样周期 {txtPeriod.Text} ms 已下发",
+>                             "参数应用");
+>         }
+>     }
+> }
 > ```
 > 
 

@@ -25,9 +25,70 @@ parent: 4.5 范围类控件
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **批量导出进度演示：Value 百分比模式 + IsIndeterminate 不确定模式切换：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="进度展示 - ProgressBar" Height="320" Width="480"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="20">
+>         <TextBlock Text="批量导出运行数据：" Foreground="White"/>
+>         <!-- 百分比模式：Minimum/Maximum/Value -->
+>         <ProgressBar x:Name="bar" Minimum="0" Maximum="100" Value="0"
+>                      Height="18" Margin="0,8,0,6"/>
+>         <TextBlock x:Name="lblPercent" Text="0%" Foreground="#8B949E"
+>                    HorizontalAlignment="Right"/>
+>
+>         <TextBlock Text="正在建立通信（不确定模式）：" Foreground="White" Margin="0,14,0,6"/>
+>         <!-- 不确定模式：IsIndeterminate=True，动画滚动表示"进行中" -->
+>         <ProgressBar IsIndeterminate="True" Height="18"/>
+>
+>         <Button x:Name="btnStart" Content="开始导出" Click="OnStart" Padding="8"
+>                 Margin="0,18,0,0" HorizontalAlignment="Left"
+>                 Background="#238636" Foreground="White"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Threading;
+> using System.Windows;
+> using System.Windows.Threading;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private int _progress;
+>
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnStart(object sender, RoutedEventArgs e)
+>         {
+>             btnStart.IsEnabled = false;
+>             _progress = 0;
+>             // 用 DispatcherTimer 模拟耗时任务推进进度条（真实项目用后台线程+回调）
+>             var timer = new DispatcherTimer { Interval = new System.TimeSpan(0, 0, 0, 0, 100) };
+>             timer.Tick += (s, args) =>
+>             {
+>                 _progress += 3;
+>                 if (_progress >= 100)
+>                 {
+>                     _progress = 100;
+>                     timer.Stop();
+>                     btnStart.IsEnabled = true;
+>                 }
+>                 bar.Value = _progress;
+>                 lblPercent.Text = $"{_progress}%";
+>             };
+>             timer.Start();
+>         }
+>     }
+> }
 > ```
 > 
 

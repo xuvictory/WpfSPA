@@ -25,9 +25,58 @@ parent: 4.6 日期与信息显示控件
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **设备照片与状态图演示：Source 多种来源、Stretch 缩放模式、代码动态切换图片：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="图片显示 - Image" Height="480" Width="520"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="设备图片（Stretch=Uniform 等比缩放）：" Foreground="White"/>
+>         <!-- 直接引用图片资源；Uniform 保持比例、Fill 拉伸铺满 -->
+>         <Image x:Name="imgDevice" Source="assets/device.png"
+>                Stretch="Uniform" Height="200" Margin="0,6,0,12"
+>                Background="#161B22"/>
+>
+>         <TextBlock Text="状态指示灯：" Foreground="White"/>
+>         <Image x:Name="imgStatus" Width="24" Height="24"
+>                Stretch="Uniform" HorizontalAlignment="Left"
+>                Source="assets/green.png" Margin="0,4,0,12"/>
+>
+>         <Button Content="切换运行状态" Click="OnToggleStatus" Padding="8"
+>                 HorizontalAlignment="Left" Background="#21262D" Foreground="White"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Media;
+> using System.Windows.Media.Imaging;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private bool _running = true;
+>
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnToggleStatus(object sender, RoutedEventArgs e)
+>         {
+>             _running = !_running;
+>             // 代码中动态更换图片来源（注意清理旧 BitmapImage 避免句柄泄漏）
+>             var uri = new System.Uri(_running
+>                 ? "pack://application:,,,/assets/green.png"
+>                 : "pack://application:,,,/assets/red.png");
+>             imgStatus.Source = new BitmapImage(uri);
+>         }
+>     }
+> }
 > ```
 > 
 

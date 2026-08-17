@@ -25,9 +25,64 @@ parent: 4.2 按钮类控件
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **温度设定微调演示：按住"＋/−"不放会按 Interval 间隔连续触发 Click：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="温度微调 - RepeatButton" Height="260" Width="400"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="20">
+>         <TextBlock Text="设定温度（℃）" Foreground="White"/>
+>         <Grid Margin="0,10,0,0">
+>             <Grid.ColumnDefinitions>
+>                 <ColumnDefinition Width="Auto"/>
+>                 <ColumnDefinition Width="*"/>
+>                 <ColumnDefinition Width="Auto"/>
+>             </Grid.ColumnDefinitions>
+>             <!-- Delay：首次重复前的等待毫秒数；Interval：后续重复间隔毫秒数 -->
+>             <RepeatButton Content="−" Click="OnDecrease" Width="40" Height="36"
+>                           Delay="300" Interval="80" Grid.Column="0"
+>                           Background="#21262D" Foreground="White" FontSize="18"/>
+>             <TextBox x:Name="TempBox" Text="25.0" Grid.Column="1"
+>                      HorizontalAlignment="Center" VerticalAlignment="Center"
+>                      FontSize="20" TextAlignment="Center" Width="140"/>
+>             <RepeatButton Content="＋" Click="OnIncrease" Width="40" Height="36"
+>                           Delay="300" Interval="80" Grid.Column="2"
+>                           Background="#21262D" Foreground="White" FontSize="18"/>
+>         </Grid>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Globalization;
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private double _temp = 25.0;
+>
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnIncrease(object sender, RoutedEventArgs e)
+>         {
+>             _temp += 0.5;
+>             TempBox.Text = _temp.ToString("F1", CultureInfo.InvariantCulture);
+>         }
+>
+>         private void OnDecrease(object sender, RoutedEventArgs e)
+>         {
+>             _temp -= 0.5;
+>             TempBox.Text = _temp.ToString("F1", CultureInfo.InvariantCulture);
+>         }
+>     }
+> }
 > ```
 > 
 

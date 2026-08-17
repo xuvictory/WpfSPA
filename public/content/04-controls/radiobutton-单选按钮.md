@@ -25,9 +25,57 @@ parent: 4.2 按钮类控件
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **通信协议选择演示：同一 GroupName 内互斥单选，代码读取选中项：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="通信方式 - RadioButton" Height="380" Width="380"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel x:Name="ProtocolPanel" Margin="15">
+>         <TextBlock Text="选择通信协议" FontWeight="Bold" Foreground="White" Margin="0,0,0,8"/>
+>         <!-- 相同 GroupName 的 RadioButton 只能选中一个 -->
+>         <RadioButton GroupName="Protocol" Content="Modbus RTU（串口）" IsChecked="True"
+>                      Margin="5" Foreground="White"/>
+>         <RadioButton GroupName="Protocol" Content="Modbus TCP（以太网）"
+>                      Margin="5" Foreground="White"/>
+>         <RadioButton GroupName="Protocol" Content="OPC UA" Margin="5" Foreground="White"/>
+>         <Button Content="连接" Click="OnConnect" Margin="5,15,5,5" Padding="8"
+>                 Background="#238636" Foreground="White"/>
+>         <TextBlock x:Name="ResultText" Foreground="#8B949E" Margin="5"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Controls;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnConnect(object sender, RoutedEventArgs e)
+>         {
+>             // 遍历同组 RadioButton，找到被选中的那一个
+>             string selected = "未选择";
+>             foreach (object child in ProtocolPanel.Children)
+>             {
+>                 if (child is RadioButton rb && rb.IsChecked == true)
+>                 {
+>                     selected = rb.Content.ToString();
+>                     break;
+>                 }
+>             }
+>             ResultText.Text = $"已选择协议：{selected}，正在连接…";
+>         }
+>     }
+> }
 > ```
 > 
 

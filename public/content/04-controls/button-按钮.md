@@ -25,9 +25,60 @@ parent: 4.2 按钮类控件
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **设备启停控制演示：Click 事件、IsDefault 回车确认、IsCancel 取消关闭：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="设备控制 - Button" Height="360" Width="380"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15" Width="300">
+>         <Button Content="启动设备" Click="OnStartClick" Margin="5" Padding="8"
+>                 Background="#238636" Foreground="White"/>
+>         <Button Content="停止设备" Click="OnStopClick" Margin="5" Padding="8"
+>                 Background="#DA3633" Foreground="White"/>
+>         <!-- IsDefault：按下回车等价于点击该按钮 -->
+>         <Button Content="确认（回车）" IsDefault="True" Click="OnConfirm"
+>                 Margin="5" Padding="8" Background="#21262D" Foreground="White"/>
+>         <!-- IsCancel：按下 Esc 会触发该按钮的 Click 并关闭窗口 -->
+>         <Button Content="取消（Esc）" IsCancel="True" Margin="5" Padding="8"
+>                 Background="#21262D" Foreground="White"/>
+>         <TextBlock x:Name="StatusText" Foreground="#8B949E" Margin="5" TextWrapping="Wrap"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Media;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnStartClick(object sender, RoutedEventArgs e)
+>         {
+>             StatusText.Text = "设备已启动，转速 0 → 1500 RPM";
+>             StatusText.Foreground = Brushes.LimeGreen;
+>         }
+>
+>         private void OnStopClick(object sender, RoutedEventArgs e)
+>         {
+>             StatusText.Text = "设备已停止";
+>             StatusText.Foreground = Brushes.OrangeRed;
+>         }
+>
+>         private void OnConfirm(object sender, RoutedEventArgs e)
+>         {
+>             StatusText.Text = "参数已确认下发";
+>         }
+>     }
+> }
 > ```
 > 
 

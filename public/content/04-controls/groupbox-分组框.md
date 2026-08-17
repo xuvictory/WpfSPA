@@ -25,9 +25,68 @@ parent: 4.7 容器与分组控件
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **设备参数分组演示：GroupBox 的 Header 作分组标题，内部放表单控件：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="参数分组 - GroupBox" Height="460" Width="520"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <!-- 通信参数分组 -->
+>         <GroupBox Header="通信参数" Margin="0,0,0,15" Foreground="White"
+>                   BorderBrush="#2A4A6C" BorderThickness="1" Padding="10">
+>             <Grid>
+>                 <Grid.ColumnDefinitions>
+>                     <ColumnDefinition Width="Auto"/>
+>                     <ColumnDefinition Width="*"/>
+>                 </Grid.ColumnDefinitions>
+>                 <Grid.RowDefinitions>
+>                     <RowDefinition Height="Auto"/>
+>                     <RowDefinition Height="Auto"/>
+>                 </Grid.RowDefinitions>
+>                 <TextBlock Text="波特率：" Foreground="#8B949E" Grid.Row="0" Grid.Column="0"/>
+>                 <TextBox Text="9600" Grid.Row="0" Grid.Column="1" Margin="6,2"/>
+>                 <TextBlock Text="从站地址：" Foreground="#8B949E" Grid.Row="1" Grid.Column="0"/>
+>                 <TextBox Text="1" Grid.Row="1" Grid.Column="1" Margin="6,2"/>
+>             </Grid>
+>         </GroupBox>
+>
+>         <!-- 运行保护分组 -->
+>         <GroupBox Header="运行保护" Foreground="White"
+>                   BorderBrush="#2A4A6C" BorderThickness="1" Padding="10">
+>             <StackPanel>
+>                 <CheckBox Content="过温保护（85 ℃）" IsChecked="True" Margin="0,2" Foreground="#C9D1D9"/>
+>                 <CheckBox Content="过压保护（0.6 MPa）" IsChecked="True" Margin="0,2" Foreground="#C9D1D9"/>
+>                 <CheckBox Content="缺相保护" Margin="0,2" Foreground="#C9D1D9"/>
+>             </StackPanel>
+>         </GroupBox>
+>
+>         <Button Content="保存参数" Click="OnSave" Padding="8" Margin="0,12,0,0"
+>                 HorizontalAlignment="Left" Background="#238636" Foreground="White"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         // 读取分组内控件取值（真实项目可用绑定替代手动查找）
+>         private void OnSave(object sender, RoutedEventArgs e)
+>         {
+>             MessageBox.Show("参数已保存", "提示");
+>         }
+>     }
+> }
 > ```
 > 
 

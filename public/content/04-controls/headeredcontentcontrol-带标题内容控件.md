@@ -25,9 +25,59 @@ parent: 4.1 控件内容模型
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **设备参数面板演示：Header 与 Content 分开设置，标题与内容自由组合：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="设备参数面板 - HeaderedContentControl" Height="450" Width="700"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel x:Name="root" Margin="15">
+>         <!-- GroupBox 就是 HeaderedContentControl 最典型的应用 -->
+>         <GroupBox Header="通信参数" Margin="5" Foreground="White">
+>             <StackPanel Margin="10">
+>                 <TextBlock Text="波特率：9600" Margin="0,2"/>
+>                 <TextBlock Text="数据位：8" Margin="0,2"/>
+>                 <TextBlock Text="停止位：1" Margin="0,2"/>
+>             </StackPanel>
+>         </GroupBox>
+>
+>         <!-- 直接使用 HeaderedContentControl -->
+>         <HeaderedContentControl Header="运行状态" Margin="5" Padding="10"
+>                                 Background="#161B22" BorderBrush="#2A4A6C"
+>                                 BorderThickness="1">
+>             <TextBlock Text="● 设备运行正常" Foreground="#3FB950"/>
+>         </HeaderedContentControl>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Controls;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>
+>             // Header 和 Content 都可以在代码中动态设置
+>             var box = new HeaderedContentControl
+>             {
+>                 Header = "实时数据",
+>                 Margin = new Thickness(5),
+>                 Content = new TextBlock { Text = "温度：25.6 ℃  湿度：48%" }
+>             };
+>             root.Children.Add(box);
+>         }
+>     }
+> }
 > ```
 > 
 

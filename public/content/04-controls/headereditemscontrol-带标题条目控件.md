@@ -25,9 +25,52 @@ parent: 4.1 控件内容模型
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **报警记录面板演示：Header 显示标题，Items 存放多条报警条目：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="报警记录 - HeaderedItemsControl" Height="450" Width="700"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <!-- TreeView、Expander 等都是 HeaderedItemsControl 的子类 -->
+>         <HeaderedItemsControl x:Name="AlarmList" Header="今日报警（3 条）"
+>                               Background="#161B22" BorderBrush="#2A4A6C"
+>                               BorderThickness="1" Padding="10">
+>             <TextBlock Text="[10:12] 电机过热报警" Foreground="#F85149" Margin="0,2"/>
+>             <TextBlock Text="[10:30] 压力过高报警" Foreground="#F85149" Margin="0,2"/>
+>             <TextBlock Text="[11:05] 通信中断报警" Foreground="#F85149" Margin="0,2"/>
+>         </HeaderedItemsControl>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Controls;
+> using System.Windows.Media;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>
+>             // 动态追加条目：调用 Items.Add() 即可实时出现在界面
+>             AlarmList.Items.Add(new TextBlock
+>             {
+>                 Text = "[11:40] 温度超限报警",
+>                 Foreground = Brushes.OrangeRed,
+>                 Margin = new Thickness(0, 2, 0, 0)
+>             });
+>         }
+>     }
+> }
 > ```
 > 
 

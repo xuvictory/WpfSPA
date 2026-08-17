@@ -25,9 +25,68 @@ parent: 4.9 装饰与辅助控件
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **可拖拽分栏布局演示：GridSplitter 拖动调整列宽，实现"设备树 | 详情 | 日志"三栏：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="分栏布局 - GridSplitter" Height="460" Width="760"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="10">
+>         <Grid.ColumnDefinitions>
+>             <ColumnDefinition Width="2*" MinWidth="140"/>
+>             <ColumnDefinition Width="Auto"/>
+>             <ColumnDefinition Width="5*" MinWidth="220"/>
+>             <ColumnDefinition Width="Auto"/>
+>             <ColumnDefinition Width="3*" MinWidth="140"/>
+>         </Grid.ColumnDefinitions>
+>
+>         <!-- 左栏：设备列表 -->
+>         <ListBox Grid.Column="0" Background="#161B22" Foreground="White"
+>                  BorderBrush="#2A4A6C" BorderThickness="1">
+>             <ListBoxItem Content="电机 M-101"/>
+>             <ListBoxItem Content="变频器 V-202"/>
+>             <ListBoxItem Content="传感器 S-303"/>
+>         </ListBox>
+>
+>         <!-- 第一个可拖拽分割条（Vertical 默认） -->
+>         <GridSplitter Grid.Column="1" Width="6" HorizontalAlignment="Stretch"
+>                       Background="#2A4A6C" ResizeBehavior="PreviousAndNext"
+>                       ShowsPreview="True"/>
+>
+>         <!-- 中栏：设备详情 -->
+>         <StackPanel Grid.Column="2" Background="#161B22" BorderBrush="#2A4A6C"
+>                     BorderThickness="1" Padding="10">
+>             <TextBlock Text="设备详情" FontWeight="Bold" Foreground="White"/>
+>             <TextBlock Text="当前转速：1500 RPM" Foreground="#8B949E" Margin="0,10,0,0"/>
+>         </StackPanel>
+>
+>         <!-- 第二个分割条 -->
+>         <GridSplitter Grid.Column="3" Width="6" HorizontalAlignment="Stretch"
+>                       Background="#2A4A6C" ResizeBehavior="PreviousAndNext"/>
+>
+>         <!-- 右栏：运行日志 -->
+>         <TextBox Grid.Column="4" AcceptsReturn="True" TextWrapping="Wrap"
+>                  IsReadOnly="True" Text="[10:12] 设备启动&#x0a;[10:15] 参数下发成功"
+>                  Background="#161B22" Foreground="#C9D1D9" BorderBrush="#2A4A6C"
+>                  BorderThickness="1" VerticalScrollBarVisibility="Auto"/>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>     }
+> }
 > ```
 > 
 

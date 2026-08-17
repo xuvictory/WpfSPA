@@ -25,9 +25,67 @@ parent: 4.2 按钮类控件
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **采集方案配置演示：多个 CheckBox 独立开关 + 三态"全选"联动：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="采集设置 - CheckBox" Height="380" Width="380"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="选择要采集的信号" FontWeight="Bold" Foreground="White" Margin="0,0,0,8"/>
+>         <CheckBox x:Name="ChkTemp" Content="温度信号" IsChecked="True"
+>                   Margin="5" Foreground="White"/>
+>         <CheckBox x:Name="ChkPressure" Content="压力信号" IsChecked="True"
+>                   Margin="5" Foreground="White"/>
+>         <!-- 三态全选：用于子项"全选/部分选/全不选"的联动显示 -->
+>         <CheckBox x:Name="ChkAll" Content="全选（三态示例）" IsThreeState="True"
+>                   Click="OnChkAllClick" Margin="5" Foreground="White"/>
+>         <Button Content="保存采集方案" Click="OnSave" Margin="5,15,5,5" Padding="8"
+>                 Background="#238636" Foreground="White"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Controls;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnChkAllClick(object sender, RoutedEventArgs e)
+>         {
+>             // 把全选框状态同步到子项
+>             if (ChkAll.IsChecked == true)
+>             {
+>                 ChkTemp.IsChecked = ChkPressure.IsChecked = true;
+>             }
+>             else if (ChkAll.IsChecked == false)
+>             {
+>                 ChkTemp.IsChecked = ChkPressure.IsChecked = false;
+>             }
+>             // null（不确定）时不改变子项状态
+>         }
+>
+>         private void OnSave(object sender, RoutedEventArgs e)
+>         {
+>             var items = new[] { ChkTemp, ChkPressure };
+>             int count = 0;
+>             foreach (var cb in items)
+>             {
+>                 if (cb.IsChecked == true) count++;
+>             }
+>             MessageBox.Show($"已保存采集方案：启用 {count} 项通道", "保存成功");
+>         }
+>     }
+> }
 > ```
 > 
 

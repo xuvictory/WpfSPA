@@ -25,9 +25,77 @@ parent: 4.6 日期与信息显示控件
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **生产计划日期演示：SelectedDate 回显、BlackoutDates 禁用不可用日期、SelectedDateFormat 格式：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="生产计划 - DatePicker" Height="360" Width="460"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15" Width="380">
+>         <TextBlock Text="选择生产计划开始日期：" Foreground="White"/>
+>         <DatePicker x:Name="dpStart" SelectedDateFormat="Long"
+>                     SelectedDateChanged="OnDateChanged"
+>                     Margin="0,6,0,12" Padding="4" Background="#161B22"
+>                     Foreground="White"/>
+>
+>         <TextBlock Text="选择计划截止日期：" Foreground="White"/>
+>         <DatePicker x:Name="dpEnd" Margin="0,6,0,12" Padding="4"
+>                     Background="#161B22" Foreground="White"/>
+>
+>         <Button Content="生成排产单" Click="OnCreate" Padding="8"
+>                 HorizontalAlignment="Left" Background="#238636" Foreground="White"/>
+>         <TextBlock x:Name="tipText" Foreground="#8B949E" Margin="0,12,0,0" TextWrapping="Wrap"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Windows;
+> using System.Windows.Controls;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>
+>             dpStart.SelectedDate = DateTime.Today;
+>
+>             // 禁用过去日期与周末（BlackoutDates 添加禁用区间）
+>             dpStart.BlackoutDates.Add(new CalendarDateRange(DateTime.MinValue,
+>                                                             DateTime.Today.AddDays(-1)));
+>             dpStart.BlackoutDates.Add(new CalendarDateRange(DateTime.Today.AddDays(3),
+>                                                             DateTime.Today.AddDays(5)));
+>         }
+>
+>         private void OnDateChanged(object sender, SelectionChangedEventArgs e)
+>         {
+>             tipText.Text = dpStart.SelectedDate.HasValue
+>                 ? $"开始日期：{dpStart.SelectedDate:yyyy-MM-dd}"
+>                 : "未选择日期";
+>         }
+>
+>         private void OnCreate(object sender, RoutedEventArgs e)
+>         {
+>             if (dpStart.SelectedDate is DateTime start && dpEnd.SelectedDate is DateTime end)
+>             {
+>                 int days = (end - start).Days;
+>                 tipText.Text = $"排产单已生成：{start:yyyy-MM-dd} 至 {end:yyyy-MM-dd}，共 {days} 天";
+>             }
+>             else
+>             {
+>                 tipText.Text = "请先选择开始与截止日期";
+>             }
+>         }
+>     }
+> }
 > ```
 > 
 

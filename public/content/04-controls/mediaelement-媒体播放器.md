@@ -25,9 +25,56 @@ parent: 4.6 日期与信息显示控件
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **现场监控视频回放演示：LoadedBehavior/UnloadedBehavior、Play/Pause/Stop 控制、倍速播放：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="监控回放 - MediaElement" Height="480" Width="680"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <DockPanel Margin="12">
+>         <!-- 视频区：Source 指向视频文件 -->
+>         <MediaElement x:Name="player" DockPanel.Dock="Top" Height="340"
+>                       Source="videos/camera1.mp4" LoadedBehavior="Manual"
+>                       UnloadedBehavior="Stop" Stretch="Uniform" Margin="0,0,0,10"
+>                       Background="Black"/>
+>
+>         <!-- 控制条 -->
+>         <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Center">
+>             <Button Content="播放" Click="OnPlay" Padding="12,6" Margin="0,0,8,0"/>
+>             <Button Content="暂停" Click="OnPause" Padding="12,6" Margin="0,0,8,0"/>
+>             <Button Content="停止" Click="OnStop" Padding="12,6" Margin="0,0,8,0"/>
+>             <Button Content="2 倍速" Click="OnSpeed" Padding="12,6"/>
+>         </StackPanel>
+>     </DockPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnPlay(object sender, RoutedEventArgs e) => player.Play();
+>
+>         private void OnPause(object sender, RoutedEventArgs e) => player.Pause();
+>
+>         private void OnStop(object sender, RoutedEventArgs e) => player.Stop();
+>
+>         private void OnSpeed(object sender, RoutedEventArgs e)
+>         {
+>             // 设置播放速率（1.0 为正常速度）
+>             player.SpeedRatio = player.SpeedRatio >= 2.0 ? 1.0 : player.SpeedRatio + 0.5;
+>         }
+>     }
+> }
 > ```
 > 
 

@@ -25,9 +25,82 @@ parent: 4.4 选择类控件
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **设备台账演示：GridView 多列定义、列头点击排序、SelectedItem 取行：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="设备台账 - ListView" Height="480" Width="640"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <DockPanel Margin="10">
+>         <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,8,0,0">
+>             <Button Content="查看选中设备" Click="OnShow" Padding="8,4"/>
+>         </StackPanel>
+>         <ListView x:Name="lvDevices" Background="#161B22" BorderBrush="#2A4A6C"
+>                   BorderThickness="1">
+>             <ListView.View>
+>                 <GridView>
+>                     <!-- 各列 Header 可点击：后台实现按列排序 -->
+>                     <GridViewColumn Header="设备编号" Width="120"
+>                                     DisplayMemberBinding="{Binding Id}"/>
+>                     <GridViewColumn Header="设备名称" Width="180"
+>                                     DisplayMemberBinding="{Binding Name}"/>
+>                     <GridViewColumn Header="状态" Width="100">
+>                         <GridViewColumn.CellTemplate>
+>                             <DataTemplate>
+>                                 <TextBlock Text="{Binding Status}" Foreground="#3FB950"/>
+>                             </DataTemplate>
+>                         </GridViewColumn.CellTemplate>
+>                     </GridViewColumn>
+>                     <GridViewColumn Header="投运时间" Width="140"
+>                                     DisplayMemberBinding="{Binding StartDate}"/>
+>                 </GridView>
+>             </ListView.View>
+>         </ListView>
+>     </DockPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Collections.Generic;
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>
+>             lvDevices.ItemsSource = new List<Device>
+>             {
+>                 new Device { Id = "DEV-001", Name = "主电机", Status = "运行中", StartDate = "2024-03-12" },
+>                 new Device { Id = "DEV-002", Name = "冷却泵", Status = "运行中", StartDate = "2024-06-01" },
+>                 new Device { Id = "DEV-003", Name = "输送带", Status = "停机", StartDate = "2023-11-20" }
+>             };
+>         }
+>
+>         private void OnShow(object sender, RoutedEventArgs e)
+>         {
+>             if (lvDevices.SelectedItem is Device d)
+>             {
+>                 MessageBox.Show($"设备 {d.Name}（{d.Id}），状态：{d.Status}", "设备信息");
+>             }
+>         }
+>     }
+>
+>     public class Device
+>     {
+>         public string Id { get; set; }
+>         public string Name { get; set; }
+>         public string Status { get; set; }
+>         public string StartDate { get; set; }
+>     }
+> }
 > ```
 > 
 

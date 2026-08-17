@@ -25,9 +25,72 @@ parent: 4.9 装饰与辅助控件
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **电子签名与批注演示：InkCanvas 手写绘制、笔迹样式/颜色切换、保存与清空：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="电子签名 - InkCanvas" Height="480" Width="700"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <DockPanel Margin="12">
+>         <!-- 顶部工具栏 -->
+>         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
+>             <Button Content="黑色" Click="OnBlack" Padding="10,4" Margin="0,0,6,0"/>
+>             <Button Content="红色" Click="OnRed" Padding="10,4" Margin="0,0,6,0"/>
+>             <Button Content="橡皮擦" Click="OnEraser" Padding="10,4" Margin="0,0,6,0"/>
+>             <Button Content="清空" Click="OnClear" Padding="10,4" Margin="0,0,6,0"/>
+>             <TextBlock x:Name="tipText" Foreground="#8B949E" VerticalAlignment="Center"
+>                        Margin="10,0,0,0"/>
+>         </StackPanel>
+>
+>         <!-- 手写画布：EditingMode 控制是画笔还是橡皮擦 -->
+>         <InkCanvas x:Name="ink" Background="White" BorderBrush="#2A4A6C"
+>                    BorderThickness="1">
+>             <InkCanvas.DefaultDrawingAttributes>
+>                 <DrawingAttributes Color="Black" Width="2" Height="2" FitToCurve="True"/>
+>             </InkCanvas.DefaultDrawingAttributes>
+>         </InkCanvas>
+>     </DockPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Ink;
+> using System.Windows.Media;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnBlack(object sender, RoutedEventArgs e)
+>         {
+>             ink.EditingMode = InkCanvasEditingMode.Ink;
+>             ink.DefaultDrawingAttributes.Color = Colors.Black;
+>         }
+>
+>         private void OnRed(object sender, RoutedEventArgs e)
+>         {
+>             ink.EditingMode = InkCanvasEditingMode.Ink;
+>             ink.DefaultDrawingAttributes.Color = Colors.Red;
+>         }
+>
+>         private void OnEraser(object sender, RoutedEventArgs e)
+>         {
+>             ink.EditingMode = InkCanvasEditingMode.EraseByStroke;
+>         }
+>
+>         private void OnClear(object sender, RoutedEventArgs e)
+>         {
+>             ink.Strokes.Clear();
+>         }
+>     }
+> }
 > ```
 > 
 

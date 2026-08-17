@@ -25,9 +25,60 @@ parent: 4.3 文本类控件
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **参数下发窗口演示：Text、AcceptsReturn、MaxLength、TextChanged 与输入校验：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="参数下发 - TextBox" Height="420" Width="420"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15" Width="360">
+>         <TextBlock Text="目标温度（℃）：" Foreground="White"/>
+>         <TextBox x:Name="txtTemp" Text="25.0" Margin="0,4,0,10" Padding="6"
+>                  MaxLength="8" ToolTip="范围 0.0 ~ 100.0"/>
+>
+>         <TextBlock Text="备注说明（支持回车换行）：" Foreground="White"/>
+>         <TextBox x:Name="txtRemark" AcceptsReturn="True" TextWrapping="Wrap"
+>                  Height="80" VerticalScrollBarVisibility="Auto"
+>                  Margin="0,4,0,10" Padding="6"/>
+>
+>         <CheckBox x:Name="chkEnable" Content="下发后立即生效" IsChecked="True"
+>                   Margin="0,0,0,10" Foreground="White"/>
+>         <Button Content="下发参数" Click="OnSend" Padding="8"
+>                 Background="#238636" Foreground="White"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnSend(object sender, RoutedEventArgs e)
+>         {
+>             // 取值 + 校验
+>             if (!double.TryParse(txtTemp.Text, out double temp) || temp < 0 || temp > 100)
+>             {
+>                 MessageBox.Show("温度值不合法，请输入 0.0 ~ 100.0", "校验失败",
+>                                 MessageBoxButton.OK, MessageBoxImage.Warning);
+>                 return;
+>             }
+>
+>             string remark = string.IsNullOrWhiteSpace(txtRemark.Text) ? "无" : txtRemark.Text;
+>             string mode = chkEnable.IsChecked == true ? "立即生效" : "定时生效";
+>             MessageBox.Show($"已下发：温度 {temp:F1} ℃\n备注：{remark}\n生效方式：{mode}",
+>                             "下发成功");
+>         }
+>     }
+> }
 > ```
 > 
 
