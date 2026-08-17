@@ -25,9 +25,118 @@ parent: 9.6 MQTT 协议
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **上位机 MQTT 应用演示：设备状态定时上报 + 指令下发响应（需安装 NuGet 包 MQTTnet）：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="上位机 MQTT 应用" Height="480" Width="540"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="场景：设备状态上报(定时发布) + 指令下发(订阅响应)"
+>                    Foreground="#58A6FF" FontWeight="Bold" TextWrapping="Wrap"/>
+>         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+>             <Button x:Name="StartBtn" Content="开始上报" Click="OnStartClick" Padding="10,4"
+>                     Background="#238636" Foreground="White"/>
+>             <Button x:Name="StopBtn" Content="停止上报" IsEnabled="False" Click="OnStopClick"
+>                     Padding="10,4" Margin="8,0,0,0" Background="#DA3633" Foreground="White"/>
+>         </StackPanel>
+>         <TextBlock Text="通信日志" Foreground="#8B949E" Margin="0,8,0,0"/>
+>         <ListBox x:Name="LogList" Height="220" Background="#161B22" Foreground="#8B949E"
+>                  BorderBrush="#30363D"/>
+>         <TextBlock x:Name="StatusText" Foreground="#8B949E" Margin="0,8,0,0" TextWrapping="Wrap"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Text;
+> using System.Threading.Tasks;
+> using System.Windows;
+> using System.Windows.Threading;
+> using MQTTnet;
+> using MQTTnet.Client;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private IMqttClient _client;
+>         private readonly DispatcherTimer _timer = new DispatcherTimer();
+>         private int _reportCount;
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             _timer.Interval = TimeSpan.FromSeconds(2);
+>             _timer.Tick += OnReportTick;
+>         }
+>
+>         // 连接 Broker，订阅指令主题，启动定时上报
+>         private async void OnStartClick(object sender, RoutedEventArgs e)
+>         {
+>             try
+>             {
+>                 var factory = new MqttFactory();
+>                 _client = factory.CreateMqttClient();
+>                 _client.ApplicationMessageReceivedAsync += OnCommandReceived;
+>                 var options = new MqttClientOptionsBuilder()
+>                     .WithTcpServer("broker.emqx.io", 1883)
+>                     .WithClientId($"device-{Guid.NewGuid():N}")
+>                     .WithCleanSession()
+>                     .Build();
+>                 await _client.ConnectAsync(options);
+>                 await _client.SubscribeAsync("hmi/device1/cmd"); // 订阅指令下发主题
+>                 _timer.Start();
+>                 StartBtn.IsEnabled = false;
+>                 StopBtn.IsEnabled = true;
+>                 AppendLog("已连接 Broker，订阅指令主题，开始上报状态");
+>             }
+>             catch (Exception ex) { AppendLog("连接失败：" + ex.Message); }
+>         }
+>
+>         private async void OnStopClick(object sender, RoutedEventArgs e)
+>         {
+>             _timer.Stop();
+>             if (_client != null) await _client.DisconnectAsync();
+>             StartBtn.IsEnabled = true;
+>             StopBtn.IsEnabled = false;
+>             AppendLog("已停止上报并断开");
+>         }
+>
+>         // 每 2 秒向状态主题发布一次设备数据
+>         private async void OnReportTick(object sender, EventArgs e)
+>         {
+>             _reportCount++;
+>             string payload = $"{{\"dev\":\"device1\",\"count\":{_reportCount}," +
+>                              $"\"temp\":{20 + _reportCount % 10},\"state\":\"running\"}}";
+>             await _client.PublishAsync(new MqttApplicationMessageBuilder()
+>                 .WithTopic("hmi/device1/status")
+>                 .WithPayload(Encoding.UTF8.GetBytes(payload))
+>                 .Build());
+>             AppendLog($"[上报] {payload}");
+>         }
+>
+>         // 收到指令：模拟执行并回复结果
+>         private async Task OnCommandReceived(MqttApplicationMessageReceivedEventArgs e)
+>         {
+>             string cmd = e.ApplicationMessage.ConvertPayloadToString();
+>             AppendLog($"[收到指令] {cmd}");
+>             string reply = $"{{\"dev\":\"device1\",\"ack\":true,\"cmd\":\"{cmd}\"}}";
+>             await _client.PublishAsync(new MqttApplicationMessageBuilder()
+>                 .WithTopic("hmi/device1/reply")
+>                 .WithPayload(Encoding.UTF8.GetBytes(reply))
+>                 .Build());
+>         }
+>
+>         private void AppendLog(string msg) =>
+>             Dispatcher.Invoke(() => LogList.Items.Add($"{DateTime.Now:HH:mm:ss}  {msg}"));
+>     }
+> }
 > ```
 > 
 

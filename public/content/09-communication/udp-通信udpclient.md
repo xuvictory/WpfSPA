@@ -25,9 +25,90 @@ parent: 9.3 Socket 网络通信
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **UDP 通信演示：UdpClient 绑定端口接收 + 向本机发送数据报：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="UDP 通信 - UdpClient" Height="460" Width="500"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="UDP 收发（本机回环，端口 9999）" Foreground="#58A6FF" FontWeight="Bold"/>
+>         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+>             <Button Content="开始接收" Click="OnStartRecv" Padding="10,4"
+>                     Background="#238636" Foreground="White"/>
+>             <Button Content="停止接收" Click="OnStopRecv" Padding="10,4" Margin="8,0,0,0"
+>                     Background="#DA3633" Foreground="White"/>
+>         </StackPanel>
+>         <TextBlock Text="接收区（无连接，谁发来都收）" Foreground="#8B949E" Margin="0,8,0,0"/>
+>         <TextBox x:Name="RecvBox" Height="100" IsReadOnly="True" TextWrapping="Wrap"
+>                  Background="#161B22" Foreground="#8B949E" BorderBrush="#30363D"/>
+>         <TextBox x:Name="SendBox" Height="40" Margin="0,8,0,0" Background="#161B22"
+>                  Foreground="#8B949E" BorderBrush="#30363D"/>
+>         <Button Content="向 127.0.0.1:9999 发送" Click="OnSendClick" Padding="10,4" Margin="0,8,0,0"
+>                 Background="#21262D" Foreground="White"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Net;
+> using System.Net.Sockets;
+> using System.Text;
+> using System.Threading;
+> using System.Threading.Tasks;
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private UdpClient _udp;
+>         private CancellationTokenSource _cts;
+>
+>         public MainWindow() => InitializeComponent();
+>
+>         // 绑定端口并开始异步接收，UDP 无连接，任何来源的数据都会收到
+>         private void OnStartRecv(object sender, RoutedEventArgs e)
+>         {
+>             _cts = new CancellationTokenSource();
+>             _udp = new UdpClient(new IPEndPoint(IPAddress.Loopback, 9999));
+>             _ = ReceiveLoopAsync(_cts.Token);
+>             RecvBox.AppendText("已开始接收，端口 9999\r\n");
+>         }
+>
+>         private void OnStopRecv(object sender, RoutedEventArgs e)
+>         {
+>             _cts?.Cancel();
+>             _udp?.Close();
+>             RecvBox.AppendText("已停止接收\r\n");
+>         }
+>
+>         private async Task ReceiveLoopAsync(CancellationToken token)
+>         {
+>             while (!token.IsCancellationRequested)
+>             {
+>                 var result = await _udp.ReceiveAsync();
+>                 string msg = Encoding.UTF8.GetString(result.Buffer);
+>                 Dispatcher.Invoke(() =>
+>                     RecvBox.AppendText($"[来自 {result.RemoteEndPoint}] {msg}\r\n"));
+>             }
+>         }
+>
+>         // 发送数据报：无需建立连接，直接指定目标地址
+>         private void OnSendClick(object sender, RoutedEventArgs e)
+>         {
+>             if (_udp == null) return;
+>             byte[] data = Encoding.UTF8.GetBytes(SendBox.Text);
+>             _udp.Send(data, data.Length, "127.0.0.1", 9999);
+>             RecvBox.AppendText($"[发送] {SendBox.Text}\r\n");
+>         }
+>     }
+> }
 > ```
 > 
 

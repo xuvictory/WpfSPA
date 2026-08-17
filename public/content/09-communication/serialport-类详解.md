@@ -25,9 +25,123 @@ parent: 9.2 串口通信
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **SerialPort 属性与方法演示：枚举端口、打开/关闭、发送与接收数据：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="串口助手 - SerialPort 类" Height="500" Width="460"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="端口与参数设置" Foreground="#58A6FF" FontWeight="Bold"/>
+>         <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+>             <ComboBox x:Name="PortCombo" Width="140" Margin="0,0,8,0"
+>                       Background="#161B22" Foreground="#8B949E"/>
+>             <ComboBox x:Name="BaudCombo" Width="100" Background="#161B22" Foreground="#8B949E"/>
+>         </StackPanel>
+>         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+>             <Button x:Name="OpenBtn" Content="打开串口" Click="OnOpenClick" Padding="10,4"
+>                     Background="#21262D" Foreground="White"/>
+>             <Button x:Name="CloseBtn" Content="关闭串口" IsEnabled="False" Click="OnCloseClick"
+>                     Padding="10,4" Margin="8,0,0,0" Background="#21262D" Foreground="White"/>
+>             <Button Content="刷新端口" Click="OnRefreshClick" Padding="10,4" Margin="8,0,0,0"
+>                     Background="#21262D" Foreground="White"/>
+>         </StackPanel>
+>         <TextBox x:Name="SendBox" Height="60" Margin="0,10,0,0" TextWrapping="Wrap"
+>                  Background="#161B22" Foreground="#8B949E" BorderBrush="#30363D"
+>                  AcceptsReturn="True"/>
+>         <Button Content="发送数据" Click="OnSendClick" Margin="0,8,0,0" Padding="10,4"
+>                 Background="#238636" Foreground="White"/>
+>         <TextBox x:Name="RecvBox" Height="120" Margin="0,10,0,0" TextWrapping="Wrap"
+>                  Background="#161B22" Foreground="#8B949E" BorderBrush="#30363D"
+>                  IsReadOnly="True" VerticalScrollBarVisibility="Auto"/>
+>         <TextBlock x:Name="StatusText" Foreground="#8B949E" Margin="0,8,0,0" TextWrapping="Wrap"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.IO.Ports;
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private SerialPort _port; // 串口对象，贯穿打开/发送/接收全流程
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             // 波特率下拉框预置常用选项
+>             foreach (var baud in new[] { "9600", "19200", "38400", "115200" })
+>                 BaudCombo.Items.Add(baud);
+>             BaudCombo.SelectedIndex = 3; // 默认 115200
+>             RefreshPorts();              // 启动即枚举可用串口
+>         }
+>
+>         // 枚举系统所有串口并填充下拉框
+>         private void RefreshPorts()
+>         {
+>             PortCombo.Items.Clear();
+>             foreach (string name in SerialPort.GetPortNames())
+>                 PortCombo.Items.Add(name);
+>             if (PortCombo.Items.Count > 0)
+>                 PortCombo.SelectedIndex = 0;
+>         }
+>
+>         private void OnRefreshClick(object sender, RoutedEventArgs e) => RefreshPorts();
+>
+>         // 打开串口：配置属性后调用 Open()
+>         private void OnOpenClick(object sender, RoutedEventArgs e)
+>         {
+>             try
+>             {
+>                 _port = new SerialPort(PortCombo.SelectedItem as string,
+>                                        int.Parse(BaudCombo.SelectedItem as string));
+>                 _port.DataReceived += OnDataReceived; // 订阅接收事件
+>                 _port.Open();
+>                 OpenBtn.IsEnabled = false;
+>                 CloseBtn.IsEnabled = true;
+>                 StatusText.Text = $"已打开 {_port.PortName}，波特率 {_port.BaudRate}";
+>                 StatusText.Foreground = System.Windows.Media.Brushes.LimeGreen;
+>             }
+>             catch (Exception ex)
+>             {
+>                 StatusText.Text = "打开失败：" + ex.Message;
+>                 StatusText.Foreground = System.Windows.Media.Brushes.OrangeRed;
+>             }
+>         }
+>
+>         private void OnCloseClick(object sender, RoutedEventArgs e)
+>         {
+>             _port?.Close(); // Close 会释放端口资源
+>             OpenBtn.IsEnabled = true;
+>             CloseBtn.IsEnabled = false;
+>             StatusText.Text = "串口已关闭";
+>             StatusText.Foreground = System.Windows.Media.Brushes.Gray;
+>         }
+>
+>         // 发送：Write 按字节写出
+>         private void OnSendClick(object sender, RoutedEventArgs e)
+>         {
+>             if (_port == null || !_port.IsOpen) return;
+>             _port.Write(SendBox.Text);
+>             RecvBox.AppendText($"[发送] {SendBox.Text}\r\n");
+>         }
+>
+>         // 接收事件在后台线程触发，需通过 Dispatcher 回到 UI 线程
+>         private void OnDataReceived(object sender, SerialDataReceivedEventArgs e)
+>         {
+>             string data = _port.ReadExisting();
+>             Dispatcher.Invoke(() => RecvBox.AppendText($"[接收] {data}\r\n"));
+>         }
+>     }
+> }
 > ```
 > 
 

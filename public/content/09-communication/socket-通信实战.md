@@ -25,9 +25,131 @@ parent: 9.3 Socket 网络通信
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **Socket 实战演示：原生 Socket 实现 TCP 服务端与客户端（本机回环）：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="Socket 通信实战" Height="500" Width="520"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="原生 Socket：创建套接字、Bind/Listen、Accept、Send/Receive"
+>                    Foreground="#58A6FF" FontWeight="Bold" TextWrapping="Wrap"/>
+>         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+>             <Button Content="启动服务端(6666)" Click="OnStartServer" Padding="10,4"
+>                     Background="#238636" Foreground="White"/>
+>             <Button Content="停止服务端" Click="OnStopServer" Padding="10,4" Margin="8,0,0,0"
+>                     Background="#DA3633" Foreground="White"/>
+>             <Button Content="连接为客户端" Click="OnConnectClient" Padding="10,4" Margin="8,0,0,0"
+>                     Background="#21262D" Foreground="White"/>
+>         </StackPanel>
+>         <TextBox x:Name="LogBox" Height="160" IsReadOnly="True" TextWrapping="Wrap"
+>                  Margin="0,8,0,0" Background="#161B22" Foreground="#8B949E"
+>                  BorderBrush="#30363D" VerticalScrollBarVisibility="Auto"/>
+>         <TextBox x:Name="SendBox" Height="40" Margin="0,8,0,0" Background="#161B22"
+>                  Foreground="#8B949E" BorderBrush="#30363D"/>
+>         <Button Content="发送并接收回显" Click="OnSendClick" Padding="10,4" Margin="0,8,0,0"
+>                 Background="#21262D" Foreground="White"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Net;
+> using System.Net.Sockets;
+> using System.Text;
+> using System.Threading;
+> using System.Threading.Tasks;
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private Socket _listenSocket; // 服务端监听套接字
+>         private Socket _clientSocket; // 客户端套接字
+>         private CancellationTokenSource _cts;
+>
+>         public MainWindow() => InitializeComponent();
+>
+>         // 服务端：创建套接字 -> Bind -> Listen -> 异步 Accept
+>         private void OnStartServer(object sender, RoutedEventArgs e)
+>         {
+>             _cts = new CancellationTokenSource();
+>             _listenSocket = new Socket(AddressFamily.InterNetwork,
+>                                        SocketType.Stream, ProtocolType.Tcp);
+>             _listenSocket.Bind(new IPEndPoint(IPAddress.Loopback, 6666));
+>             _listenSocket.Listen(10);
+>             AppendLog("服务端已监听 127.0.0.1:6666");
+>             _ = AcceptLoopAsync(_cts.Token);
+>         }
+>
+>         private void OnStopServer(object sender, RoutedEventArgs e)
+>         {
+>             _cts?.Cancel();
+>             _listenSocket?.Close();
+>             AppendLog("服务端已停止");
+>         }
+>
+>         private async Task AcceptLoopAsync(CancellationToken token)
+>         {
+>             while (!token.IsCancellationRequested)
+>             {
+>                 Socket conn = await _listenSocket.AcceptAsync();
+>                 AppendLog($"客户端 {conn.RemoteEndPoint} 已连接");
+>                 _ = EchoAsync(conn); // 收到数据原样返回
+>             }
+>         }
+>
+>         private async Task EchoAsync(Socket conn)
+>         {
+>             byte[] buffer = new byte[1024];
+>             try
+>             {
+>                 while (true)
+>                 {
+>                     int n = await conn.ReceiveAsync(buffer, SocketFlags.None);
+>                     if (n == 0) break;
+>                     AppendLog($"服务端收到：{Encoding.UTF8.GetString(buffer, 0, n)}");
+>                     await conn.SendAsync(new ArraySegment<byte>(buffer, 0, n), SocketFlags.None);
+>                 }
+>             }
+>             catch { }
+>             finally { conn.Close(); }
+>         }
+>
+>         // 客户端：Connect 后 Send/Receive
+>         private async void OnConnectClient(object sender, RoutedEventArgs e)
+>         {
+>             try
+>             {
+>                 _clientSocket = new Socket(AddressFamily.InterNetwork,
+>                                            SocketType.Stream, ProtocolType.Tcp);
+>                 await _clientSocket.ConnectAsync(IPAddress.Loopback, 6666);
+>                 AppendLog("客户端已连接 127.0.0.1:6666");
+>             }
+>             catch (Exception ex) { AppendLog("连接失败：" + ex.Message); }
+>         }
+>
+>         private async void OnSendClick(object sender, RoutedEventArgs e)
+>         {
+>             if (_clientSocket == null) return;
+>             byte[] data = Encoding.UTF8.GetBytes(SendBox.Text);
+>             await _clientSocket.SendAsync(new ArraySegment<byte>(data), SocketFlags.None);
+>             // 等待回显，演示 Receive
+>             byte[] buffer = new byte[1024];
+>             int n = _clientSocket.Receive(buffer);
+>             AppendLog($"客户端收到回显：{Encoding.UTF8.GetString(buffer, 0, n)}");
+>         }
+>
+>         private void AppendLog(string msg) =>
+>             Dispatcher.Invoke(() => LogBox.AppendText(msg + "\r\n"));
+>     }
+> }
 > ```
 > 
 

@@ -25,9 +25,119 @@ parent: 9.4 Modbus 通信协议
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **Modbus 报文封装演示：封装请求构建与响应解析工具类，上层只传业务参数：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="Modbus 库 - 报文封装" Height="500" Width="520"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="封装 Modbus 请求/响应工具方法，上层只需传业务参数"
+>                    Foreground="#58A6FF" FontWeight="Bold" TextWrapping="Wrap"/>
+>         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+>             <TextBlock Text="站号" Foreground="#8B949E" VerticalAlignment="Center"/>
+>             <TextBox x:Name="SlaveBox" Width="50" Text="1" Margin="8,0,0,0"
+>                      Background="#161B22" Foreground="#8B949E" BorderBrush="#30363D"/>
+>             <TextBlock Text="起始地址" Foreground="#8B949E" Margin="16,0,0,0" VerticalAlignment="Center"/>
+>             <TextBox x:Name="AddrBox" Width="60" Text="0" Margin="8,0,0,0"
+>                      Background="#161B22" Foreground="#8B949E" BorderBrush="#30363D"/>
+>             <TextBlock Text="数量" Foreground="#8B949E" Margin="16,0,0,0" VerticalAlignment="Center"/>
+>             <TextBox x:Name="CountBox" Width="50" Text="3" Margin="8,0,0,0"
+>                      Background="#161B22" Foreground="#8B949E" BorderBrush="#30363D"/>
+>         </StackPanel>
+>         <Button Content="构建请求帧" Click="OnBuildClick" Padding="10,4" Margin="0,8,0,0"
+>                 HorizontalAlignment="Left" Background="#238636" Foreground="White"/>
+>         <TextBlock Text="请求帧" Foreground="#8B949E" Margin="0,8,0,0"/>
+>         <TextBox x:Name="ReqBox" Height="28" IsReadOnly="True" Background="#161B22"
+>                  Foreground="#58A6FF" BorderBrush="#30363D"/>
+>         <TextBlock Text="模拟响应帧（含 CRC 校验解析）" Foreground="#8B949E" Margin="0,8,0,0"/>
+>         <TextBox x:Name="RespBox" Height="28" Text="01 03 02 00 64 B9 AF"
+>                  Background="#161B22" Foreground="#8B949E" BorderBrush="#30363D"/>
+>         <Button Content="解析响应" Click="OnParseClick" Padding="10,4" Margin="0,8,0,0"
+>                 HorizontalAlignment="Left" Background="#21262D" Foreground="White"/>
+>         <TextBox x:Name="ResultBox" Height="70" IsReadOnly="True" TextWrapping="Wrap"
+>                  Margin="0,8,0,0" Background="#161B22" Foreground="#8B949E"
+>                  BorderBrush="#30363D" VerticalScrollBarVisibility="Auto"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Linq;
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     // Modbus 报文封装类：上层只传业务参数，不关心字节细节
+>     public static class ModbusHelper
+>     {
+>         // 构建读保持寄存器(03)请求帧
+>         public static byte[] BuildReadHoldingRegisters(byte slave, ushort addr, ushort count)
+>         {
+>             byte[] frame = { slave, 0x03, (byte)(addr >> 8), (byte)addr,
+>                              (byte)(count >> 8), (byte)count, 0, 0 };
+>             ushort crc = Crc16(frame, 6);
+>             frame[6] = (byte)crc;
+>             frame[7] = (byte)(crc >> 8);
+>             return frame;
+>         }
+>
+>         // 解析读保持寄存器响应：验证 CRC 并取出寄存器值
+>         public static (bool ok, ushort[] values) ParseReadResponse(byte[] resp)
+>         {
+>             if (resp.Length < 5) return (false, null); // 帧太短
+>             if (Crc16(resp, resp.Length - 2) !=
+>                 (ushort)(resp[resp.Length - 2] | resp[resp.Length - 1] << 8))
+>                 return (false, null); // CRC 校验失败
+>             int regCount = resp[2] / 2; // 数据字节数 / 2 = 寄存器数
+>             ushort[] values = new ushort[regCount];
+>             for (int i = 0; i < regCount; i++)
+>                 values[i] = (ushort)(resp[3 + i * 2] << 8 | resp[4 + i * 2]); // Modbus 大端序
+>             return (true, values);
+>         }
+>
+>         public static ushort Crc16(byte[] data, int len)
+>         {
+>             ushort crc = 0xFFFF;
+>             for (int i = 0; i < len; i++)
+>             {
+>                 crc ^= data[i];
+>                 for (int j = 0; j < 8; j++)
+>                     crc = (crc & 1) != 0 ? (ushort)((crc >> 1) ^ 0xA001) : (ushort)(crc >> 1);
+>             }
+>             return crc;
+>         }
+>     }
+>
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnBuildClick(object sender, RoutedEventArgs e)
+>         {
+>             byte[] frame = ModbusHelper.BuildReadHoldingRegisters(
+>                 byte.Parse(SlaveBox.Text), ushort.Parse(AddrBox.Text), ushort.Parse(CountBox.Text));
+>             ReqBox.Text = BitConverter.ToString(frame);
+>         }
+>
+>         // 解析模拟响应帧，验证 CRC 并显示寄存器值
+>         private void OnParseClick(object sender, RoutedEventArgs e)
+>         {
+>             byte[] resp = RespBox.Text.Split(' ')
+>                 .Select(t => Convert.ToByte(t, 16)).ToArray();
+>             var (ok, values) = ModbusHelper.ParseReadResponse(resp);
+>             ResultBox.Text = ok
+>                 ? $"CRC 校验通过，共 {values.Length} 个寄存器：\r\n"
+>                   + string.Join(", ", values.Select(v => $"0x{v:X4} ({v})"))
+>                 : "CRC 校验失败或帧格式错误";
+>         }
+>     }
+> }
 > ```
 > 
 

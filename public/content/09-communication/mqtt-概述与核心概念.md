@@ -25,9 +25,104 @@ parent: 9.6 MQTT 协议
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **MQTT 核心概念演示：架构三要素展示 + 连接公共 Broker 并订阅主题：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="MQTT 概述与核心概念" Height="500" Width="540"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="MQTT 三要素：发布者(Publisher) → Broker → 订阅者(Subscriber)"
+>                    Foreground="#58A6FF" FontWeight="Bold" TextWrapping="Wrap"/>
+>         <ListBox x:Name="ConceptList" Height="90" Margin="0,6,0,0" Background="#161B22"
+>                  Foreground="#8B949E" BorderBrush="#30363D">
+>             <ListBoxItem Content="Broker：消息代理，如 mosquitto、EMQX"/>
+>             <ListBoxItem Content="主题(Topic)：如 factory/line1/temp，支持 / 层级与 # 通配"/>
+>             <ListBoxItem Content="QoS：0 至多一次 / 1 至少一次 / 2 恰好一次"/>
+>         </ListBox>
+>         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+>             <Button Content="连接公共 Broker" Click="OnConnectClick" Padding="10,4"
+>                     Background="#238636" Foreground="White"/>
+>             <Button Content="断开" Click="OnDisconnectClick" Padding="10,4" Margin="8,0,0,0"
+>                     Background="#DA3633" Foreground="White"/>
+>         </StackPanel>
+>         <TextBlock Text="订阅主题" Foreground="#8B949E" Margin="0,8,0,0"/>
+>         <TextBox x:Name="TopicBox" Text="hmi/demo/#" Height="28" Margin="0,4,0,0"
+>                  Background="#161B22" Foreground="#8B949E" BorderBrush="#30363D"/>
+>         <TextBox x:Name="MsgList" Height="150" IsReadOnly="True" TextWrapping="Wrap"
+>                  Margin="0,8,0,0" Background="#161B22" Foreground="#8B949E"
+>                  BorderBrush="#30363D" VerticalScrollBarVisibility="Auto"/>
+>         <TextBlock x:Name="StatusText" Foreground="#8B949E" Margin="0,8,0,0" TextWrapping="Wrap"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Threading.Tasks;
+> using System.Windows;
+> using MQTTnet;
+> using MQTTnet.Client;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private IMqttClient _client;
+>
+>         public MainWindow() => InitializeComponent();
+>
+>         // 连接公共 Broker 并订阅主题（需安装 NuGet 包 MQTTnet）
+>         private async void OnConnectClick(object sender, RoutedEventArgs e)
+>         {
+>             try
+>             {
+>                 var factory = new MqttFactory();
+>                 _client = factory.CreateMqttClient();
+>                 // 收到消息时触发（后台线程，需 Dispatcher 更新 UI）
+>                 _client.ApplicationMessageReceivedAsync += OnMessageReceived;
+>
+>                 var options = new MqttClientOptionsBuilder()
+>                     .WithTcpServer("broker.emqx.io", 1883) // 公共测试 Broker
+>                     .WithClientId($"hmi-{Guid.NewGuid():N}")
+>                     .WithCleanSession()
+>                     .Build();
+>                 await _client.ConnectAsync(options);
+>                 await _client.SubscribeAsync(TopicBox.Text);
+>
+>                 StatusText.Text = "已连接并订阅 " + TopicBox.Text;
+>                 StatusText.Foreground = System.Windows.Media.Brushes.LimeGreen;
+>             }
+>             catch (Exception ex)
+>             {
+>                 StatusText.Text = "连接失败：" + ex.Message;
+>                 StatusText.Foreground = System.Windows.Media.Brushes.OrangeRed;
+>             }
+>         }
+>
+>         private async void OnDisconnectClick(object sender, RoutedEventArgs e)
+>         {
+>             if (_client != null)
+>                 await _client.DisconnectAsync();
+>             StatusText.Text = "已断开";
+>             StatusText.Foreground = System.Windows.Media.Brushes.Gray;
+>         }
+>
+>         // 订阅消息回调：显示主题与内容
+>         private Task OnMessageReceived(MqttApplicationMessageReceivedEventArgs e)
+>         {
+>             string topic = e.ApplicationMessage.Topic;
+>             string payload = e.ApplicationMessage.ConvertPayloadToString();
+>             Dispatcher.Invoke(() =>
+>                 MsgList.AppendText($"[{topic}] {payload}\r\n"));
+>             return Task.CompletedTask;
+>         }
+>     }
+> }
 > ```
 > 
 

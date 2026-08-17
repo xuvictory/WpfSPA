@@ -25,9 +25,86 @@ parent: 9.5 OPC 协议
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **OPC Classic vs UA 对比演示 + 最小 UA 客户端连接示例：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="OPC Classic vs UA" Height="480" Width="560"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="OPC Classic vs UA 对比" Foreground="#58A6FF" FontWeight="Bold"/>
+>         <ListBox x:Name="CompareList" Height="130" Margin="0,6,0,0" Background="#161B22"
+>                  Foreground="#8B949E" BorderBrush="#30363D">
+>             <ListBoxItem Content="Classic：基于 Windows COM/DCOM，仅限 Windows，配置繁琐"/>
+>             <ListBoxItem Content="UA：跨平台、基于 TCP/安全信道，内置安全模型"/>
+>             <ListBoxItem Content="UA：信息模型更丰富，自带地址空间与浏览能力"/>
+>         </ListBox>
+>         <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+>             <TextBlock Text="UA 端点" Foreground="#8B949E" VerticalAlignment="Center"/>
+>             <TextBox x:Name="UrlBox" Text="opc.tcp://localhost:4840" Width="210" Margin="8,0,0,0"
+>                      Background="#161B22" Foreground="#8B949E" BorderBrush="#30363D"/>
+>             <Button Content="连接" Click="OnConnectClick" Padding="10,4" Margin="8,0,0,0"
+>                     Background="#238636" Foreground="White"/>
+>         </StackPanel>
+>         <TextBlock Text="连接日志" Foreground="#8B949E" Margin="0,8,0,0"/>
+>         <TextBox x:Name="LogBox" Height="130" IsReadOnly="True" TextWrapping="Wrap"
+>                  Margin="0,4,0,0" Background="#161B22" Foreground="#8B949E"
+>                  BorderBrush="#30363D" VerticalScrollBarVisibility="Auto"/>
+>         <TextBlock x:Name="StatusText" Foreground="#8B949E" Margin="0,8,0,0" TextWrapping="Wrap"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Threading.Tasks;
+> using System.Windows;
+> using Opc.Ua;
+> using Opc.Ua.Client;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         // 连接 UA 服务器（需 NuGet 包 OPCFoundation.NetStandard.Opc.Ua.Client）
+>         private async void OnConnectClick(object sender, RoutedEventArgs e)
+>         {
+>             try
+>             {
+>                 var config = new ApplicationConfiguration
+>                 {
+>                     ApplicationName = "HmiDemo",
+>                     ApplicationUri = "urn:localhost:UA:HmiDemo",
+>                     ApplicationType = ApplicationType.Client,
+>                     SecurityConfiguration = new SecurityConfiguration
+>                     { ApplicationCertificate = new CertificateIdentifier() },
+>                     TransportQuotas = new TransportQuotas { OperationTimeout = 15000 },
+>                     ClientConfiguration = new ClientConfiguration { DefaultSessionTimeout = 60000 }
+>                 };
+>                 await config.Validate(ApplicationType.Client);
+>
+>                 var endpoint = CoreClientUtils.SelectEndpoint(config, UrlBox.Text, useSecurity: false);
+>                 using var session = await Session.Create(config, endpoint, false, "HmiDemo",
+>                                                          60000, new UserIdentity(), null);
+>                 LogBox.AppendText($"已连接 UA 服务器：{endpoint.EndpointUrl}\r\n");
+>                 LogBox.AppendText($"服务器名称：{session.ServerDescription?.ApplicationName?.Text}\r\n");
+>                 StatusText.Text = "连接成功（OPC UA 为跨平台标准）";
+>                 StatusText.Foreground = System.Windows.Media.Brushes.LimeGreen;
+>             }
+>             catch (Exception ex)
+>             {
+>                 StatusText.Text = "连接失败：" + ex.Message;
+>                 StatusText.Foreground = System.Windows.Media.Brushes.OrangeRed;
+>             }
+>         }
+>     }
+> }
 > ```
 > 
 

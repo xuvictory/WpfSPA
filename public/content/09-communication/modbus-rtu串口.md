@@ -25,9 +25,136 @@ parent: 9.4 Modbus 通信协议
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **Modbus RTU 演示：构建 03 读保持寄存器请求帧 + CRC16 校验并通过串口发送：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="Modbus RTU - 帧构建与 CRC16" Height="520" Width="500"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="Modbus RTU 帧：站号 功能码 起始地址 数量 CRC16(低字节在前)"
+>                    Foreground="#58A6FF" FontWeight="Bold" TextWrapping="Wrap"/>
+>         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+>             <ComboBox x:Name="PortCombo" Width="130" Background="#161B22" Foreground="#8B949E"/>
+>             <Button Content="打开串口" Click="OnOpenClick" Margin="8,0,0,0" Padding="8,4"
+>                     Background="#21262D" Foreground="White"/>
+>         </StackPanel>
+>         <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+>             <TextBlock Text="站号" Foreground="#8B949E" VerticalAlignment="Center"/>
+>             <TextBox x:Name="SlaveBox" Width="50" Text="1" Margin="8,0,0,0"
+>                      Background="#161B22" Foreground="#8B949E" BorderBrush="#30363D"/>
+>             <TextBlock Text="起始地址" Foreground="#8B949E" Margin="16,0,0,0" VerticalAlignment="Center"/>
+>             <TextBox x:Name="AddrBox" Width="60" Text="0" Margin="8,0,0,0"
+>                      Background="#161B22" Foreground="#8B949E" BorderBrush="#30363D"/>
+>             <TextBlock Text="数量" Foreground="#8B949E" Margin="16,0,0,0" VerticalAlignment="Center"/>
+>             <TextBox x:Name="CountBox" Width="50" Text="2" Margin="8,0,0,0"
+>                      Background="#161B22" Foreground="#8B949E" BorderBrush="#30363D"/>
+>         </StackPanel>
+>         <Button Content="构建帧并发送" Click="OnSendClick" Margin="0,12,0,0" Padding="10,4"
+>                 Background="#238636" Foreground="White"/>
+>         <TextBlock Text="请求帧" Foreground="#8B949E" Margin="0,10,0,0"/>
+>         <TextBox x:Name="FrameBox" Height="30" IsReadOnly="True" Background="#161B22"
+>                  Foreground="#58A6FF" BorderBrush="#30363D"/>
+>         <TextBlock Text="接收响应" Foreground="#8B949E" Margin="0,8,0,0"/>
+>         <TextBox x:Name="RecvBox" Height="80" IsReadOnly="True" TextWrapping="Wrap"
+>                  Background="#161B22" Foreground="#8B949E" BorderBrush="#30363D"/>
+>         <TextBlock x:Name="StatusText" Foreground="#8B949E" Margin="0,8,0,0" TextWrapping="Wrap"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.IO.Ports;
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private SerialPort _port;
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             foreach (string name in SerialPort.GetPortNames())
+>                 PortCombo.Items.Add(name);
+>             if (PortCombo.Items.Count > 0) PortCombo.SelectedIndex = 0;
+>         }
+>
+>         private void OnOpenClick(object sender, RoutedEventArgs e)
+>         {
+>             try
+>             {
+>                 _port = new SerialPort(PortCombo.SelectedItem as string,
+>                                        9600, Parity.None, 8, StopBits.One);
+>                 _port.DataReceived += OnDataReceived;
+>                 _port.Open();
+>                 StatusText.Text = "串口已打开";
+>                 StatusText.Foreground = System.Windows.Media.Brushes.LimeGreen;
+>             }
+>             catch (Exception ex)
+>             {
+>                 StatusText.Text = "打开失败：" + ex.Message;
+>                 StatusText.Foreground = System.Windows.Media.Brushes.OrangeRed;
+>             }
+>         }
+>
+>         // 构建读保持寄存器(03)请求帧：站号 + 03 + 起始地址 + 寄存器数量 + CRC16
+>         private byte[] BuildReadHoldingRegisters(byte slave, ushort addr, ushort count)
+>         {
+>             byte[] frame = new byte[8];
+>             frame[0] = slave;
+>             frame[1] = 0x03;
+>             frame[2] = (byte)(addr >> 8);
+>             frame[3] = (byte)addr;
+>             frame[4] = (byte)(count >> 8);
+>             frame[5] = (byte)count;
+>             ushort crc = Crc16(frame, 6); // 对前 6 字节计算 CRC
+>             frame[6] = (byte)crc;          // CRC 低字节在前
+>             frame[7] = (byte)(crc >> 8);
+>             return frame;
+>         }
+>
+>         // 标准 Modbus CRC16 算法（多项式 0xA001）
+>         private ushort Crc16(byte[] data, int len)
+>         {
+>             ushort crc = 0xFFFF;
+>             for (int i = 0; i < len; i++)
+>             {
+>                 crc ^= data[i];
+>                 for (int j = 0; j < 8; j++)
+>                     crc = (crc & 1) != 0 ? (ushort)((crc >> 1) ^ 0xA001) : (ushort)(crc >> 1);
+>             }
+>             return crc;
+>         }
+>
+>         private void OnSendClick(object sender, RoutedEventArgs e)
+>         {
+>             if (_port == null || !_port.IsOpen) return;
+>             byte slave = byte.Parse(SlaveBox.Text);
+>             ushort addr = ushort.Parse(AddrBox.Text);
+>             ushort count = ushort.Parse(CountBox.Text);
+>             byte[] frame = BuildReadHoldingRegisters(slave, addr, count);
+>             _port.Write(frame, 0, frame.Length);
+>             FrameBox.Text = BitConverter.ToString(frame);
+>             StatusText.Text = "请求已发送，等待从站响应";
+>             StatusText.Foreground = System.Windows.Media.Brushes.Gray;
+>         }
+>
+>         private void OnDataReceived(object sender, SerialDataReceivedEventArgs e)
+>         {
+>             int n = _port.BytesToRead;
+>             byte[] data = new byte[n];
+>             _port.Read(data, 0, n);
+>             Dispatcher.Invoke(() => RecvBox.AppendText(BitConverter.ToString(data) + "\r\n"));
+>         }
+>     }
+> }
 > ```
 > 
 

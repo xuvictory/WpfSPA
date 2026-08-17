@@ -25,9 +25,61 @@ parent: 9.3 Socket 网络通信
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **网络基础概念演示：查看本机 IP、TCP 与 UDP 协议对比：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="网络基础概念 - IP / 端口 / TCP vs UDP" Height="460" Width="540"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="本机 IP 地址" Foreground="#58A6FF" FontWeight="Bold"/>
+>         <Button Content="刷新本机 IP" Click="OnRefreshClick" Padding="8,4" HorizontalAlignment="Left"
+>                 Margin="0,6,0,0" Background="#21262D" Foreground="White"/>
+>         <ListBox x:Name="IpList" Height="80" Margin="0,6,0,0" Background="#161B22"
+>                  Foreground="#8B949E" BorderBrush="#30363D"/>
+>         <TextBlock Text="协议对比" Foreground="#58A6FF" FontWeight="Bold" Margin="0,12,0,0"/>
+>         <RadioButton x:Name="TcpRadio" Content="TCP：面向连接、可靠有序、适合数据采集/指令下发"
+>                      Foreground="#8B949E" Checked="OnProtocolChanged" Margin="0,6,0,0"/>
+>         <RadioButton x:Name="UdpRadio" Content="UDP：无连接、尽力而为、低延迟、适合状态广播"
+>                      Foreground="#8B949E" Checked="OnProtocolChanged" Margin="0,6,0,0"/>
+>         <TextBlock x:Name="DetailText" Foreground="#58A6FF" Margin="0,8,0,0" TextWrapping="Wrap"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Net;
+> using System.Net.Sockets;
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         // 枚举本机所有 IPv4 地址并显示
+>         private void OnRefreshClick(object sender, RoutedEventArgs e)
+>         {
+>             IpList.Items.Clear();
+>             foreach (var ip in Dns.GetHostAddresses(Dns.GetHostName()))
+>                 if (ip.AddressFamily == AddressFamily.InterNetwork) // 只取 IPv4
+>                     IpList.Items.Add(ip.ToString());
+>         }
+>
+>         // 选中不同协议时给出更详细的说明
+>         private void OnProtocolChanged(object sender, RoutedEventArgs e)
+>         {
+>             DetailText.Text = TcpRadio.IsChecked == true
+>                 ? "TCP 先三次握手建立连接再传输，丢包会重传，数据按序到达；上位机常用它采集 PLC 数据、下发控制指令。"
+>                 : "UDP 不需要连接，直接发数据报，延迟更低但不保证送达；常用在设备状态广播、音视频流等场景。";
+>         }
+>     }
+> }
 > ```
 > 
 

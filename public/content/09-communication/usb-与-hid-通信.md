@@ -25,9 +25,72 @@ parent: 9.7 其他通信方式
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **USB 与 HID 通信演示：概念浏览 + HID 报告解析：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="USB 与 HID 通信" Height="500" Width="540"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="USB/HID 概念（点击查看说明）" Foreground="#58A6FF" FontWeight="Bold"/>
+>         <ListBox x:Name="ConceptList" Height="120" Margin="0,8,0,0" Background="#161B22"
+>                  Foreground="#8B949E" BorderBrush="#30363D" SelectionChanged="OnConceptSelected">
+>             <ListBoxItem Content="USB 枚举：设备插入后系统获取描述符"/>
+>             <ListBoxItem Content="HID 类：免驱、即插即用的输入/控制设备"/>
+>             <ListBoxItem Content="HID 报告：IN/OUT 端点收发定长报文"/>
+>         </ListBox>
+>         <TextBlock x:Name="DescText" Foreground="#58A6FF" Margin="0,8,0,0" TextWrapping="Wrap"/>
+>         <TextBlock Text="模拟 HID 输入报告（8 字节）" Foreground="#8B949E" Margin="0,10,0,0"/>
+>         <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+>             <TextBox x:Name="ReportBox" Text="00 00 2C 00 00 00 00 00" Width="200"
+>                      Background="#161B22" Foreground="#8B949E" BorderBrush="#30363D"/>
+>             <Button Content="解析报告" Click="OnParseClick" Padding="10,4" Margin="8,0,0,0"
+>                     Background="#238636" Foreground="White"/>
+>         </StackPanel>
+>         <TextBox x:Name="ResultBox" Height="80" IsReadOnly="True" TextWrapping="Wrap"
+>                  Margin="0,8,0,0" Background="#161B22" Foreground="#8B949E"
+>                  BorderBrush="#30363D" VerticalScrollBarVisibility="Auto"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Windows;
+> using System.Windows.Controls;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnConceptSelected(object sender, SelectionChangedEventArgs e)
+>         {
+>             DescText.Text = ConceptList.SelectedIndex switch
+>             {
+>                 0 => "USB 枚举：设备插入后主机读取设备/配置/接口描述符，分配地址并加载驱动",
+>                 1 => "HID 类：键盘、鼠标、扫描枪、自定义控制面板都属 HID，免驱动即插即用",
+>                 2 => "HID 报告：通过中断 IN/OUT 端点收发固定长度报文，上位机用 WriteFile 发送",
+>                 _ => ""
+>             };
+>         }
+>
+>         // 模拟解析 HID 键盘报告（第 2 字节为按键码）
+>         private void OnParseClick(object sender, RoutedEventArgs e)
+>         {
+>             string[] parts = ReportBox.Text.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+>             byte[] report = Array.ConvertAll(parts, t => Convert.ToByte(t, 16));
+>             byte keyCode = report[2];
+>             ResultBox.Text = $"报告长度：{report.Length} 字节\r\n" +
+>                              $"修饰键：0x{report[0]:X2}，按键码：0x{keyCode:X2}（如 0x2C = 空格键）";
+>         }
+>     }
+> }
 > ```
 > 
 

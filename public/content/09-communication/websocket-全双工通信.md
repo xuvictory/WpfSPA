@@ -25,9 +25,111 @@ parent: 9.7 其他通信方式
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **WebSocket 全双工演示：ClientWebSocket 连接公共 Echo 服务，同一条连接上双向同时收发：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="WebSocket 全双工通信" Height="480" Width="540"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="ClientWebSocket：一条 TCP 连接上双向同时收发（全双工）"
+>                    Foreground="#58A6FF" FontWeight="Bold" TextWrapping="Wrap"/>
+>         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+>             <Button Content="连接 wss://echo.websocket.org" Click="OnConnectClick" Padding="10,4"
+>                     Background="#238636" Foreground="White"/>
+>             <Button Content="断开" Click="OnDisconnectClick" Padding="10,4" Margin="8,0,0,0"
+>                     Background="#DA3633" Foreground="White"/>
+>         </StackPanel>
+>         <TextBox x:Name="SendBox" Height="40" Margin="0,8,0,0" Background="#161B22"
+>                  Foreground="#8B949E" BorderBrush="#30363D"/>
+>         <Button Content="发送（Echo 服务器原样返回）" Click="OnSendClick" Padding="10,4" Margin="0,8,0,0"
+>                 Background="#21262D" Foreground="White"/>
+>         <TextBox x:Name="LogBox" Height="150" IsReadOnly="True" TextWrapping="Wrap"
+>                  Margin="0,8,0,0" Background="#161B22" Foreground="#8B949E"
+>                  BorderBrush="#30363D" VerticalScrollBarVisibility="Auto"/>
+>         <TextBlock x:Name="StatusText" Foreground="#8B949E" Margin="0,8,0,0" TextWrapping="Wrap"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Net.WebSockets;
+> using System.Text;
+> using System.Threading;
+> using System.Threading.Tasks;
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private ClientWebSocket _ws;
+>         private CancellationTokenSource _cts;
+>
+>         public MainWindow() => InitializeComponent();
+>
+>         // 建立 WebSocket 连接（依赖公共测试服务，需联网）
+>         private async void OnConnectClick(object sender, RoutedEventArgs e)
+>         {
+>             try
+>             {
+>                 _ws = new ClientWebSocket();
+>                 _cts = new CancellationTokenSource();
+>                 await _ws.ConnectAsync(new Uri("wss://echo.websocket.org"), _cts.Token);
+>                 AppendLog("连接成功，开始接收消息...");
+>                 _ = ReceiveLoopAsync(); // 后台持续接收
+>                 StatusText.Text = "已连接（全双工）";
+>                 StatusText.Foreground = System.Windows.Media.Brushes.LimeGreen;
+>             }
+>             catch (Exception ex)
+>             {
+>                 StatusText.Text = "连接失败：" + ex.Message;
+>                 StatusText.Foreground = System.Windows.Media.Brushes.OrangeRed;
+>             }
+>         }
+>
+>         private async void OnDisconnectClick(object sender, RoutedEventArgs e)
+>         {
+>             if (_ws != null && _ws.State == WebSocketState.Open)
+>                 await _ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "bye", CancellationToken.None);
+>             _cts?.Cancel();
+>             AppendLog("已断开");
+>             StatusText.Text = "已断开";
+>             StatusText.Foreground = System.Windows.Media.Brushes.Gray;
+>         }
+>
+>         // 发送：SendAsync 随时可发，与接收互不阻塞
+>         private async void OnSendClick(object sender, RoutedEventArgs e)
+>         {
+>             if (_ws == null || _ws.State != WebSocketState.Open) return;
+>             byte[] data = Encoding.UTF8.GetBytes(SendBox.Text);
+>             await _ws.SendAsync(new ArraySegment<byte>(data),
+>                                 WebSocketMessageType.Text, true, CancellationToken.None);
+>             AppendLog($"[发送] {SendBox.Text}");
+>         }
+>
+>         // 接收循环：服务端推送的消息持续进入
+>         private async Task ReceiveLoopAsync()
+>         {
+>             byte[] buffer = new byte[4096];
+>             while (_ws.State == WebSocketState.Open)
+>             {
+>                 var result = await _ws.ReceiveAsync(new ArraySegment<byte>(buffer), _cts.Token);
+>                 if (result.MessageType == WebSocketMessageType.Close) break;
+>                 string msg = Encoding.UTF8.GetString(buffer, 0, result.Count);
+>                 AppendLog($"[接收] {msg}");
+>             }
+>         }
+>
+>         private void AppendLog(string msg) =>
+>             Dispatcher.Invoke(() => LogBox.AppendText(msg + "\r\n"));
+>     }
+> }
 > ```
 > 
 

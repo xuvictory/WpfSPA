@@ -25,9 +25,137 @@ parent: 9.4 Modbus 通信协议
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **Modbus 上位机实战演示：定时轮询读取保持寄存器并解析显示：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="Modbus 上位机实战" Height="520" Width="520"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="轮询读取：定时向从站发送读请求，解析响应并刷新显示"
+>                    Foreground="#58A6FF" FontWeight="Bold" TextWrapping="Wrap"/>
+>         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+>             <Button x:Name="StartBtn" Content="启动轮询" Click="OnStartClick" Padding="10,4"
+>                     Background="#238636" Foreground="White"/>
+>             <Button x:Name="StopBtn" Content="停止轮询" IsEnabled="False" Click="OnStopClick"
+>                     Padding="10,4" Margin="8,0,0,0" Background="#DA3633" Foreground="White"/>
+>             <TextBlock Text="间隔(ms)" Foreground="#8B949E" Margin="16,0,0,0" VerticalAlignment="Center"/>
+>             <TextBox x:Name="IntervalBox" Width="60" Text="1000" Margin="8,0,0,0"
+>                      Background="#161B22" Foreground="#8B949E" BorderBrush="#30363D"/>
+>         </StackPanel>
+>         <TextBlock Text="保持寄存器值" Foreground="#8B949E" Margin="0,8,0,0"/>
+>         <ListBox x:Name="RegList" Height="180" Background="#161B22" Foreground="#8B949E"
+>                  BorderBrush="#30363D"/>
+>         <TextBlock Text="通信日志" Foreground="#8B949E" Margin="0,8,0,0"/>
+>         <ListBox x:Name="LogList" Height="110" Background="#161B22" Foreground="#8B949E"
+>                  BorderBrush="#30363D"/>
+>         <TextBlock x:Name="StatusText" Foreground="#8B949E" Margin="0,8,0,0" TextWrapping="Wrap"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Windows;
+> using System.Windows.Threading;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private readonly DispatcherTimer _timer = new DispatcherTimer();
+>         private int _pollCount; // 轮询计数
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             _timer.Tick += OnPollTick;
+>         }
+>
+>         private void OnStartClick(object sender, RoutedEventArgs e)
+>         {
+>             _timer.Interval = TimeSpan.FromMilliseconds(int.Parse(IntervalBox.Text));
+>             _timer.Start();
+>             StartBtn.IsEnabled = false;
+>             StopBtn.IsEnabled = true;
+>             StatusText.Text = "轮询已启动";
+>             StatusText.Foreground = System.Windows.Media.Brushes.LimeGreen;
+>         }
+>
+>         private void OnStopClick(object sender, RoutedEventArgs e)
+>         {
+>             _timer.Stop();
+>             StartBtn.IsEnabled = true;
+>             StopBtn.IsEnabled = false;
+>             StatusText.Text = "轮询已停止";
+>             StatusText.Foreground = System.Windows.Media.Brushes.Gray;
+>         }
+>
+>         // 每次 Tick：构建请求帧 -> 模拟响应 -> 解析寄存器值
+>         private void OnPollTick(object sender, EventArgs e)
+>         {
+>             _pollCount++;
+>             // 构建读保持寄存器请求帧（站号 1，地址 0，数量 3）
+>             byte[] req = BuildReadFrame(1, 0, 3);
+>             // 模拟设备返回 3 个寄存器的响应帧（含 CRC）
+>             byte[] resp = BuildMockResponse(req);
+>
+>             // 解析响应中的寄存器值并刷新界面
+>             RegList.Items.Clear();
+>             for (int i = 0; i < 3; i++)
+>             {
+>                 ushort v = (ushort)(resp[3 + i * 2] << 8 | resp[4 + i * 2]); // Modbus 大端序
+>                 RegList.Items.Add($"寄存器 {40000 + i}: {v:D5}");
+>             }
+>             LogList.Items.Add($"第 {_pollCount} 次轮询：请求 {BitConverter.ToString(req)}，" +
+>                               $"响应 {resp.Length} 字节");
+>             if (LogList.Items.Count > 20) LogList.Items.RemoveAt(0); // 限制日志长度
+>         }
+>
+>         // 构建 03 功能码读请求帧（RTU）
+>         private byte[] BuildReadFrame(byte slave, ushort addr, ushort count)
+>         {
+>             byte[] frame = { slave, 0x03, (byte)(addr >> 8), (byte)addr,
+>                              (byte)(count >> 8), (byte)count, 0, 0 };
+>             ushort crc = Crc16(frame, 6);
+>             frame[6] = (byte)crc;
+>             frame[7] = (byte)(crc >> 8);
+>             return frame;
+>         }
+>
+>         // 模拟从站响应：站号 + 03 + 字节数 + 3 个寄存器值 + CRC
+>         private byte[] BuildMockResponse(byte[] req)
+>         {
+>             byte[] resp = new byte[11];
+>             resp[0] = req[0];
+>             resp[1] = 0x03;
+>             resp[2] = 6; // 3 个寄存器 = 6 字节
+>             Random rnd = new Random(Environment.TickCount);
+>             for (int i = 0; i < 6; i++)
+>                 resp[3 + i] = (byte)rnd.Next(0, 256); // 模拟设备数值
+>             ushort crc = Crc16(resp, 9);
+>             resp[9] = (byte)crc;
+>             resp[10] = (byte)(crc >> 8);
+>             return resp;
+>         }
+>
+>         private ushort Crc16(byte[] data, int len)
+>         {
+>             ushort crc = 0xFFFF;
+>             for (int i = 0; i < len; i++)
+>             {
+>                 crc ^= data[i];
+>                 for (int j = 0; j < 8; j++)
+>                     crc = (crc & 1) != 0 ? (ushort)((crc >> 1) ^ 0xA001) : (ushort)(crc >> 1);
+>             }
+>             return crc;
+>         }
+>     }
+> }
 > ```
 > 
 

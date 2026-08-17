@@ -25,9 +25,105 @@ parent: 9.4 Modbus 通信协议
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **Modbus TCP 演示：MBAP 头构建 + TcpClient 发送请求帧：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="Modbus TCP - MBAP 头" Height="520" Width="540"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="Modbus TCP 帧 = MBAP 头(7B) + 功能码 + 数据"
+>                    Foreground="#58A6FF" FontWeight="Bold"/>
+>         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+>             <TextBlock Text="IP" Foreground="#8B949E" VerticalAlignment="Center"/>
+>             <TextBox x:Name="IpBox" Text="127.0.0.1" Width="100" Margin="8,0,0,0"
+>                      Background="#161B22" Foreground="#8B949E" BorderBrush="#30363D"/>
+>             <TextBlock Text="端口" Foreground="#8B949E" Margin="16,0,0,0" VerticalAlignment="Center"/>
+>             <TextBox x:Name="PortBox" Text="502" Width="60" Margin="8,0,0,0"
+>                      Background="#161B22" Foreground="#8B949E" BorderBrush="#30363D"/>
+>         </StackPanel>
+>         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+>             <TextBlock Text="站号" Foreground="#8B949E" VerticalAlignment="Center"/>
+>             <TextBox x:Name="SlaveBox" Width="50" Text="1" Margin="8,0,0,0"
+>                      Background="#161B22" Foreground="#8B949E" BorderBrush="#30363D"/>
+>             <TextBlock Text="地址" Foreground="#8B949E" Margin="16,0,0,0" VerticalAlignment="Center"/>
+>             <TextBox x:Name="AddrBox" Width="60" Text="0" Margin="8,0,0,0"
+>                      Background="#161B22" Foreground="#8B949E" BorderBrush="#30363D"/>
+>             <TextBlock Text="数量" Foreground="#8B949E" Margin="16,0,0,0" VerticalAlignment="Center"/>
+>             <TextBox x:Name="CountBox" Width="50" Text="2" Margin="8,0,0,0"
+>                      Background="#161B22" Foreground="#8B949E" BorderBrush="#30363D"/>
+>         </StackPanel>
+>         <Button Content="构建并发送" Click="OnSendClick" Padding="10,4" Margin="0,10,0,0"
+>                 HorizontalAlignment="Left" Background="#238636" Foreground="White"/>
+>         <TextBlock Text="请求帧（含 MBAP 头）" Foreground="#8B949E" Margin="0,8,0,0"/>
+>         <TextBox x:Name="FrameBox" Height="28" IsReadOnly="True" Background="#161B22"
+>                  Foreground="#58A6FF" BorderBrush="#30363D"/>
+>         <TextBlock Text="响应帧" Foreground="#8B949E" Margin="0,8,0,0"/>
+>         <TextBox x:Name="RecvBox" Height="80" IsReadOnly="True" TextWrapping="Wrap"
+>                  Background="#161B22" Foreground="#8B949E" BorderBrush="#30363D"/>
+>         <TextBlock x:Name="StatusText" Foreground="#8B949E" Margin="0,8,0,0" TextWrapping="Wrap"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Net.Sockets;
+> using System.Threading.Tasks;
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         // 构建 Modbus TCP 请求帧：MBAP 头(7B) + 功能码 + 数据
+>         private byte[] BuildMbapFrame(byte slave, ushort addr, ushort count)
+>         {
+>             byte[] body = { 0x03, (byte)(addr >> 8), (byte)addr,
+>                             (byte)(count >> 8), (byte)count };
+>             byte[] frame = new byte[body.Length + 7];
+>             frame[0] = 0x00; frame[1] = 0x01;          // 事务标识符
+>             frame[2] = 0x00; frame[3] = 0x00;          // 协议标识符（0 = Modbus）
+>             frame[4] = 0x00; frame[5] = (byte)body.Length; // 后续字节数
+>             frame[6] = slave;                          // 单元标识符
+>             Array.Copy(body, 0, frame, 7, body.Length);
+>             return frame;
+>         }
+>
+>         private async void OnSendClick(object sender, RoutedEventArgs e)
+>         {
+>             try
+>             {
+>                 byte[] frame = BuildMbapFrame(byte.Parse(SlaveBox.Text),
+>                                               ushort.Parse(AddrBox.Text),
+>                                               ushort.Parse(CountBox.Text));
+>                 FrameBox.Text = BitConverter.ToString(frame);
+>
+>                 using var client = new TcpClient();
+>                 await client.ConnectAsync(IpBox.Text, int.Parse(PortBox.Text));
+>                 var stream = client.GetStream();
+>                 await stream.WriteAsync(frame, 0, frame.Length);
+>
+>                 byte[] buffer = new byte[256];
+>                 int n = await stream.ReadAsync(buffer, 0, buffer.Length);
+>                 RecvBox.Text = BitConverter.ToString(buffer, 0, n);
+>                 StatusText.Text = "发送并接收成功";
+>                 StatusText.Foreground = System.Windows.Media.Brushes.LimeGreen;
+>             }
+>             catch (Exception ex)
+>             {
+>                 StatusText.Text = "通信失败：" + ex.Message;
+>                 StatusText.Foreground = System.Windows.Media.Brushes.OrangeRed;
+>             }
+>         }
+>     }
+> }
 > ```
 > 
 

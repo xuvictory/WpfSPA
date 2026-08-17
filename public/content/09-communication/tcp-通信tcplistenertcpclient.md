@@ -25,9 +25,146 @@ parent: 9.3 Socket 网络通信
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **TCP 通信演示：TcpListener 服务端监听 + TcpClient 客户端连接，本机回环测试：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="TCP 通信 - TcpListener / TcpClient" Height="520" Width="540"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="服务端（TcpListener，端口 8888）" Foreground="#58A6FF" FontWeight="Bold"/>
+>         <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+>             <Button Content="启动监听" Click="OnStartListen" Padding="10,4"
+>                     Background="#238636" Foreground="White"/>
+>             <Button Content="停止监听" Click="OnStopListen" Padding="10,4" Margin="8,0,0,0"
+>                     Background="#DA3633" Foreground="White"/>
+>         </StackPanel>
+>         <TextBox x:Name="ServerLog" Height="80" IsReadOnly="True" TextWrapping="Wrap"
+>                  Margin="0,6,0,0" Background="#161B22" Foreground="#8B949E"
+>                  BorderBrush="#30363D" VerticalScrollBarVisibility="Auto"/>
+>         <TextBlock Text="客户端（TcpClient，连接 127.0.0.1:8888）" Foreground="#58A6FF"
+>                    FontWeight="Bold" Margin="0,12,0,0"/>
+>         <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+>             <Button Content="连接" Click="OnConnectClick" Padding="10,4"
+>                     Background="#21262D" Foreground="White"/>
+>             <Button Content="断开" Click="OnDisconnectClick" Padding="10,4" Margin="8,0,0,0"
+>                     Background="#21262D" Foreground="White"/>
+>         </StackPanel>
+>         <TextBox x:Name="SendBox" Height="40" Margin="0,6,0,0" Background="#161B22"
+>                  Foreground="#8B949E" BorderBrush="#30363D"/>
+>         <Button Content="发送（服务端原样回显）" Click="OnSendClick" Padding="10,4" Margin="0,6,0,0"
+>                 Background="#238636" Foreground="White"/>
+>         <TextBox x:Name="ClientLog" Height="80" IsReadOnly="True" TextWrapping="Wrap"
+>                  Margin="0,6,0,0" Background="#161B22" Foreground="#8B949E"
+>                  BorderBrush="#30363D" VerticalScrollBarVisibility="Auto"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Net;
+> using System.Net.Sockets;
+> using System.Text;
+> using System.Threading;
+> using System.Threading.Tasks;
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private TcpListener _listener;
+>         private CancellationTokenSource _cts = new CancellationTokenSource();
+>         private TcpClient _client;
+>         private NetworkStream _stream;
+>
+>         public MainWindow() => InitializeComponent();
+>
+>         // 服务端：开始监听并异步接受客户端
+>         private async void OnStartListen(object sender, RoutedEventArgs e)
+>         {
+>             try
+>             {
+>                 _cts = new CancellationTokenSource();
+>                 _listener = new TcpListener(IPAddress.Loopback, 8888);
+>                 _listener.Start();
+>                 AppendServer("已开始监听 127.0.0.1:8888");
+>                 while (!_cts.IsCancellationRequested)
+>                 {
+>                     TcpClient conn = await _listener.AcceptTcpClientAsync();
+>                     _ = HandleClientAsync(conn); // 每个客户端独立处理
+>                 }
+>             }
+>             catch (Exception ex) { AppendServer("监听失败：" + ex.Message); }
+>         }
+>
+>         private void OnStopListen(object sender, RoutedEventArgs e)
+>         {
+>             _cts.Cancel();
+>             _listener?.Stop();
+>             AppendServer("已停止监听");
+>         }
+>
+>         // 处理单个客户端：收到消息后原样回显
+>         private async Task HandleClientAsync(TcpClient conn)
+>         {
+>             AppendServer($"客户端 {conn.Client.RemoteEndPoint} 已接入");
+>             var stream = conn.GetStream();
+>             byte[] buffer = new byte[1024];
+>             try
+>             {
+>                 while (true)
+>                 {
+>                     int n = await stream.ReadAsync(buffer, 0, buffer.Length);
+>                     if (n == 0) break; // 连接已关闭
+>                     string msg = Encoding.UTF8.GetString(buffer, 0, n);
+>                     AppendServer($"收到：{msg}，回显");
+>                     await stream.WriteAsync(buffer, 0, n); // 原样回显
+>                 }
+>             }
+>             catch { }
+>             finally { conn.Close(); }
+>         }
+>
+>         // 客户端：连接服务端
+>         private async void OnConnectClick(object sender, RoutedEventArgs e)
+>         {
+>             try
+>             {
+>                 _client = new TcpClient();
+>                 await _client.ConnectAsync(IPAddress.Loopback, 8888);
+>                 _stream = _client.GetStream();
+>                 AppendClient("已连接到 127.0.0.1:8888");
+>             }
+>             catch (Exception ex) { AppendClient("连接失败：" + ex.Message); }
+>         }
+>
+>         private void OnDisconnectClick(object sender, RoutedEventArgs e)
+>         {
+>             _client?.Close();
+>             AppendClient("已断开");
+>         }
+>
+>         private async void OnSendClick(object sender, RoutedEventArgs e)
+>         {
+>             if (_stream == null) return;
+>             byte[] data = Encoding.UTF8.GetBytes(SendBox.Text);
+>             await _stream.WriteAsync(data, 0, data.Length);
+>             AppendClient($"[发送] {SendBox.Text}");
+>         }
+>
+>         private void AppendServer(string msg) =>
+>             Dispatcher.Invoke(() => ServerLog.AppendText(msg + "\r\n"));
+>
+>         private void AppendClient(string msg) =>
+>             Dispatcher.Invoke(() => ClientLog.AppendText(msg + "\r\n"));
+>     }
+> }
 > ```
 > 
 

@@ -25,9 +25,83 @@ parent: 9.4 Modbus 通信协议
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **Modbus 协议概述演示：报文结构分解 + 构建 03 读保持寄存器请求帧：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="Modbus 协议概述 - 报文结构" Height="460" Width="520"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="Modbus RTU 报文结构：地址码(1B) + 功能码(1B) + 数据(NB) + CRC16(2B)"
+>                    Foreground="#58A6FF" FontWeight="Bold" TextWrapping="Wrap"/>
+>         <Button Content="构建请求帧（读保持寄存器 03）" Click="OnBuildClick" Padding="10,4"
+>                 Margin="0,8,0,0" HorizontalAlignment="Left"
+>                 Background="#238636" Foreground="White"/>
+>         <TextBlock Text="完整请求帧" Foreground="#8B949E" Margin="0,8,0,0"/>
+>         <TextBox x:Name="FrameBox" Height="30" IsReadOnly="True" Background="#161B22"
+>                  Foreground="#58A6FF" BorderBrush="#30363D"/>
+>         <TextBlock Text="报文结构分解" Foreground="#8B949E" Margin="0,8,0,0"/>
+>         <ListBox x:Name="PartList" Height="180" Background="#161B22" Foreground="#8B949E"
+>                  BorderBrush="#30363D"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         // 构建读保持寄存器(03)请求帧并展示结构
+>         private void OnBuildClick(object sender, RoutedEventArgs e)
+>         {
+>             byte[] frame = BuildReadFrame(1, 0, 2); // 站号1，起始地址0，数量2
+>             FrameBox.Text = BitConverter.ToString(frame);
+>             PartList.Items.Clear();
+>             PartList.Items.Add($"地址码：0x{frame[0]:X2}（从站号 = 1）");
+>             PartList.Items.Add($"功能码：0x{frame[1]:X2}（03 = 读保持寄存器）");
+>             PartList.Items.Add($"数据区：{frame[2]:X2} {frame[3]:X2} {frame[4]:X2} {frame[5]:X2}（起始地址 + 寄存器数量）");
+>             PartList.Items.Add($"校验区：{frame[6]:X2} {frame[7]:X2}（CRC16，低字节在前）");
+>         }
+>
+>         // 构建标准 RTU 请求帧
+>         private byte[] BuildReadFrame(byte slave, ushort addr, ushort count)
+>         {
+>             byte[] frame = new byte[8];
+>             frame[0] = slave;
+>             frame[1] = 0x03;
+>             frame[2] = (byte)(addr >> 8);
+>             frame[3] = (byte)addr;
+>             frame[4] = (byte)(count >> 8);
+>             frame[5] = (byte)count;
+>             ushort crc = Crc16(frame, 6);
+>             frame[6] = (byte)crc;
+>             frame[7] = (byte)(crc >> 8);
+>             return frame;
+>         }
+>
+>         private ushort Crc16(byte[] data, int len)
+>         {
+>             ushort crc = 0xFFFF;
+>             for (int i = 0; i < len; i++)
+>             {
+>                 crc ^= data[i];
+>                 for (int j = 0; j < 8; j++)
+>                     crc = (crc & 1) != 0 ? (ushort)((crc >> 1) ^ 0xA001) : (ushort)(crc >> 1);
+>             }
+>             return crc;
+>         }
+>     }
+> }
 > ```
 > 
 

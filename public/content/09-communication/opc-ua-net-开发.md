@@ -25,9 +25,119 @@ parent: 9.5 OPC 协议
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **OPC UA .NET 开发演示：客户端连接、读取与写入节点值：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="OPC UA .NET 开发" Height="520" Width="600"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="OPC UA .NET 客户端三步：Connect → Read → Write"
+>                    Foreground="#58A6FF" FontWeight="Bold"/>
+>         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+>             <TextBlock Text="端点" Foreground="#8B949E" VerticalAlignment="Center"/>
+>             <TextBox x:Name="UrlBox" Text="opc.tcp://localhost:4840" Width="210" Margin="8,0,0,0"
+>                      Background="#161B22" Foreground="#8B949E" BorderBrush="#30363D"/>
+>             <Button Content="连接" Click="OnConnectClick" Padding="10,4" Margin="8,0,0,0"
+>                     Background="#238636" Foreground="White"/>
+>         </StackPanel>
+>         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+>             <TextBlock Text="节点ID" Foreground="#8B949E" VerticalAlignment="Center"/>
+>             <TextBox x:Name="NodeBox" Text="ns=2;s=Demo.Static.Temperature" Width="280" Margin="8,0,0,0"
+>                      Background="#161B22" Foreground="#8B949E" BorderBrush="#30363D"/>
+>             <Button Content="读取" Click="OnReadClick" Padding="10,4" Margin="8,0,0,0"
+>                     Background="#21262D" Foreground="White"/>
+>             <Button Content="写入" Click="OnWriteClick" Padding="10,4" Margin="8,0,0,0"
+>                     Background="#21262D" Foreground="White"/>
+>         </StackPanel>
+>         <TextBlock Text="值" Foreground="#8B949E" Margin="0,8,0,0"/>
+>         <TextBox x:Name="ValueBox" Height="28" Margin="0,4,0,0" Background="#161B22"
+>                  Foreground="#8B949E" BorderBrush="#30363D"/>
+>         <TextBlock Text="操作日志" Foreground="#8B949E" Margin="0,8,0,0"/>
+>         <TextBox x:Name="LogBox" Height="130" IsReadOnly="True" TextWrapping="Wrap"
+>                  Margin="0,4,0,0" Background="#161B22" Foreground="#8B949E"
+>                  BorderBrush="#30363D" VerticalScrollBarVisibility="Auto"/>
+>         <TextBlock x:Name="StatusText" Foreground="#8B949E" Margin="0,8,0,0" TextWrapping="Wrap"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Threading.Tasks;
+> using System.Windows;
+> using Opc.Ua;
+> using Opc.Ua.Client;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private Session _session;
+>
+>         public MainWindow() => InitializeComponent();
+>
+>         // 连接 UA 服务器（需 NuGet 包 OPCFoundation.NetStandard.Opc.Ua.Client）
+>         private async void OnConnectClick(object sender, RoutedEventArgs e)
+>         {
+>             try
+>             {
+>                 var config = new ApplicationConfiguration
+>                 {
+>                     ApplicationName = "HmiDemo",
+>                     ApplicationUri = "urn:localhost:UA:HmiDemo",
+>                     ApplicationType = ApplicationType.Client,
+>                     SecurityConfiguration = new SecurityConfiguration
+>                     { ApplicationCertificate = new CertificateIdentifier() },
+>                     TransportQuotas = new TransportQuotas { OperationTimeout = 15000 },
+>                     ClientConfiguration = new ClientConfiguration { DefaultSessionTimeout = 60000 }
+>                 };
+>                 await config.Validate(ApplicationType.Client);
+>                 var endpoint = CoreClientUtils.SelectEndpoint(config, UrlBox.Text, useSecurity: false);
+>                 _session = await Session.Create(config, endpoint, false, "HmiDemo",
+>                                                 60000, new UserIdentity(), null);
+>                 StatusText.Text = "已连接 " + endpoint.EndpointUrl;
+>                 StatusText.Foreground = System.Windows.Media.Brushes.LimeGreen;
+>             }
+>             catch (Exception ex)
+>             {
+>                 StatusText.Text = "连接失败：" + ex.Message;
+>                 StatusText.Foreground = System.Windows.Media.Brushes.OrangeRed;
+>             }
+>         }
+>
+>         // 通过 NodeId 读取节点当前值
+>         private void OnReadClick(object sender, RoutedEventArgs e)
+>         {
+>             if (_session == null) return;
+>             try
+>             {
+>                 var nodeId = new NodeId(NodeBox.Text);
+>                 DataValue value = _session.ReadValue(nodeId);
+>                 ValueBox.Text = value.Value?.ToString();
+>                 LogBox.AppendText($"读取 {nodeId} = {value.Value}\r\n");
+>             }
+>             catch (Exception ex) { LogBox.AppendText("读取失败：" + ex.Message + "\r\n"); }
+>         }
+>
+>         // 向节点写入新值（数值型演示）
+>         private void OnWriteClick(object sender, RoutedEventArgs e)
+>         {
+>             if (_session == null) return;
+>             try
+>             {
+>                 var nodeId = new NodeId(NodeBox.Text);
+>                 _session.WriteValue(nodeId, new DataValue(double.Parse(ValueBox.Text)));
+>                 LogBox.AppendText($"已写入 {nodeId} = {ValueBox.Text}\r\n");
+>             }
+>             catch (Exception ex) { LogBox.AppendText("写入失败：" + ex.Message + "\r\n"); }
+>         }
+>     }
+> }
 > ```
 > 
 

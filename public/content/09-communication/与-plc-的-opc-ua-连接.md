@@ -25,9 +25,104 @@ parent: 9.5 OPC 协议
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **连接 PLC 的 OPC UA 演示：配置 PLC 端点与凭据并读取变量：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="与 PLC 的 OPC UA 连接" Height="500" Width="560"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="通过 OPC UA 连接 PLC（S7-1500 / 罗克韦尔 / 倍福等）"
+>                    Foreground="#58A6FF" FontWeight="Bold" TextWrapping="Wrap"/>
+>         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+>             <TextBlock Text="PLC 地址" Foreground="#8B949E" VerticalAlignment="Center"/>
+>             <TextBox x:Name="IpBox" Text="192.168.1.10" Width="110" Margin="8,0,0,0"
+>                      Background="#161B22" Foreground="#8B949E" BorderBrush="#30363D"/>
+>             <TextBlock Text="端口" Foreground="#8B949E" Margin="16,0,0,0" VerticalAlignment="Center"/>
+>             <TextBox x:Name="PortBox" Text="4840" Width="60" Margin="8,0,0,0"
+>                      Background="#161B22" Foreground="#8B949E" BorderBrush="#30363D"/>
+>         </StackPanel>
+>         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+>             <TextBlock Text="用户名" Foreground="#8B949E" VerticalAlignment="Center"/>
+>             <TextBox x:Name="UserBox" Text="opcua" Width="100" Margin="8,0,0,0"
+>                      Background="#161B22" Foreground="#8B949E" BorderBrush="#30363D"/>
+>             <TextBlock Text="密码" Foreground="#8B949E" Margin="16,0,0,0" VerticalAlignment="Center"/>
+>             <PasswordBox x:Name="PwdBox" Width="100" Margin="8,0,0,0"
+>                          Background="#161B22" Foreground="#8B949E" BorderBrush="#30363D"/>
+>         </StackPanel>
+>         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+>             <TextBlock Text="PLC 变量" Foreground="#8B949E" VerticalAlignment="Center"/>
+>             <TextBox x:Name="NodeBox" Text="ns=2;s=DB1.Temp" Width="170" Margin="8,0,0,0"
+>                      Background="#161B22" Foreground="#8B949E" BorderBrush="#30363D"/>
+>             <Button Content="连接并读取" Click="OnReadClick" Padding="10,4" Margin="8,0,0,0"
+>                     Background="#238636" Foreground="White"/>
+>         </StackPanel>
+>         <TextBlock Text="日志" Foreground="#8B949E" Margin="0,8,0,0"/>
+>         <TextBox x:Name="LogBox" Height="140" IsReadOnly="True" TextWrapping="Wrap"
+>                  Margin="0,4,0,0" Background="#161B22" Foreground="#8B949E"
+>                  BorderBrush="#30363D" VerticalScrollBarVisibility="Auto"/>
+>         <TextBlock x:Name="StatusText" Foreground="#8B949E" Margin="0,8,0,0" TextWrapping="Wrap"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Threading.Tasks;
+> using System.Windows;
+> using Opc.Ua;
+> using Opc.Ua.Client;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         // 连接 PLC 的 UA 服务器：端点 = opc.tcp://IP:Port，可用用户名密码认证
+>         private async void OnReadClick(object sender, RoutedEventArgs e)
+>         {
+>             try
+>             {
+>                 var config = new ApplicationConfiguration
+>                 {
+>                     ApplicationName = "HmiDemo",
+>                     ApplicationUri = "urn:localhost:UA:HmiDemo",
+>                     ApplicationType = ApplicationType.Client,
+>                     SecurityConfiguration = new SecurityConfiguration
+>                     { ApplicationCertificate = new CertificateIdentifier() },
+>                     TransportQuotas = new TransportQuotas { OperationTimeout = 15000 },
+>                     ClientConfiguration = new ClientConfiguration { DefaultSessionTimeout = 60000 }
+>                 };
+>                 await config.Validate(ApplicationType.Client);
+>
+>                 string url = $"opc.tcp://{IpBox.Text}:{PortBox.Text}";
+>                 var endpoint = CoreClientUtils.SelectEndpoint(config, url, useSecurity: false);
+>                 // PLC 常用用户名密码认证，对应 UserIdentity 构造
+>                 var identity = new UserIdentity(UserBox.Text, PwdBox.Password);
+>                 using var session = await Session.Create(config, endpoint, false, "HmiDemo",
+>                                                          60000, identity, null);
+>                 LogBox.AppendText($"已连接 PLC：{url}\r\n");
+>
+>                 // 读取 PLC 中的变量节点
+>                 var nodeId = new NodeId(NodeBox.Text);
+>                 DataValue value = session.ReadValue(nodeId);
+>                 LogBox.AppendText($"变量 {nodeId} = {value.Value}\r\n");
+>                 StatusText.Text = "读取成功";
+>                 StatusText.Foreground = System.Windows.Media.Brushes.LimeGreen;
+>             }
+>             catch (Exception ex)
+>             {
+>                 StatusText.Text = "连接/读取失败：" + ex.Message;
+>                 StatusText.Foreground = System.Windows.Media.Brushes.OrangeRed;
+>             }
+>         }
+>     }
+> }
 > ```
 > 
 

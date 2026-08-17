@@ -25,9 +25,59 @@ parent: 9.1 通信协议概述
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **OSI 七层模型演示：逐层查看功能说明：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="OSI 七层模型简化" Height="500" Width="560"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="OSI 七层模型（点击分层查看说明）" Foreground="#58A6FF" FontWeight="Bold"/>
+>         <ListBox x:Name="LayerList" Height="280" Margin="0,8,0,0" Background="#161B22"
+>                  Foreground="#8B949E" BorderBrush="#30363D" SelectionChanged="OnLayerSelected">
+>             <ListBoxItem Content="7 应用层 (HTTP/MQTT/Modbus)"/>
+>             <ListBoxItem Content="6 表示层 (加密/编码)"/>
+>             <ListBoxItem Content="5 会话层 (建立/维护会话)"/>
+>             <ListBoxItem Content="4 传输层 (TCP/UDP)"/>
+>             <ListBoxItem Content="3 网络层 (IP 路由)"/>
+>             <ListBoxItem Content="2 数据链路层 (MAC/以太网帧)"/>
+>             <ListBoxItem Content="1 物理层 (网线/电平信号)"/>
+>         </ListBox>
+>         <TextBlock x:Name="DescText" Foreground="#58A6FF" Margin="0,10,0,0" TextWrapping="Wrap"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Controls;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnLayerSelected(object sender, SelectionChangedEventArgs e)
+>         {
+>             DescText.Text = LayerList.SelectedIndex switch
+>             {
+>                 6 => "应用层：与业务直接相关，上位机里的 HTTP、MQTT、Modbus 都工作在这一层",
+>                 5 => "表示层：负责数据格式转换、压缩、加密，保证两端能看懂同一份数据",
+>                 4 => "会话层：建立、管理和终止通信会话，决定谁先发言、何时结束",
+>                 3 => "传输层：TCP 保证可靠有序，UDP 追求低延迟，是端到端的搬运工",
+>                 2 => "网络层：IP 地址寻址与路由选择，把数据包从源主机送到目标主机",
+>                 1 => "数据链路层：把比特组装成帧，用 MAC 地址在局域网内传输",
+>                 0 => "物理层：传输原始比特流，如网线、光纤、电平信号",
+>                 _ => "点击上方分层查看说明"
+>             };
+>         }
+>     }
+> }
 > ```
 > 
 

@@ -25,9 +25,93 @@ parent: 9.7 其他通信方式
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **HTTP API 调用演示：HttpClient 执行 GET 与 POST 请求并显示响应：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="HTTP API 调用" Height="480" Width="560"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="HttpClient 是 .NET 推荐的 HTTP 客户端（GET/POST + JSON）"
+>                    Foreground="#58A6FF" FontWeight="Bold" TextWrapping="Wrap"/>
+>         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+>             <Button Content="GET 请求" Click="OnGetClick" Padding="10,4"
+>                     Background="#21262D" Foreground="White"/>
+>             <Button Content="POST 请求" Click="OnPostClick" Padding="10,4" Margin="8,0,0,0"
+>                     Background="#238636" Foreground="White"/>
+>         </StackPanel>
+>         <TextBlock Text="请求地址" Foreground="#8B949E" Margin="0,8,0,0"/>
+>         <TextBox x:Name="UrlBox" Text="https://httpbin.org/get" Height="28" Margin="0,4,0,0"
+>                  Background="#161B22" Foreground="#8B949E" BorderBrush="#30363D"/>
+>         <TextBlock Text="请求体（POST 时发送）" Foreground="#8B949E" Margin="0,8,0,0"/>
+>         <TextBox x:Name="BodyBox" Text="{&quot;device&quot;:&quot;PLC-01&quot;,&quot;cmd&quot;:&quot;start&quot;}"
+>                  Height="40" Margin="0,4,0,0" Background="#161B22" Foreground="#8B949E"
+>                  BorderBrush="#30363D" TextWrapping="Wrap"/>
+>         <TextBlock Text="响应内容" Foreground="#8B949E" Margin="0,8,0,0"/>
+>         <TextBox x:Name="RespBox" Height="120" IsReadOnly="True" TextWrapping="Wrap"
+>                  Margin="0,4,0,0" Background="#161B22" Foreground="#8B949E"
+>                  BorderBrush="#30363D" VerticalScrollBarVisibility="Auto"/>
+>         <TextBlock x:Name="StatusText" Foreground="#8B949E" Margin="0,8,0,0" TextWrapping="Wrap"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Net.Http;
+> using System.Text;
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private static readonly HttpClient Http = new HttpClient(); // 复用单例，避免端口耗尽
+>
+>         public MainWindow() => InitializeComponent();
+>
+>         // GET：查询类接口，参数拼在 URL 上
+>         private async void OnGetClick(object sender, RoutedEventArgs e)
+>         {
+>             try
+>             {
+>                 StatusText.Text = "请求中...";
+>                 var resp = await Http.GetStringAsync(UrlBox.Text);
+>                 RespBox.Text = resp;
+>                 StatusText.Text = "GET 完成";
+>                 StatusText.Foreground = System.Windows.Media.Brushes.LimeGreen;
+>             }
+>             catch (Exception ex)
+>             {
+>                 StatusText.Text = "GET 失败：" + ex.Message;
+>                 StatusText.Foreground = System.Windows.Media.Brushes.OrangeRed;
+>             }
+>         }
+>
+>         // POST：提交类接口，JSON 放进请求体
+>         private async void OnPostClick(object sender, RoutedEventArgs e)
+>         {
+>             try
+>             {
+>                 StatusText.Text = "请求中...";
+>                 var content = new StringContent(BodyBox.Text, Encoding.UTF8, "application/json");
+>                 var resp = await Http.PostAsync(UrlBox.Text, content);
+>                 RespBox.Text = await resp.Content.ReadAsStringAsync();
+>                 StatusText.Text = $"POST 完成，状态码 {(int)resp.StatusCode}";
+>                 StatusText.Foreground = System.Windows.Media.Brushes.LimeGreen;
+>             }
+>             catch (Exception ex)
+>             {
+>                 StatusText.Text = "POST 失败：" + ex.Message;
+>                 StatusText.Foreground = System.Windows.Media.Brushes.OrangeRed;
+>             }
+>         }
+>     }
+> }
 > ```
 > 
 

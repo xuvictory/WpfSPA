@@ -25,9 +25,87 @@ parent: 9.5 OPC 协议
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **OPC UA 核心概念演示：地址空间树形展示 + 通过节点 ID 读取变量值：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="OPC UA 核心概念 - 地址空间" Height="520" Width="560"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="OPC UA 地址空间（信息模型树，每个节点有唯一 NodeId）"
+>                    Foreground="#58A6FF" FontWeight="Bold" TextWrapping="Wrap"/>
+>         <TreeView x:Name="SpaceTree" Height="180" Margin="0,6,0,0" Background="#161B22"
+>                   Foreground="#8B949E" BorderBrush="#30363D">
+>             <TreeViewItem Header="Objects (根对象)">
+>                 <TreeViewItem Header="Device1 (设备)">
+>                     <TreeViewItem Header="Temperature (温度, Double)"/>
+>                     <TreeViewItem Header="Pressure (压力, Double)"/>
+>                     <TreeViewItem Header="Running (运行中, Boolean)"/>
+>                 </TreeViewItem>
+>             </TreeViewItem>
+>         </TreeView>
+>         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+>             <TextBlock Text="端点" Foreground="#8B949E" VerticalAlignment="Center"/>
+>             <TextBox x:Name="UrlBox" Text="opc.tcp://localhost:4840" Width="200" Margin="8,0,0,0"
+>                      Background="#161B22" Foreground="#8B949E" BorderBrush="#30363D"/>
+>             <Button Content="连接并读取" Click="OnReadClick" Padding="10,4" Margin="8,0,0,0"
+>                     Background="#238636" Foreground="White"/>
+>         </StackPanel>
+>         <TextBlock Text="读取日志" Foreground="#8B949E" Margin="0,8,0,0"/>
+>         <TextBox x:Name="LogBox" Height="120" IsReadOnly="True" TextWrapping="Wrap"
+>                  Margin="0,4,0,0" Background="#161B22" Foreground="#8B949E"
+>                  BorderBrush="#30363D" VerticalScrollBarVisibility="Auto"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Threading.Tasks;
+> using System.Windows;
+> using Opc.Ua;
+> using Opc.Ua.Client;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         // 连接 UA 服务器并通过节点 ID 读取变量值（需 NuGet 包 OPC UA Client）
+>         private async void OnReadClick(object sender, RoutedEventArgs e)
+>         {
+>             try
+>             {
+>                 var config = new ApplicationConfiguration
+>                 {
+>                     ApplicationName = "HmiDemo",
+>                     ApplicationUri = "urn:localhost:UA:HmiDemo",
+>                     ApplicationType = ApplicationType.Client,
+>                     SecurityConfiguration = new SecurityConfiguration
+>                     { ApplicationCertificate = new CertificateIdentifier() },
+>                     TransportQuotas = new TransportQuotas { OperationTimeout = 15000 },
+>                     ClientConfiguration = new ClientConfiguration { DefaultSessionTimeout = 60000 }
+>                 };
+>                 await config.Validate(ApplicationType.Client);
+>                 var endpoint = CoreClientUtils.SelectEndpoint(config, UrlBox.Text, useSecurity: false);
+>                 using var session = await Session.Create(config, endpoint, false, "HmiDemo",
+>                                                          60000, new UserIdentity(), null);
+>
+>                 // 每个节点用 NodeId 唯一标识，如 ns=2;s=Device1.Temperature
+>                 var nodeId = new NodeId("ns=2;s=Device1.Temperature");
+>                 DataValue value = session.ReadValue(nodeId);
+>                 LogBox.AppendText($"节点 {nodeId} 的值 = {value.Value}\r\n");
+>                 LogBox.AppendText($"状态码 = {value.StatusCode}\r\n");
+>             }
+>             catch (Exception ex) { LogBox.AppendText("读取失败：" + ex.Message + "\r\n"); }
+>         }
+>     }
+> }
 > ```
 > 
 

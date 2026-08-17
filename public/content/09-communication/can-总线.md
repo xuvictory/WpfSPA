@@ -25,9 +25,63 @@ parent: 9.7 其他通信方式
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **CAN 报文帧演示：解析标准帧格式（ID + DLC + 数据 + CRC）：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="CAN 总线 - 报文帧解析" Height="460" Width="520"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="CAN 标准帧解析（帧ID + 长度 + 数据 + CRC）"
+>                    Foreground="#58A6FF" FontWeight="Bold" TextWrapping="Wrap"/>
+>         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+>             <TextBlock Text="帧ID" Foreground="#8B949E" VerticalAlignment="Center"/>
+>             <TextBox x:Name="IdBox" Text="0x180" Width="70" Margin="8,0,0,0"
+>                      Background="#161B22" Foreground="#8B949E" BorderBrush="#30363D"/>
+>             <TextBlock Text="数据(Hex)" Foreground="#8B949E" Margin="16,0,0,0" VerticalAlignment="Center"/>
+>             <TextBox x:Name="DataBox" Text="FF 01 02 03" Width="130" Margin="8,0,0,0"
+>                      Background="#161B22" Foreground="#8B949E" BorderBrush="#30363D"/>
+>         </StackPanel>
+>         <Button Content="解析帧" Click="OnParseClick" Padding="10,4" Margin="0,10,0,0"
+>                 HorizontalAlignment="Left" Background="#238636" Foreground="White"/>
+>         <ListBox x:Name="ResultList" Height="180" Margin="0,10,0,0" Background="#161B22"
+>                  Foreground="#8B949E" BorderBrush="#30363D"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         // 解析 CAN 帧：ID、DLC、数据字节、校验演示
+>         private void OnParseClick(object sender, RoutedEventArgs e)
+>         {
+>             string[] parts = DataBox.Text.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+>             byte[] data = Array.ConvertAll(parts, t => Convert.ToByte(t, 16));
+>             uint id = Convert.ToUInt32(IdBox.Text, 16);
+>
+>             ResultList.Items.Clear();
+>             ResultList.Items.Add($"帧 ID：0x{id:X3}（仲裁 ID，值越小总线优先级越高）");
+>             ResultList.Items.Add($"数据长度 DLC：{data.Length} 字节");
+>             ResultList.Items.Add($"数据区：{BitConverter.ToString(data)}");
+>             // 简单校验演示（真实 CAN 使用硬件 CRC15）
+>             byte crc = 0;
+>             foreach (byte b in data) crc ^= b;
+>             ResultList.Items.Add($"校验 CRC：0x{crc:X2}（演示用异或，实际为硬件 CRC15）");
+>         }
+>     }
+> }
 > ```
 > 
 
