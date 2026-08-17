@@ -25,9 +25,73 @@ parent: 12.8 测试
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **FlaUI UI 自动化演示：给出被测窗口（含输入框与按钮），再用 FlaUI 语法编写自动化脚本模拟"输入参数→点击启动→断言状态"：**
+>
+> **被测窗口 MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="FlaUI 被测窗口" Height="320" Width="420"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock x:Name="StatusText" Margin="0,0,0,10" FontSize="16" FontWeight="Bold"
+>                    Foreground="#DA3633" Text="● 待机"/>
+>         <TextBox x:Name="ParamBox" Margin="0,6,0,0" Padding="4"
+>                  Background="#161B22" Foreground="#8B949E"/>
+>         <Button x:Name="StartButton" Content="启动设备" Click="OnStart" Margin="0,10,0,0" Padding="8"
+>                 Background="#21262D" Foreground="White"/>
+>         <TextBlock x:Name="OutputText" Margin="0,12,0,0" Foreground="#8B949E" TextWrapping="Wrap"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 被测逻辑：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Media;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnStart(object sender, RoutedEventArgs e)
+>         {
+>             bool ok = double.TryParse(ParamBox.Text, out double temp);
+>             StatusText.Text = ok ? "● 运行中" : "● 参数错误";
+>             StatusText.Foreground = new SolidColorBrush(Color.FromRgb(
+>                 ok ? 0x23 : 0xDA, ok ? 0x86 : 0x36, ok ? 0x36 : 0x33));
+>             OutputText.Text = ok ? $"已用 {temp}℃ 启动" : "请输入数字参数";
+>         }
+>     }
+> }
+> ```
+>
+> **FlaUI 自动化脚本（测试项目内，需安装 FlaUI.UIA3）：**
+> ```csharp
+> using FlaUI.Core;
+> using FlaUI.Core.AutomationElements;
+> using FlaUI.UIA3;
+>
+> public class HmiUiTests
+> {
+>     [Fact]
+>     public void 输入参数点击启动_状态应变为运行中()
+>     {
+>         using var app = Application.Launch("HmiDemo.exe");
+>         using var automation = new UIA3Automation();
+>         var window = app.GetMainWindow(automation);
+>
+>         // 通过 AutomationId 定位控件并操作
+>         window.FindFirstDescendant(x => x.ByAutomationId("ParamBox")).AsTextBox().Text = "80";
+>         window.FindFirstDescendant(x => x.ByAutomationId("StartButton")).AsButton().Click();
+>
+>         var status = window.FindFirstDescendant(x => x.ByAutomationId("StatusText")).AsTextBox().Text;
+>         Assert.Contains("运行中", status);
+>     }
+> }
 > ```
 > 
 

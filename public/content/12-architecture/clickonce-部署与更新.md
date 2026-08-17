@@ -25,9 +25,68 @@ parent: 12.7 软件更新方案
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **ClickOnce 版本信息演示：读取当前程序集版本并检查更新，展示 ClickOnce 自动更新流程（发布到服务器 → 客户端启动时检查 → 自动下载）：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="ClickOnce 部署演示" Height="340" Width="440"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="ClickOnce 版本检查与更新" Foreground="#58A6FF" FontWeight="Bold"/>
+>         <Button Content="检查服务器是否有新版本" Click="OnCheck" Margin="0,12,0,0" Padding="8"
+>                 Background="#21262D" Foreground="White"/>
+>         <Button Content="执行更新（模拟下载）" Click="OnUpdate" Margin="0,8,0,0" Padding="8"
+>                 Background="#238636" Foreground="White"/>
+>         <TextBlock x:Name="OutputText" Margin="0,12,0,0" Foreground="#8B949E" TextWrapping="Wrap"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Deployment.Application;
+> using System.Reflection;
+> using System.Windows;
+> using System.Windows.Media;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         // 模拟服务器上部署的最新版本
+>         private readonly Version _serverVersion = new Version(1, 0, 2);
+>
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnCheck(object sender, RoutedEventArgs e)
+>         {
+>             // ClickOnce 部署时可用 ApplicationDeployment.CurrentDeployment 判断
+>             bool isClickOnce = ApplicationDeployment.IsNetworkDeployed;
+>             Version current = isClickOnce
+>                 ? ApplicationDeployment.CurrentDeployment.CurrentVersion
+>                 : Assembly.GetExecutingAssembly().GetName().Version;
+>
+>             bool hasUpdate = _serverVersion > current;
+>             OutputText.Text =
+>                 $"当前版本：{current}\n服务器版本：{_serverVersion}\n" +
+>                 (hasUpdate ? "→ 检测到新版本，可点击更新" : "→ 已是最新版本");
+>             OutputText.Foreground = new SolidColorBrush(Color.FromRgb(
+>                 hasUpdate ? 0x23 : 0x8B, hasUpdate ? 0x86 : 0x94, hasUpdate ? 0x36 : 0x9E));
+>         }
+>
+>         private void OnUpdate(object sender, RoutedEventArgs e)
+>         {
+>             // ClickOnce 中：ApplicationDeployment.CurrentDeployment.Update() 会自动下载并提示重启
+>             OutputText.Text = "已从服务器下载增量包并完成安装（模拟）\n" +
+>                               "重新启动后即可使用新版本";
+>             OutputText.Foreground = new SolidColorBrush(Color.FromRgb(0x23, 0x86, 0x36));
+>         }
+>     }
+> }
 > ```
 > 
 

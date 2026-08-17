@@ -25,9 +25,91 @@ parent: 12.8 测试
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **xUnit 单元测试演示：先给出被测业务类"产量统计器"，再用 xUnit 写断言测试，用 Moq 模拟数据源，体现"测试不依赖真实硬件"：**
+>
+> **被测业务类 TemperatureAlarm.cs（放在主项目）：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> namespace HmiDemo
+> {
+>     // 被测对象：温度超限判断
+>     public class TemperatureAlarm
+>     {
+>         public bool ShouldAlarm(double current, double limit) => current > limit;
+>         public string AlarmLevel(double current, double limit)
+>             => current > limit * 1.2 ? "严重" : "一般";
+>     }
+> }
+> ```
+>
+> **MainWindow.xaml（演示界面，显示测试概念）：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="单元测试演示" Height="340" Width="440"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="xUnit + Moq 单元测试" Foreground="#58A6FF" FontWeight="Bold"/>
+>         <Button Content="运行内嵌断言（模拟测试）" Click="OnRun" Margin="0,12,0,0" Padding="8"
+>                 Background="#21262D" Foreground="White"/>
+>         <TextBlock x:Name="OutputText" Margin="0,12,0,0" Foreground="#8B949E" TextWrapping="Wrap"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码（演示断言流程）：**
+> ```csharp
+> using System.Windows;
+> using System.Windows.Media;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private readonly TemperatureAlarm _alarm = new TemperatureAlarm();
+>
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnRun(object sender, RoutedEventArgs e)
+>         {
+>             bool t1 = _alarm.ShouldAlarm(90, 85);             // 期望 true
+>             bool t2 = !_alarm.ShouldAlarm(80, 85);            // 期望 true
+>             string t3 = _alarm.AlarmLevel(120, 85);           // 期望"严重"
+>             bool pass = t1 && t2 && t3 == "严重";
+>
+>             OutputText.Text = pass
+>                 ? "3/3 断言全部通过 ✅\n可放心提交代码"
+>                 : "存在失败断言 ❌ 请检查业务逻辑";
+>             OutputText.Foreground = new SolidColorBrush(Color.FromRgb(
+>                 pass ? 0x23 : 0xDA, pass ? 0x86 : 0x36, pass ? 0x36 : 0x33));
+>         }
+>     }
+> }
+> ```
+>
+> **TemperatureAlarmTests.cs（真实 xUnit 测试项目写法，随示例展示）：**
+> ```csharp
+> using HmiDemo;
+> using Xunit;
+>
+> public class TemperatureAlarmTests
+> {
+>     private readonly TemperatureAlarm _alarm = new TemperatureAlarm();
+>
+>     [Fact]
+>     public void 温度超过上限_应触发报警()
+>     {
+>         Assert.True(_alarm.ShouldAlarm(90, 85));
+>     }
+>
+>     [Theory]
+>     [InlineData(80, 85)]
+>     [InlineData(85, 85)]
+>     public void 温度未超限_不应报警(double current, double limit)
+>     {
+>         Assert.False(_alarm.ShouldAlarm(current, limit));
+>     }
+> }
 > ```
 > 
 

@@ -25,9 +25,94 @@ parent: 12.3 插件化架构
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **MEF 用法演示：用 System.ComponentModel.Composition 的特性（[Export]/[Import]）实现插件组合——容器自动把已导出的模块注入到宿主，模拟 MEF 的发现与组合机制：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="MEF 组合演示" Height="340" Width="440"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="MEF 导出 / 导入机制" Foreground="#58A6FF" FontWeight="Bold"/>
+>         <Button Content="组合目录并执行所有模块" Click="OnCompose" Margin="0,12,0,0" Padding="8"
+>                 Background="#21262D" Foreground="White"/>
+>         <TextBlock x:Name="OutputText" Margin="0,12,0,0" Foreground="#8B949E" TextWrapping="Wrap"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Collections.Generic;
+> using System.ComponentModel.Composition;
+> using System.ComponentModel.Composition.Hosting;
+> using System.Reflection;
+> using System.Windows;
+> using System.Windows.Media;
+>
+> namespace HmiDemo
+> {
+>     // 模块契约
+>     public interface IHmiModule
+>     {
+>         string Name { get; }
+>         string Run();
+>     }
+>
+>     // [Export]：声明"我可以被容器发现"
+>     [Export(typeof(IHmiModule))]
+>     public class AlarmModule : IHmiModule
+>     {
+>         public string Name => "报警模块";
+>         public string Run() => "当前 2 条未确认报警";
+>     }
+>
+>     [Export(typeof(IHmiModule))]
+>     public class TrendModule : IHmiModule
+>     {
+>         public string Name => "趋势曲线模块";
+>         public string Run() => "已加载 24 小时温度曲线";
+>     }
+>
+>     public partial class MainWindow : Window
+>     {
+>         // [ImportMany]：声明"我需要所有 IHmiModule"
+>         [ImportMany]
+>         public IEnumerable<IHmiModule> Modules { get; set; }
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             Compose(); // 启动时自动组合
+>         }
+>
+>         private void Compose()
+>         {
+>             // 创建组合容器：扫描当前程序集并填充所有 [Import] 属性
+>             var catalog = new AssemblyCatalog(Assembly.GetExecutingAssembly());
+>             var container = new CompositionContainer(catalog);
+>             container.ComposeParts(this);
+>         }
+>
+>         private void OnCompose(object sender, RoutedEventArgs e)
+>         {
+>             string text = $"发现并组合 {Count(Modules)} 个模块：\n";
+>             foreach (var m in Modules) text += $"【{m.Name}】{m.Run()}\n";
+>             OutputText.Text = text;
+>             OutputText.Foreground = new SolidColorBrush(Color.FromRgb(0x23, 0x86, 0x36));
+>         }
+>
+>         private static int Count(IEnumerable<IHmiModule> modules)
+>         {
+>             int n = 0;
+>             foreach (var m in modules) n++;
+>             return n;
+>         }
+>     }
+> }
 > ```
 > 
 

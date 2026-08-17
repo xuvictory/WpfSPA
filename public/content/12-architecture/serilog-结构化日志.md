@@ -25,9 +25,57 @@ parent: 12.6 日志系统
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **Serilog 结构化日志演示：通过模板语法 {DeviceId} {Temperature} 把变量名保留为结构化字段，可被 ES/Kibana 等直接检索，而非拼进纯文本：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="Serilog 结构化日志" Height="360" Width="480"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="结构化日志模板 {DeviceId} {Temperature}" Foreground="#58A6FF" FontWeight="Bold"/>
+>         <Button Content="写入一条结构化温度日志" Click="OnWrite" Margin="0,12,0,0" Padding="8"
+>                 Background="#21262D" Foreground="White"/>
+>         <TextBlock x:Name="OutputText" Margin="0,12,0,0" Foreground="#8B949E" TextWrapping="Wrap"/>
+>         <TextBlock Text="提示：真实项目用 NuGet 安装 Serilog + Serilog.Sinks.File/Console，
+>                     Log.Information(\"温度 {Temperature}\", 78.5) 即可自动结构化。"
+>                    Foreground="#8B949E" Margin="0,10,0,0" TextWrapping="Wrap" FontSize="11"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码（模拟 Serilog 消息模板）：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Windows;
+> using System.Windows.Media;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnWrite(object sender, RoutedEventArgs e)
+>         {
+>             // 模拟 Serilog 消息模板：花括号 {} 里的名字会作为字段保存
+>             string messageTemplate = "设备 {DeviceId} 上报温度 {Temperature:F1}℃";
+>             string structured = messageTemplate
+>                 .Replace("{DeviceId}", "PLC-01")
+>                 .Replace("{Temperature:F1}", "78.5");
+>
+>             // 真实 Serilog：Log.Information("设备 {DeviceId} 上报温度 {Temperature}", "PLC-01", 78.5);
+>             OutputText.Text =
+>                 $"模板：{messageTemplate}\n\n" +
+>                 $"输出：{structured}\n\n" +
+>                 "结构化字段：\n  DeviceId = \"PLC-01\"\n  Temperature = 78.5\n" +
+>                 "（可用 ES 按 Temperature > 85 直接检索，无需全文匹配）";
+>             OutputText.Foreground = new SolidColorBrush(Color.FromRgb(0x23, 0x86, 0x36));
+>         }
+>     }
+> }
 > ```
 > 
 

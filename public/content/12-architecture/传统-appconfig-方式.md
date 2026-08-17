@@ -25,9 +25,63 @@ parent: 12.5 配置文件管理
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **App.config 读取演示：ConfigurationManager 读取 appSettings 里的串口参数（波特率、数据位），并显示在界面上：**
+>
+> **App.config（需在项目右键→属性→添加应用配置文件，并引用 System.Configuration）：**
+> ```xml
+> <?xml version="1.0" encoding="utf-8"?>
+> <configuration>
+>   <appSettings>
+>     <add key="ComPort" value="COM3"/>
+>     <add key="BaudRate" value="9600"/>
+>     <add key="DataBits" value="8"/>
+>     <add key="Parity" value="None"/>
+>   </appSettings>
+> </configuration>
+> ```
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="App.config 配置读取" Height="320" Width="420"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="从 App.config 读取串口参数" Foreground="#58A6FF" FontWeight="Bold"/>
+>         <Button Content="读取配置并打开串口" Click="OnOpen" Margin="0,12,0,0" Padding="8"
+>                 Background="#21262D" Foreground="White"/>
+>         <TextBlock x:Name="OutputText" Margin="0,12,0,0" Foreground="#8B949E" TextWrapping="Wrap"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Configuration;
+> using System.Windows;
+> using System.Windows.Media;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnOpen(object sender, RoutedEventArgs e)
+>         {
+>             // 从 App.config 的 appSettings 读取键值
+>             string port = ConfigurationManager.AppSettings["ComPort"];
+>             string baud = ConfigurationManager.AppSettings["BaudRate"];
+>             string dataBits = ConfigurationManager.AppSettings["DataBits"];
+>
+>             OutputText.Text =
+>                 $"串口配置：\n  端口 {port}，波特率 {baud}，数据位 {dataBits}\n" +
+>                 "→ SerialPort.Open() 已执行（模拟）";
+>             OutputText.Foreground = new SolidColorBrush(Color.FromRgb(0x23, 0x86, 0x36));
+>         }
+>     }
+> }
 > ```
 > 
 

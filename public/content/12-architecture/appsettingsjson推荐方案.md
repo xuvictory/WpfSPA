@@ -25,9 +25,79 @@ parent: 12.5 配置文件管理
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **appsettings.json 读取演示：仿照 .NET Core 配置体系，用 JSON 存放设备与通信参数，程序读取后绑定到界面，比 App.config 更结构化：**
+>
+> **appsettings.json（复制到输出目录）：**
+> ```json
+> {
+>   "Device": {
+>     "Name": "高速贴片机",
+>     "Ip": "192.168.1.50",
+>     "Port": 502
+>   },
+>   "Comm": {
+>     "TimeoutMs": 3000,
+>     "RetryCount": 3
+>   }
+> }
+> ```
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="appsettings.json 配置" Height="340" Width="440"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="从 appsettings.json 读取配置" Foreground="#58A6FF" FontWeight="Bold"/>
+>         <Button Content="加载配置并连接设备" Click="OnLoad" Margin="0,12,0,0" Padding="8"
+>                 Background="#21262D" Foreground="White"/>
+>         <TextBlock x:Name="OutputText" Margin="0,12,0,0" Foreground="#8B949E" TextWrapping="Wrap"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.IO;
+> using System.Text.Json;
+> using System.Windows;
+> using System.Windows.Media;
+>
+> namespace HmiDemo
+> {
+>     // 强类型配置类，与 JSON 结构一一对应
+>     public class DeviceOptions
+>     {
+>         public string Name { get; set; }
+>         public string Ip { get; set; }
+>         public int Port { get; set; }
+>     }
+>
+>     public class AppOptions
+>     {
+>         public DeviceOptions Device { get; set; }
+>         public int TimeoutMs { get; set; }
+>     }
+>
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnLoad(object sender, RoutedEventArgs e)
+>         {
+>             // 读取 JSON 文件并反序列化为强类型对象（真实项目可用 Microsoft.Extensions.Configuration）
+>             string json = File.ReadAllText("appsettings.json");
+>             var options = JsonSerializer.Deserialize<AppOptions>(json);
+>
+>             OutputText.Text =
+>                 $"设备：{options.Device.Name}  {options.Device.Ip}:{options.Device.Port}\n" +
+>                 $"超时：{options.TimeoutMs}ms（反序列化后强类型访问）";
+>             OutputText.Foreground = new SolidColorBrush(Color.FromRgb(0x23, 0x86, 0x36));
+>         }
+>     }
+> }
 > ```
 > 
 

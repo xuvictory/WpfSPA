@@ -25,9 +25,70 @@ parent: 12.1 上位机软件架构概述
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **SOLID 演示：以"报表导出"为例，接口隔离 + 依赖倒置——MainWindow 依赖 IReportExporter 接口而非具体类，切换 CSV/Excel 导出器无需改动调用代码：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="SOLID 原则演示" Height="340" Width="420"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="接口隔离 + 依赖倒置" Foreground="#58A6FF" FontWeight="Bold"/>
+>         <ComboBox x:Name="FormatBox" Margin="0,12,0,0" Padding="4"
+>                   Background="#161B22" Foreground="#8B949E">
+>             <ComboBoxItem Content="导出 CSV" IsSelected="True"/>
+>             <ComboBoxItem Content="导出 Excel"/>
+>         </ComboBox>
+>         <Button Content="导出生产报表" Click="OnExport" Margin="0,10,0,0" Padding="8"
+>                 Background="#21262D" Foreground="White"/>
+>         <TextBlock x:Name="OutputText" Margin="0,12,0,0" Foreground="#8B949E" TextWrapping="Wrap"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Media;
+>
+> namespace HmiDemo
+> {
+>     // 依赖倒置：上层依赖抽象接口，而不是具体实现
+>     public interface IReportExporter
+>     {
+>         string Export(string data);
+>     }
+>
+>     // 单一职责：每个类只做一件事
+>     public class CsvExporter : IReportExporter
+>     {
+>         public string Export(string data) => $"CSV 已导出：{data} 行数据 → report.csv";
+>     }
+>
+>     public class ExcelExporter : IReportExporter
+>     {
+>         public string Export(string data) => $"Excel 已导出：{data} 行数据 → report.xlsx";
+>     }
+>
+>     public partial class MainWindow : Window
+>     {
+>         private readonly string _data = "1280"; // 模拟报表数据
+>
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnExport(object sender, RoutedEventArgs e)
+>         {
+>             // 通过接口使用不同实现，新增导出格式时调用方代码零修改
+>             IReportExporter exporter = FormatBox.SelectedIndex == 0
+>                 ? new CsvExporter()
+>                 : new ExcelExporter();
+>             OutputText.Text = exporter.Export(_data);
+>             OutputText.Foreground = new SolidColorBrush(Color.FromRgb(0x23, 0x86, 0x36));
+>         }
+>     }
+> }
 > ```
 > 
 

@@ -25,9 +25,70 @@ parent: 12.6 日志系统
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **NLog 使用演示：安装 NLog 包后，通过 Logger 输出不同级别日志，可同时写到控制台与文件（此处用内置文本日志器模拟 NLog 的 API 风格）：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="NLog 风格日志" Height="360" Width="460"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="NLog 用法（Trace/Debug/Info/Warn/Error）" Foreground="#58A6FF" FontWeight="Bold"/>
+>         <Button Content="写入五种级别日志" Click="OnWrite" Margin="0,12,0,0" Padding="8"
+>                 Background="#21262D" Foreground="White"/>
+>         <TextBlock x:Name="OutputText" Margin="0,12,0,0" Foreground="#8B949E" TextWrapping="Wrap"/>
+>         <TextBlock Text="提示：真实项目中先 NuGet 安装 NLog + NLog.Config，
+>                     再配置 nlog.config 即可使用相同 API。" Foreground="#8B949E" Margin="0,10,0,0"
+>                    TextWrapping="Wrap" FontSize="11"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码（API 与 NLog 一致的简化实现）：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.IO;
+> using System.Windows;
+> using System.Windows.Media;
+>
+> namespace HmiDemo
+> {
+>     // 模拟 NLog：Logger 实例 + Trace/Debug/Info/Warn/Error 方法
+>     public class NLogLikeLogger
+>     {
+>         public void Trace(string msg) => Write("TRACE", msg, 0x8B, 0x94, 0x9E);
+>         public void Debug(string msg) => Write("DEBUG", msg, 0x8B, 0x94, 0x9E);
+>         public void Info(string msg) => Write("INFO", msg, 0x23, 0x86, 0x36);
+>         public void Warn(string msg) => Write("WARN", msg, 0x8B, 0x94, 0x9E);
+>         public void Error(string msg) => Write("ERROR", msg, 0xDA, 0x36, 0x33);
+>
+>         private void Write(string level, string msg, byte r, byte g, byte b)
+>             => File.AppendAllText("nlog-demo.log", $"[{DateTime.Now:HH:mm:ss}] [{level}] {msg}\n");
+>     }
+>
+>     public partial class MainWindow : Window
+>     {
+>         // 真实 NLog 中：private static readonly Logger logger = LogManager.GetCurrentClassLogger();
+>         private readonly NLogLikeLogger _logger = new NLogLikeLogger();
+>
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnWrite(object sender, RoutedEventArgs e)
+>         {
+>             _logger.Trace("打开设备串口");
+>             _logger.Debug("读取配置：波特率 9600");
+>             _logger.Info("设备连接成功");
+>             _logger.Warn("温度接近上限 84.2℃");
+>             _logger.Error("第 3 次握手失败，设备离线");
+>
+>             OutputText.Text = "已按 TRACE→DEBUG→INFO→WARN→ERROR 顺序写入 5 条日志\n" +
+>                               "（保存至 nlog-demo.log，对应 NLog 的日志级别）";
+>             OutputText.Foreground = new SolidColorBrush(Color.FromRgb(0x23, 0x86, 0x36));
+>         }
+>     }
+> }
 > ```
 > 
 
