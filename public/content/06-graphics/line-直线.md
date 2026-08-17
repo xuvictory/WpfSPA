@@ -25,9 +25,75 @@ parent: 6.2 Shape 基本图形
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **温度实时趋势演示：用多条 Line 拼接折线，X1/Y1/X2/Y2 定义端点，点击按钮逐点追加采集数据：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="温度趋势 - Line" Height="400" Width="460"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="温度实时曲线（Line 拼接）" Foreground="#58A6FF" FontSize="16" FontWeight="Bold"/>
+>         <Canvas x:Name="PlotArea" Grid.Row="1" Background="#161B22" Margin="0,10,0,0">
+>             <!-- 坐标轴基线 -->
+>             <Line X1="0" Y1="180" X2="420" Y2="180" Stroke="#30363D" StrokeThickness="1"/>
+>             <!-- 趋势线段容器：后续由代码追加 Line -->
+>         </Canvas>
+>         <Button Grid.Row="2" Content="采集数据" Click="OnSample" Margin="0,12,0,0"
+>                 Padding="8" Background="#21262D" Foreground="White" HorizontalAlignment="Left"/>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Media;
+> using System.Windows.Shapes;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private int _count;                    // 已采集的点数
+>         private double _lastY;                 // 上一帧数据的 Y 坐标
+>         private readonly Random _rnd = new Random();
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>         }
+>
+>         private void OnSample(object sender, RoutedEventArgs e)
+>         {
+>             if (_count >= 20) return;                       // 画满 20 点后停止
+>             double newY = 20 + _rnd.NextDouble() * 140;     // 随机温度值 20~160
+>             double x = 20 * _count;                         // X 方向每个点间隔 20px
+>             // 用一条新 Line 连接上一数据点与当前数据点
+>             var seg = new Line
+>             {
+>                 X1 = _count == 0 ? 0 : 20 * (_count - 1),
+>                 Y1 = _count == 0 ? newY : _lastY,
+>                 X2 = x,
+>                 Y2 = newY,
+>                 Stroke = new SolidColorBrush(Color.FromRgb(0x58, 0xA6, 0xFF)),
+>                 StrokeThickness = 2,
+>                 StrokeStartLineCap = PenLineCap.Round,      // 圆头端点更平滑
+>                 StrokeEndLineCap = PenLineCap.Round
+>             };
+>             PlotArea.Children.Add(seg);
+>             _lastY = newY;
+>             _count++;
+>         }
+>     }
+> }
 > ```
 > 
 

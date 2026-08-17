@@ -25,9 +25,68 @@ parent: 6.4 Brush 画刷
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **仪表盘倒影演示：用 VisualBrush 以仪表盘 Visual 为画刷实现镜面倒影，TileMode 控制平铺方式，Opacity 调节倒影透明度：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="仪表倒影 - VisualBrush" Height="480" Width="420"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="仪表盘倒影（VisualBrush）" Foreground="#58A6FF" FontSize="16" FontWeight="Bold"/>
+>         <StackPanel Grid.Row="1" Margin="0,10,0,0">
+>             <!-- 被复制的源 Visual：仪表盘 -->
+>             <Grid x:Name="GaugeHost" Height="160">
+>                 <Ellipse Width="150" Height="150" Fill="#161B22" Stroke="#30363D" StrokeThickness="4"
+>                          HorizontalAlignment="Center"/>
+>                 <TextBlock Text="66.6" Foreground="#58A6FF" FontSize="28"
+>                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
+>             </Grid>
+>             <!-- 倒影：用 VisualBrush 引用 GaugeHost，上下翻转 -->
+>             <Rectangle Height="80" Opacity="0.35" Margin="0,4,0,0">
+>                 <Rectangle.Fill>
+>                     <VisualBrush Stretch="None" AlignmentX="Center" AlignmentY="Top">
+>                         <VisualBrush.Visual>
+>                             <Border Width="150" Height="150">
+>                                 <Border.RenderTransform>
+>                                     <ScaleTransform ScaleY="-1" ScaleX="1"/>
+>                                 </Border.RenderTransform>
+>                                 <Border.Background>
+>                                     <VisualBrush Visual="{Binding ElementName=GaugeHost}"/>
+>                                 </Border.Background>
+>                             </Border>
+>                         </VisualBrush.Visual>
+>                     </VisualBrush>
+>                 </Rectangle.Fill>
+>             </Rectangle>
+>         </StackPanel>
+>         <TextBlock Grid.Row="2" Foreground="#8B949E" Margin="0,12,0,0"
+>                    Text="提示：VisualBrush 可把任意 UIElement 当画刷使用，适合做倒影、水印"/>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>         }
+>     }
+> }
 > ```
 > 
 

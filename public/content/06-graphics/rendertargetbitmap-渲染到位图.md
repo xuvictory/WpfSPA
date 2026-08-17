@@ -25,9 +25,87 @@ parent: 6.7 图像处理
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **画面快照演示：用 RenderTargetBitmap 把任意 UIElement 渲染成位图，实现报表截图/曲线快照，点击按钮生成并保存快照：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="画面快照 - RenderTargetBitmap" Height="460" Width="480"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="生产报表快照" Foreground="#58A6FF" FontSize="16" FontWeight="Bold"/>
+>         <!-- 被快照的源画面 -->
+>         <Grid x:Name="SnapshotSource" Grid.Row="1" Margin="0,10,0,0" Background="#161B22"
+>               Width="420" Height="240" ClipToBounds="True">
+>             <StackPanel Margin="15">
+>                 <TextBlock Text="产线日报" Foreground="#58A6FF" FontSize="15" FontWeight="Bold"/>
+>                 <Rectangle Height="70" Margin="0,8,0,0" Fill="#21262D" RadiusX="4" RadiusY="4">
+>                     <Rectangle.Fill>
+>                         <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+>                             <GradientStop Color="#0D419D" Offset="0"/>
+>                             <GradientStop Color="#58A6FF" Offset="1"/>
+>                         </LinearGradientBrush>
+>                     </Rectangle.Fill>
+>                 </Rectangle>
+>                 <TextBlock x:Name="SnapText" Text="产量：1250 件 / 合格率：98.6%" Foreground="#8B949E"
+>                            Margin="0,10,0,0"/>
+>             </StackPanel>
+>         </Grid>
+>         <!-- 快照预览区 -->
+>         <Border Grid.Row="2" Margin="0,12,0,0" Height="120" CornerRadius="6" Background="#161B22" BorderBrush="#30363D" BorderThickness="1">
+>             <Image x:Name="SnapshotPreview" Stretch="Uniform"/>
+>         </Border>
+>         <Button Grid.Row="2" Content="生成快照" Click="OnCapture" Margin="0,12,0,0" Padding="8"
+>                 Background="#21262D" Foreground="White" HorizontalAlignment="Right" VerticalAlignment="Bottom"/>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.IO;
+> using System.Windows;
+> using System.Windows.Media;
+> using System.Windows.Media.Imaging;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>         }
+>
+>         // 把 SnapshotSource 渲染成位图并显示到预览区
+>         private void OnCapture(object sender, RoutedEventArgs e)
+>         {
+>             // 1. 按目标尺寸创建 RenderTargetBitmap
+>             var rtb = new RenderTargetBitmap(420, 240, 96, 96, PixelFormats.Pbgra32);
+>             // 2. 渲染 UIElement（需先 Measure/Arrange 保证有实际尺寸）
+>             SnapshotSource.Measure(new Size(420, 240));
+>             SnapshotSource.Arrange(new Rect(0, 0, 420, 240));
+>             SnapshotSource.UpdateLayout();
+>             rtb.Render(SnapshotSource);
+>             SnapshotPreview.Source = rtb;
+>
+>             // 3. 可选：编码为 PNG 保存
+>             var encoder = new PngBitmapEncoder();
+>             encoder.Frames.Add(BitmapFrame.Create(rtb));
+>             using (var fs = File.Create("snapshot.png"))
+>             {
+>                 encoder.Save(fs);
+>             }
+>         }
+>     }
+> }
 > ```
 > 
 

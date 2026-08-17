@@ -25,9 +25,84 @@ parent: 6.3 Path 与 Geometry
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **液位罐体图演示：用 GeometryGroup 组合矩形罐体与椭圆液面，CombinedGeometry 取交集/并集造型，体现 Geometry 的复用与组合：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="罐体液位 - Geometry" Height="440" Width="520"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="储罐液位监控（Geometry 组合）" Foreground="#58A6FF" FontSize="16" FontWeight="Bold"/>
+>         <Canvas Grid.Row="1" Background="#161B22" Margin="0,10,0,0">
+>             <!-- GeometryGroup：矩形 + 两侧半圆组成罐体轮廓 -->
+>             <Path Canvas.Left="40" Canvas.Top="40" Stroke="#58A6FF" StrokeThickness="3" Fill="Transparent">
+>                 <Path.Data>
+>                     <GeometryGroup>
+>                         <RectangleGeometry Rect="60,40 220,200" RadiusX="8" RadiusY="8"/>
+>                         <EllipseGeometry Center="80,140" RadiusX="20" RadiusY="100"/>
+>                         <EllipseGeometry Center="260,140" RadiusX="20" RadiusY="100"/>
+>                     </GeometryGroup>
+>                 </Path.Data>
+>             </Path>
+>             <!-- 液面：EllipseGeometry + RectangleGeometry 并集 -->
+>             <Path x:Name="Liquid" Canvas.Left="40" Canvas.Top="40" Fill="#238636" Opacity="0.7">
+>                 <Path.Data>
+>                     <GeometryGroup>
+>                         <RectangleGeometry Rect="64,140 192,96" RadiusX="6" RadiusY="6"/>
+>                         <EllipseGeometry Center="80,140" RadiusX="16" RadiusY="90"/>
+>                         <EllipseGeometry Center="256,140" RadiusX="16" RadiusY="90"/>
+>                     </GeometryGroup>
+>                 </Path.Data>
+>             </Path>
+>             <TextBlock Canvas.Left="140" Canvas.Top="250" Text="液位 55%" Foreground="#8B949E"/>
+>         </Canvas>
+>         <Slider x:Name="LevelSlider" Grid.Row="2" Minimum="0" Maximum="100" Value="55"
+>                 Margin="0,12,0,0" ValueChanged="OnLevelChanged"/>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Controls;
+> using System.Windows.Media;
+> using System.Windows.Shapes;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>         }
+>
+>         // 拖动滑块改变液面高度（GeometryGroup 内矩形高度随之变化）
+>         private void OnLevelChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+>         {
+>             double level = LevelSlider.Value;
+>             var rect = new RectangleGeometry(new Rect(64, 236 - level * 1.7, 192, level * 1.7))
+>             {
+>                 RadiusX = 6,
+>                 RadiusY = 6
+>             };
+>             var group = new GeometryGroup();
+>             group.Children.Add(rect);
+>             group.Children.Add(new EllipseGeometry(new Point(80, 236 - level * 1.7), 16, 16));
+>             group.Children.Add(new EllipseGeometry(new Point(256, 236 - level * 1.7), 16, 16));
+>             Liquid.Data = group;
+>         }
+>     }
+> }
 > ```
 > 
 

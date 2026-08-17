@@ -25,9 +25,74 @@ parent: 6.8 音频与视频
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **操作培训视频演示：用 MediaElement 播放视频并控制播放/暂停/停止/音量，LoadedBehavior 与媒体事件协同：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="培训视频 - MediaElement" Height="460" Width="560"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="设备操作培训视频" Foreground="#58A6FF" FontSize="16" FontWeight="Bold"/>
+>         <!-- MediaElement：Source 指定视频，LoadedBehavior=Manual 由代码控制播放 -->
+>         <Border Grid.Row="1" Margin="0,10,0,0" CornerRadius="6" Background="#161B22" BorderBrush="#30363D" BorderThickness="1">
+>             <MediaElement x:Name="Player" Source="Assets/training.mp4"
+>                           LoadedBehavior="Manual" UnloadedBehavior="Manual"
+>                           Stretch="Uniform" MediaOpened="OnMediaOpened"/>
+>         </Border>
+>         <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,12,0,0">
+>             <Button Content="播放" Click="OnPlay" Padding="10" Background="#238636" Foreground="White" Margin="0,0,8,0"/>
+>             <Button Content="暂停" Click="OnPause" Padding="10" Background="#21262D" Foreground="White" Margin="0,0,8,0"/>
+>             <Button Content="停止" Click="OnStop" Padding="10" Background="#DA3633" Foreground="White" Margin="0,0,16,0"/>
+>             <TextBlock Text="音量" Foreground="#8B949E" VerticalAlignment="Center" Margin="0,0,6,0"/>
+>             <Slider x:Name="VolumeSlider" Width="140" Minimum="0" Maximum="1" Value="0.6"
+>                     ValueChanged="OnVolumeChanged" VerticalAlignment="Center"/>
+>         </StackPanel>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Controls;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>         }
+>
+>         private void OnMediaOpened(object sender, RoutedEventArgs e)
+>         {
+>             // 媒体打开后设置初始音量
+>             Player.Volume = VolumeSlider.Value;
+>         }
+>
+>         private void OnPlay(object sender, RoutedEventArgs e) => Player.Play();
+>         private void OnPause(object sender, RoutedEventArgs e) => Player.Pause();
+>         private void OnStop(object sender, RoutedEventArgs e)
+>         {
+>             Player.Stop();
+>             Player.Position = System.TimeSpan.Zero;
+>         }
+>
+>         private void OnVolumeChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+>         {
+>             if (Player != null) Player.Volume = VolumeSlider.Value;
+>         }
+>     }
+> }
 > ```
 > 
 

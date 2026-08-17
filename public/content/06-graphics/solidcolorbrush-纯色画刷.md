@@ -25,9 +25,69 @@ parent: 6.4 Brush 画刷
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **设备启停状态灯演示：用 SolidColorBrush 纯色画刷控制指示灯颜色（红/绿/灰），演示 XAML 声明与后台代码动态赋值两种写法：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="状态灯 - SolidColorBrush" Height="380" Width="420"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="1 号泵运行状态" Foreground="#58A6FF" FontSize="16" FontWeight="Bold"/>
+>         <!-- 声明式纯色画刷：Fill="#21262D" 等价于 SolidColorBrush -->
+>         <StackPanel Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+>             <Ellipse x:Name="Lamp" Width="90" Height="90" Fill="#21262D"
+>                      Stroke="#30363D" StrokeThickness="3"/>
+>             <TextBlock x:Name="StateText" Text="停止" Foreground="#8B949E" FontSize="20"
+>                        HorizontalAlignment="Center" Margin="0,12,0,0"/>
+>         </StackPanel>
+>         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,12,0,0">
+>             <Button Content="启动" Click="OnStart" Padding="10" Background="#238636"
+>                     Foreground="White" Margin="0,0,10,0"/>
+>             <Button Content="停止" Click="OnStop" Padding="10" Background="#DA3633"
+>                     Foreground="White"/>
+>         </StackPanel>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Media;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>         }
+>
+>         private void OnStart(object sender, RoutedEventArgs e)
+>         {
+>             // 命令式纯色画刷：Color.FromRgb 构造
+>             Lamp.Fill = new SolidColorBrush(Color.FromRgb(0x23, 0x86, 0x36));
+>             StateText.Text = "运行中";
+>             StateText.Foreground = Brushes.LimeGreen;
+>         }
+>
+>         private void OnStop(object sender, RoutedEventArgs e)
+>         {
+>             Lamp.Fill = new SolidColorBrush(Color.FromRgb(0xDA, 0x36, 0x33));
+>             StateText.Text = "停止";
+>             StateText.Foreground = Brushes.OrangeRed;
+>         }
+>     }
+> }
 > ```
 > 
 

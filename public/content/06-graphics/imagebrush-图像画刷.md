@@ -25,9 +25,74 @@ parent: 6.4 Brush 画刷
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **产品图片展示演示：用 ImageBrush 将 BitmapImage 作为 Shape/控件背景，Viewbox 控制贴图区域，Stretch 控制缩放方式：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="产品图墙 - ImageBrush" Height="440" Width="460"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="产品图片墙（ImageBrush）" Foreground="#58A6FF" FontSize="16" FontWeight="Bold"/>
+>         <!-- ImageSource 指定图片来源，Stretch 控制图片在容器中的缩放 -->
+>         <UniformGrid Grid.Row="1" Columns="2" Margin="0,10,0,0">
+>             <Rectangle x:Name="Pic1" Width="190" Height="140" Margin="6" RadiusX="6" RadiusY="6"
+>                        Stroke="#30363D" StrokeThickness="2">
+>                 <Rectangle.Fill>
+>                     <ImageBrush x:Name="Brush1" Stretch="UniformToFill"
+>                                 ImageSource="pack://application:,,,/Assets/product.png"/>
+>                 </Rectangle.Fill>
+>             </Rectangle>
+>             <Rectangle Width="190" Height="140" Margin="6" RadiusX="6" RadiusY="6"
+>                        Stroke="#30363D" StrokeThickness="2">
+>                 <Rectangle.Fill>
+>                     <ImageBrush ImageSource="pack://application:,,,/Assets/product.png"
+>                                 Stretch="Fill" Opacity="0.8"/>
+>                 </Rectangle.Fill>
+>             </Rectangle>
+>             <Rectangle Width="190" Height="140" Margin="6" RadiusX="6" RadiusY="6"
+>                        Stroke="#30363D" StrokeThickness="2">
+>                 <Rectangle.Fill>
+>                     <ImageBrush ImageSource="pack://application:,,,/Assets/product.png"
+>                                 Stretch="None" AlignmentX="Left" AlignmentY="Top"/>
+>                 </Rectangle.Fill>
+>             </Rectangle>
+>             <Rectangle Width="190" Height="140" Margin="6" RadiusX="6" RadiusY="6"
+>                        Stroke="#30363D" StrokeThickness="2">
+>                 <Rectangle.Fill>
+>                     <ImageBrush ImageSource="pack://application:,,,/Assets/product.png"
+>                                 Stretch="Uniform"/>
+>                 </Rectangle.Fill>
+>             </Rectangle>
+>         </UniformGrid>
+>         <TextBlock Grid.Row="2" Foreground="#8B949E" Margin="0,12,0,0"
+>                    Text="注：运行前请在项目 Assets 目录放置 product.png 图片"/>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Media;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>         }
+>     }
+> }
 > ```
 > 
 

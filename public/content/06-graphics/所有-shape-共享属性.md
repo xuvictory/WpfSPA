@@ -25,9 +25,63 @@ parent: 6.2 Shape 基本图形
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **监控面板综合演示：集中展示 Shape 共享属性——Fill 填充、Stroke 描边、StrokeThickness 线宽、Stretch 拉伸、Opacity 透明度、RenderTransform 变换：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="监控面板 - Shape 共享属性" Height="420" Width="480"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="共享属性一览" Foreground="#58A6FF" FontSize="16" FontWeight="Bold"/>
+>         <StackPanel Grid.Row="1" Margin="0,10,0,0">
+>             <!-- Fill + Stroke + StrokeThickness + 虚线 StrokeDashArray -->
+>             <Rectangle Width="420" Height="36" Fill="#21262D" Stroke="#58A6FF"
+>                        StrokeThickness="2" StrokeDashArray="4,2" RadiusX="4" RadiusY="4"/>
+>             <!-- Opacity 半透明叠加 -->
+>             <Ellipse Width="120" Height="60" Fill="#238636" Opacity="0.6" Margin="10,10,0,0"
+>                      HorizontalAlignment="Left"/>
+>             <!-- Stretch 拉伸变形 -->
+>             <Path Data="M 0,0 L 30,0 L 15,26 Z" Fill="#DA3633" Stretch="Fill"
+>                   Width="160" Height="44" Margin="10,10,0,0" HorizontalAlignment="Left"/>
+>             <!-- RenderTransform 旋转 + 缩放 -->
+>             <Line X1="0" Y1="0" X2="120" Y2="0" Stroke="#8B949E" StrokeThickness="4"
+>                   Margin="10,20,0,0" HorizontalAlignment="Left">
+>                 <Line.RenderTransform>
+>                     <TransformGroup>
+>                         <RotateTransform Angle="-15"/>
+>                         <ScaleTransform ScaleX="0.9" ScaleY="0.9"/>
+>                     </TransformGroup>
+>                 </Line.RenderTransform>
+>             </Line>
+>         </StackPanel>
+>         <TextBlock Grid.Row="2" Foreground="#8B949E" Margin="0,12,0,0"
+>                    Text="提示：Fill 决定内部填充，Stroke 决定轮廓，StrokeThickness 控制轮廓粗细"/>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>         }
+>     }
+> }
 > ```
 > 
 

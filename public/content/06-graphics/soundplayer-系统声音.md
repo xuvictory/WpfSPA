@@ -25,9 +25,75 @@ parent: 6.8 音频与视频
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **报警提示音演示：用 SoundPlayer 播放 WAV 格式报警音（同步/异步两种方式），并结合状态灯联动提示：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="报警音 - SoundPlayer" Height="380" Width="420"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="报警提示音（SoundPlayer）" Foreground="#58A6FF" FontSize="16" FontWeight="Bold"/>
+>         <StackPanel Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+>             <Ellipse x:Name="AlarmLamp" Width="80" Height="80" Fill="#21262D"
+>                      Stroke="#30363D" StrokeThickness="3"/>
+>             <TextBlock x:Name="AlarmText" Text="无报警" Foreground="#8B949E" FontSize="18"
+>                        HorizontalAlignment="Center" Margin="0,12,0,0"/>
+>         </StackPanel>
+>         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,12,0,0">
+>             <Button Content="触发报警" Click="OnAlarm" Padding="10" Background="#DA3633"
+>                     Foreground="White" Margin="0,0,10,0"/>
+>             <Button Content="解除报警" Click="OnReset" Padding="10" Background="#238636"
+>                     Foreground="White"/>
+>         </StackPanel>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Media;
+> using System.Windows;
+> using System.Windows.Media;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         // 加载 WAV 文件（可换成自己的报警音资源）
+>         private readonly SoundPlayer _player = new SoundPlayer("Assets/alarm.wav");
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>         }
+>
+>         private void OnAlarm(object sender, RoutedEventArgs e)
+>         {
+>             AlarmLamp.Fill = new SolidColorBrush(Color.FromRgb(0xDA, 0x36, 0x33));
+>             AlarmText.Text = "正在报警！";
+>             AlarmText.Foreground = Brushes.OrangeRed;
+>             // 异步播放：不阻塞 UI 线程
+>             _player.Load();
+>             _player.Play();
+>         }
+>
+>         private void OnReset(object sender, RoutedEventArgs e)
+>         {
+>             AlarmLamp.Fill = new SolidColorBrush(Color.FromRgb(0x21, 0x26, 0x2D));
+>             AlarmText.Text = "无报警";
+>             AlarmText.Foreground = new SolidColorBrush(Color.FromRgb(0x8B, 0x94, 0x9E));
+>             _player.Stop();
+>         }
+>     }
+> }
 > ```
 > 
 

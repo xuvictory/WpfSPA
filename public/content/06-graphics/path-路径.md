@@ -25,9 +25,63 @@ parent: 6.2 Shape 基本图形
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **设备状态图标演示：用 Path 的 Data 属性定义齿轮/箭头等矢量图标，Stretch 控制缩放适应，点击按钮切换图标状态：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="状态图标 - Path" Height="380" Width="440"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="设备状态图标（Path.Data）" Foreground="#58A6FF" FontSize="16" FontWeight="Bold"/>
+>         <!-- Data 使用路径微语言：M 起点、L 连线、Z 闭合、C 贝塞尔 -->
+>         <Grid Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+>             <Path x:Name="GearIcon" Width="120" Height="120" Stretch="Uniform"
+>                   Data="M 60,20 L 72,20 L 78,32 L 92,38 L 104,32 L 112,40 L 106,52 L 112,64 L 104,72 L 92,66 L 78,72 L 72,84 L 60,84 L 54,72 L 40,66 L 28,72 L 20,64 L 26,52 L 20,40 L 28,32 L 40,38 L 54,20 Z"
+>                   Fill="#8B949E"/>
+>             <TextBlock x:Name="StateText" Text="待机" Foreground="#8B949E" FontSize="18"
+>                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
+>         </Grid>
+>         <Button Grid.Row="2" Content="启动设备" Click="OnStart" Margin="0,12,0,0"
+>                 Padding="8" Background="#21262D" Foreground="White" HorizontalAlignment="Left"/>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Media;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private bool _running;
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>         }
+>
+>         private void OnStart(object sender, RoutedEventArgs e)
+>         {
+>             _running = !_running;
+>             GearIcon.Fill = _running
+>                 ? new SolidColorBrush(Color.FromRgb(0x23, 0x86, 0x36)) // 运行绿色
+>                 : new SolidColorBrush(Color.FromRgb(0x8B, 0x94, 0x9E));
+>             StateText.Text = _running ? "运行中" : "待机";
+>             StateText.Foreground = _running ? Brushes.LimeGreen : Brushes.Gray;
+>         }
+>     }
+> }
 > ```
 > 
 

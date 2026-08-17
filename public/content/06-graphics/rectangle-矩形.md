@@ -25,9 +25,92 @@ parent: 6.2 Shape 基本图形
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **设备状态栅格演示：用 Rectangle 绘制工位状态块，Width/Height 定义尺寸、RadiusX/RadiusY 圆角，点击按钮切换工作状态：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="工位状态 - Rectangle" Height="420" Width="460"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="3 号产线工位状态" Foreground="#58A6FF" FontSize="16" FontWeight="Bold"/>
+>         <!-- 3x3 工位状态栅格，每个工位用矩形 + 圆角表示 -->
+>         <UniformGrid x:Name="GridArea" Grid.Row="1" Columns="3" Margin="0,10,0,0">
+>             <Rectangle x:Name="Cell00" Width="110" Height="80" Margin="8" RadiusX="8" RadiusY="8"
+>                        Fill="#21262D" Stroke="#8B949E" StrokeThickness="2"/>
+>             <Rectangle x:Name="Cell01" Width="110" Height="80" Margin="8" RadiusX="8" RadiusY="8"
+>                        Fill="#21262D" Stroke="#8B949E" StrokeThickness="2"/>
+>             <Rectangle x:Name="Cell02" Width="110" Height="80" Margin="8" RadiusX="8" RadiusY="8"
+>                        Fill="#21262D" Stroke="#8B949E" StrokeThickness="2"/>
+>             <Rectangle x:Name="Cell10" Width="110" Height="80" Margin="8" RadiusX="8" RadiusY="8"
+>                        Fill="#21262D" Stroke="#8B949E" StrokeThickness="2"/>
+>             <Rectangle x:Name="Cell11" Width="110" Height="80" Margin="8" RadiusX="8" RadiusY="8"
+>                        Fill="#21262D" Stroke="#8B949E" StrokeThickness="2"/>
+>             <Rectangle x:Name="Cell12" Width="110" Height="80" Margin="8" RadiusX="8" RadiusY="8"
+>                        Fill="#21262D" Stroke="#8B949E" StrokeThickness="2"/>
+>             <Rectangle x:Name="Cell20" Width="110" Height="80" Margin="8" RadiusX="8" RadiusY="8"
+>                        Fill="#21262D" Stroke="#8B949E" StrokeThickness="2"/>
+>             <Rectangle x:Name="Cell21" Width="110" Height="80" Margin="8" RadiusX="8" RadiusY="8"
+>                        Fill="#21262D" Stroke="#8B949E" StrokeThickness="2"/>
+>             <Rectangle x:Name="Cell22" Width="110" Height="80" Margin="8" RadiusX="8" RadiusY="8"
+>                        Fill="#21262D" Stroke="#8B949E" StrokeThickness="2"/>
+>         </UniformGrid>
+>         <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,12,0,0">
+>             <Button Content="模拟运行" Click="OnRun" Padding="8" Background="#238636"
+>                     Foreground="White" Margin="0,0,10,0"/>
+>             <Button Content="全部停止" Click="OnStop" Padding="8" Background="#DA3633"
+>                     Foreground="White"/>
+>         </StackPanel>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Media;
+> using System.Windows.Shapes;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private readonly Rectangle[] _cells;
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             _cells = new[] { Cell00, Cell01, Cell02, Cell10, Cell11, Cell12, Cell20, Cell21, Cell22 };
+>         }
+>
+>         // 模拟运行：逐块点亮工位（绿色 = 运行中）
+>         private void OnRun(object sender, RoutedEventArgs e)
+>         {
+>             for (int i = 0; i < _cells.Length; i++)
+>             {
+>                 _cells[i].Fill = new SolidColorBrush(Color.FromRgb(0x23, 0x86, 0x36));
+>                 _cells[i].Stroke = new SolidColorBrush(Color.FromRgb(0x8B, 0x94, 0x9E));
+>             }
+>         }
+>
+>         // 全部停止：恢复灰色待机状态
+>         private void OnStop(object sender, RoutedEventArgs e)
+>         {
+>             for (int i = 0; i < _cells.Length; i++)
+>             {
+>                 _cells[i].Fill = new SolidColorBrush(Color.FromRgb(0x21, 0x26, 0x2D));
+>                 _cells[i].Stroke = new SolidColorBrush(Color.FromRgb(0x8B, 0x94, 0x9E));
+>             }
+>         }
+>     }
+> }
 > ```
 > 
 

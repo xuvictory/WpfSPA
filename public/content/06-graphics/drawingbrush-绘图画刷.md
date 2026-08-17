@@ -25,9 +25,100 @@ parent: 6.4 Brush 画刷
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **水印纹路演示：用 DrawingBrush 以 GeometryDrawing 绘制网格/斜纹作为背景纹路，TileMode 平铺铺满区域，Viewport 控制单元大小：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="背景纹路 - DrawingBrush" Height="420" Width="460"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="操作台背景纹路（DrawingBrush）" Foreground="#58A6FF" FontSize="16" FontWeight="Bold"/>
+>         <!-- DrawingBrush 使用矢量图元做平铺纹路 -->
+>         <Border Grid.Row="1" Margin="0,10,0,0" CornerRadius="6" BorderBrush="#30363D" BorderThickness="1">
+>             <Border.Background>
+>                 <DrawingBrush Viewport="0,0,30,30" ViewportUnits="Absolute" TileMode="Tile">
+>                     <DrawingBrush.Drawing>
+>                         <GeometryDrawing>
+>                             <GeometryDrawing.Geometry>
+>                                 <GeometryGroup>
+>                                     <!-- 对角斜纹 -->
+>                                     <LineGeometry StartPoint="0,30" EndPoint="30,0"/>
+>                                     <!-- 边框方块 -->
+>                                     <RectangleGeometry Rect="0,0,30,30"/>
+>                                 </GeometryGroup>
+>                             </GeometryDrawing.Geometry>
+>                             <GeometryDrawing.Pen>
+>                                 <Pen Brush="#2D333A" Thickness="1"/>
+>                             </GeometryDrawing.Pen>
+>                         </GeometryDrawing>
+>                     </DrawingBrush.Drawing>
+>                 </DrawingBrush>
+>             </Border.Background>
+>             <TextBlock Text="设备参数面板" Foreground="#8B949E" FontSize="24"
+>                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
+>         </Border>
+>         <Button Grid.Row="2" Content="切换纹路" Click="OnSwitch" Margin="0,12,0,0"
+>                 Padding="8" Background="#21262D" Foreground="White" HorizontalAlignment="Left"/>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Media;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private bool _dot;
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>         }
+>
+>         // 在斜纹与圆点纹路之间切换（动态构造 DrawingBrush）
+>         private void OnSwitch(object sender, RoutedEventArgs e)
+>         {
+>             _dot = !_dot;
+>             var brush = new DrawingBrush
+>             {
+>                 Viewport = new Rect(0, 0, 30, 30),
+>                 ViewportUnits = BrushMappingMode.Absolute,
+>                 TileMode = TileMode.Tile
+>             };
+>             if (_dot)
+>             {
+>                 brush.Drawing = new GeometryDrawing
+>                 {
+>                     Geometry = new EllipseGeometry(new Point(15, 15), 4, 4),
+>                     Pen = new Pen(new SolidColorBrush(Color.FromRgb(0x58, 0xA6, 0xFF)), 1)
+>                 };
+>             }
+>             else
+>             {
+>                 brush.Drawing = new GeometryDrawing
+>                 {
+>                     Geometry = new LineGeometry(new Point(0, 30), new Point(30, 0)),
+>                     Pen = new Pen(new SolidColorBrush(Color.FromRgb(0x8B, 0x94, 0x9E)), 1)
+>                 };
+>             }
+>             (sender as System.Windows.Controls.Button).Tag = brush;
+>             // 重新赋值背景触发重绘
+>             (Parent as Grid).Background = brush;
+>         }
+>     }
+> }
 > ```
 > 
 

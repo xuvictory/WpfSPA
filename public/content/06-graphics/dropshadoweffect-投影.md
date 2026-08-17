@@ -25,9 +25,68 @@ parent: 6.6 Effect 特效
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **悬浮卡片演示：用 DropShadowEffect 的 BlurRadius/ShadowDepth/Color 为面板添加投影，模拟选中/悬浮的高亮效果：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="悬浮卡片 - DropShadowEffect" Height="440" Width="460"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="设备卡片（投影特效）" Foreground="#58A6FF" FontSize="16" FontWeight="Bold"/>
+>         <!-- 选中卡片：蓝色投影；普通卡片：灰色投影 -->
+>         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,10,0,0">
+>             <Border x:Name="CardA" Width="170" Height="120" Background="#21262D" CornerRadius="8"
+>                     Margin="8" Padding="10">
+>                 <Border.Effect>
+>                     <DropShadowEffect x:Name="ShadowA" Color="#58A6FF" BlurRadius="18"
+>                                       ShadowDepth="4" Opacity="0.8"/>
+>                 </Border.Effect>
+>                 <StackPanel>
+>                     <TextBlock Text="A 号泵" Foreground="#58A6FF" FontSize="16" FontWeight="Bold"/>
+>                     <TextBlock Text="运行中" Foreground="#238636" Margin="0,8,0,0"/>
+>                     <TextBlock Text="25.0 ℃" Foreground="#8B949E" Margin="0,4,0,0"/>
+>                 </StackPanel>
+>             </Border>
+>             <Border x:Name="CardB" Width="170" Height="120" Background="#21262D" CornerRadius="8"
+>                     Margin="8" Padding="10">
+>                 <Border.Effect>
+>                     <DropShadowEffect Color="#8B949E" BlurRadius="6" ShadowDepth="2" Opacity="0.4"/>
+>                 </Border.Effect>
+>                 <StackPanel>
+>                     <TextBlock Text="B 号泵" Foreground="#8B949E" FontSize="16" FontWeight="Bold"/>
+>                     <TextBlock Text="停止" Foreground="#8B949E" Margin="0,8,0,0"/>
+>                     <TextBlock Text="-- ℃" Foreground="#8B949E" Margin="0,4,0,0"/>
+>                 </StackPanel>
+>             </Border>
+>         </StackPanel>
+>         <TextBlock Grid.Row="2" Foreground="#8B949E" Margin="0,12,0,0"
+>                    Text="提示：ShadowDepth 控制偏移，BlurRadius 控制投影柔和度"/>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>         }
+>     }
+> }
 > ```
 > 
 

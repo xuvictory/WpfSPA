@@ -25,9 +25,81 @@ parent: 6.5 Transform 变换
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **机械臂姿态演示：用 TransformGroup 将平移、旋转、缩放按顺序叠加，控制机械臂末端执行器到指定姿态：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="机械臂 - TransformGroup" Height="440" Width="440"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="机械臂姿态（组合变换）" Foreground="#58A6FF" FontSize="16" FontWeight="Bold"/>
+>         <!-- TransformGroup：依次执行缩放→旋转→平移 -->
+>         <Grid Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+>             <Grid x:Name="Arm" RenderTransformOrigin="0.5,0.5" HorizontalAlignment="Center" VerticalAlignment="Center">
+>                 <Grid.RenderTransform>
+>                     <TransformGroup>
+>                         <ScaleTransform x:Name="GroupScale" ScaleX="1" ScaleY="1"/>
+>                         <RotateTransform x:Name="GroupRotate" Angle="0"/>
+>                         <TranslateTransform x:Name="GroupTranslate" X="0" Y="0"/>
+>                     </TransformGroup>
+>                 </Grid.RenderTransform>
+>                 <!-- 机械臂本体：大臂 + 小臂 + 抓手 -->
+>                 <Rectangle Width="26" Height="90" Fill="#58A6FF" RadiusX="10" RadiusY="10"
+>                            VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0,0,0,0"/>
+>                 <Rectangle Width="20" Height="80" Fill="#8B949E" RadiusX="8" RadiusY="8"
+>                            VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,0,0,30"/>
+>                 <Ellipse Width="22" Height="22" Fill="#DA3633" VerticalAlignment="Bottom" HorizontalAlignment="Center"/>
+>             </Grid>
+>         </Grid>
+>         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,12,0,0">
+>             <Button Content="左转" Click="OnLeft" Padding="10" Background="#21262D" Foreground="White" Margin="0,0,10,0"/>
+>             <Button Content="右转" Click="OnRight" Padding="10" Background="#21262D" Foreground="White" Margin="0,0,10,0"/>
+>             <Button Content="放大" Click="OnGrow" Padding="10" Background="#21262D" Foreground="White"/>
+>         </StackPanel>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>         }
+>
+>         // 只改旋转，平移与缩放保持
+>         private void OnLeft(object sender, RoutedEventArgs e)
+>         {
+>             GroupRotate.Angle -= 15;
+>             GroupTranslate.X -= 8;
+>         }
+>
+>         private void OnRight(object sender, RoutedEventArgs e)
+>         {
+>             GroupRotate.Angle += 15;
+>             GroupTranslate.X += 8;
+>         }
+>
+>         private void OnGrow(object sender, RoutedEventArgs e)
+>         {
+>             GroupScale.ScaleX = GroupScale.ScaleY = System.Math.Min(1.8, GroupScale.ScaleX + 0.15);
+>         }
+>     }
+> }
 > ```
 > 
 

@@ -25,9 +25,77 @@ parent: 6.4 Brush 画刷
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **料位渐变条演示：用 LinearGradientBrush 定义 StartPoint/EndPoint 方向与 GradientStop 渐变色阶，点击按钮切换液位高低：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="料位条 - LinearGradientBrush" Height="400" Width="380"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="原料仓料位" Foreground="#58A6FF" FontSize="16" FontWeight="Bold"/>
+>         <!-- StartPoint 决定渐变起点，EndPoint 决定方向；Stop 定义颜色断点 -->
+>         <StackPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Center">
+>             <Border Width="36" Height="240" CornerRadius="4" BorderBrush="#30363D" BorderThickness="1"
+>                     Background="#161B22" VerticalAlignment="Center">
+>                 <Border x:Name="LevelFill" Height="0" Width="36" VerticalAlignment="Bottom"
+>                         CornerRadius="4">
+>                     <Border.Background>
+>                         <LinearGradientBrush StartPoint="0,1" EndPoint="0,0">
+>                             <GradientStop Color="#0D419D" Offset="0"/>
+>                             <GradientStop Color="#58A6FF" Offset="1"/>
+>                         </LinearGradientBrush>
+>                     </Border.Background>
+>                 </Border>
+>             </Border>
+>             <StackPanel Margin="18,0,0,0" VerticalAlignment="Center">
+>                 <TextBlock x:Name="LevelText" Text="0 %" Foreground="#8B949E" FontSize="26"/>
+>                 <TextBlock Text="当前料位" Foreground="#8B949E" Margin="0,8,0,0"/>
+>             </StackPanel>
+>         </StackPanel>
+>         <Button Grid.Row="2" Content="补料 / 放料" Click="OnToggle" Margin="0,12,0,0"
+>                 Padding="8" Background="#21262D" Foreground="White" HorizontalAlignment="Left"/>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Media;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private double _level = 20;
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             UpdateLevel();
+>         }
+>
+>         private void OnToggle(object sender, RoutedEventArgs e)
+>         {
+>             _level = _level > 60 ? 20 : 80;   // 在低料位与高料位之间切换
+>             UpdateLevel();
+>         }
+>
+>         private void UpdateLevel()
+>         {
+>             LevelFill.Height = 240 * _level / 100.0;
+>             LevelText.Text = $"{_level:F0} %";
+>         }
+>     }
+> }
 > ```
 > 
 

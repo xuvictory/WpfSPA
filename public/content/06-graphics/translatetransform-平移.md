@@ -25,9 +25,74 @@ parent: 6.5 Transform 变换
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **传送带物料移动演示：用 TranslateTransform 的 X/Y 控制平移距离，让物料方块沿传送带往复移动：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="传送带 - TranslateTransform" Height="420" Width="480"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="物料输送演示" Foreground="#58A6FF" FontSize="16" FontWeight="Bold"/>
+>         <Grid Grid.Row="1" Background="#161B22" Margin="0,10,0,0" ClipToBounds="True">
+>             <!-- 传送带轨道 -->
+>             <Rectangle Height="14" Fill="#30363D" VerticalAlignment="Center"/>
+>             <!-- 物料：通过 TranslateTransform 控制水平位置 -->
+>             <Rectangle x:Name="Box" Width="48" Height="34" Fill="#DA3633" RadiusX="4" RadiusY="4"
+>                        HorizontalAlignment="Left" VerticalAlignment="Center" Margin="24,0,0,0">
+>                 <Rectangle.RenderTransform>
+>                     <TranslateTransform x:Name="BoxMove" X="0" Y="0"/>
+>                 </Rectangle.RenderTransform>
+>             </Rectangle>
+>         </Grid>
+>         <Button Grid.Row="2" Content="开始输送" Click="OnStart" Margin="0,12,0,0"
+>                 Padding="8" Background="#21262D" Foreground="White" HorizontalAlignment="Left"/>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Threading;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private readonly DispatcherTimer _timer = new DispatcherTimer();
+>         private bool _forward = true;
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             _timer.Interval = System.TimeSpan.FromMilliseconds(30);
+>             _timer.Tick += OnTick;
+>         }
+>
+>         private void OnStart(object sender, RoutedEventArgs e)
+>         {
+>             if (_timer.IsEnabled) _timer.Stop(); else _timer.Start();
+>         }
+>
+>         // 每帧更新 X 坐标，触达边界后反向，形成往复运动
+>         private void OnTick(object sender, System.EventArgs e)
+>         {
+>             double x = BoxMove.X;
+>             if (_forward) x += 4; else x -= 4;
+>             if (x > 300) _forward = false;
+>             if (x < 0) _forward = true;
+>             BoxMove.X = x;
+>         }
+>     }
+> }
 > ```
 > 
 

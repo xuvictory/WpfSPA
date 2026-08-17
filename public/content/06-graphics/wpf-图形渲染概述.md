@@ -25,9 +25,70 @@ parent: 6.1 图形渲染概述
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **上位机设备看板演示：用 Shape 矢量图形组合搭建看板，点击按钮动态刷新颜色与尺寸，体现 WPF 保留模式渲染（改属性即自动重绘）：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="图形渲染概述 - 设备看板" Height="400" Width="440"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="设备看板（矢量图形）" Foreground="#58A6FF" FontSize="16" FontWeight="Bold"/>
+>         <!-- 矢量图形组合：矩形机柜 + 椭圆指示灯 + 直线分隔 + Path 状态箭头 -->
+>         <Canvas Grid.Row="1" Background="#161B22" ClipToBounds="True" Margin="0,10,0,0">
+>             <Rectangle x:Name="Cabinet" Width="160" Height="120" Canvas.Left="30" Canvas.Top="30"
+>                        Fill="#21262D" Stroke="#8B949E" StrokeThickness="2" RadiusX="6" RadiusY="6"/>
+>             <Ellipse x:Name="Lamp" Width="28" Height="28" Canvas.Left="150" Canvas.Top="60" Fill="#DA3633"/>
+>             <Line X1="30" Y1="190" X2="190" Y2="190" Stroke="#58A6FF" StrokeThickness="2"/>
+>             <Path Data="M 210,60 L 250,60 L 250,45 L 280,70 L 250,95 L 250,80 L 210,80 Z" Fill="#238636"/>
+>             <TextBlock Canvas.Left="210" Canvas.Top="30" Text="运行" Foreground="#8B949E"/>
+>         </Canvas>
+>         <Button Grid.Row="2" Content="切换运行状态" Click="OnSwitch" Margin="0,12,0,0"
+>                 Padding="8" Background="#21262D" Foreground="White" HorizontalAlignment="Left"/>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Media;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private bool _running;
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>         }
+>
+>         // 保留模式渲染：无需手动重绘，直接修改依赖属性即可自动刷新画面
+>         private void OnSwitch(object sender, RoutedEventArgs e)
+>         {
+>             _running = !_running;
+>             if (_running)
+>             {
+>                 Lamp.Fill = new SolidColorBrush(Color.FromRgb(0x23, 0x86, 0x36)); // 运行绿灯
+>                 Cabinet.Fill = new SolidColorBrush(Color.FromRgb(0x21, 0x26, 0x2D));
+>             }
+>             else
+>             {
+>                 Lamp.Fill = new SolidColorBrush(Color.FromRgb(0xDA, 0x36, 0x33)); // 停止红灯
+>                 Cabinet.Fill = new SolidColorBrush(Color.FromRgb(0x2D, 0x33, 0x3A));
+>             }
+>         }
+>     }
+> }
 > ```
 > 
 

@@ -25,9 +25,86 @@ parent: 6.7 图像处理
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **像素级示波器演示：用 WriteableBitmap 直接操作像素缓冲区（WritePixels），实时绘制波形，体现高速逐帧更新的能力：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="示波器 - WriteableBitmap" Height="460" Width="520"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="虚拟示波器（WritePixels）" Foreground="#58A6FF" FontSize="16" FontWeight="Bold"/>
+>         <!-- 后台代码通过 WriteableBitmap 直接写像素 -->
+>         <Border Grid.Row="1" Margin="0,10,0,0" CornerRadius="6" Background="#161B22" BorderBrush="#30363D" BorderThickness="1">
+>             <Image x:Name="ScopeImage" Stretch="Fill" Margin="5"/>
+>         </Border>
+>         <Button Grid.Row="2" Content="开始 / 暂停" Click="OnToggle" Margin="0,12,0,0"
+>                 Padding="8" Background="#21262D" Foreground="White" HorizontalAlignment="Left"/>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Windows;
+> using System.Windows.Media;
+> using System.Windows.Media.Imaging;
+> using System.Windows.Threading;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private const int W = 480, H = 260;
+>         private readonly byte[] _pixels = new byte[W * H * 4];  // BGRA 像素缓冲
+>         private readonly WriteableBitmap _bmp = new WriteableBitmap(W, H, 96, 96, PixelFormats.Bgra32, null);
+>         private readonly DispatcherTimer _timer = new DispatcherTimer();
+>         private int _phase;
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             ScopeImage.Source = _bmp;
+>             _timer.Interval = TimeSpan.FromMilliseconds(33);    // ~30 FPS
+>             _timer.Tick += OnTick;
+>         }
+>
+>         private void OnToggle(object sender, RoutedEventArgs e)
+>         {
+>             if (_timer.IsEnabled) _timer.Stop(); else _timer.Start();
+>         }
+>
+>         // 每帧清空画布并逐像素绘制正弦波
+>         private void OnTick(object sender, EventArgs e)
+>         {
+>             Array.Clear(_pixels, 0, _pixels.Length);            // 1. 清屏（黑色）
+>             for (int x = 0; x < W; x++)
+>             {
+>                 double y = H / 2 + Math.Sin((x + _phase) * 0.06) * 60;
+>                 int py = (int)y;
+>                 if (py >= 0 && py < H)
+>                 {
+>                     int i = (py * W + x) * 4;
+>                     _pixels[i] = 0xFF;       // B
+>                     _pixels[i + 1] = 0xA6;   // G
+>                     _pixels[i + 2] = 0x58;   // R
+>                     _pixels[i + 3] = 0xFF;   // A
+>                 }
+>             }
+>             _phase = (_phase + 3) % W;
+>             // 2. 整幅写入位图并立即刷新
+>             _bmp.WritePixels(new Int32Rect(0, 0, W, H), _pixels, W * 4, 0);
+>         }
+>     }
+> }
 > ```
 > 
 

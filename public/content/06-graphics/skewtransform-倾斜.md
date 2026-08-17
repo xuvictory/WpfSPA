@@ -25,9 +25,71 @@ parent: 6.5 Transform 变换
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **角度标牌演示：用 SkewTransform 的 AngleX/AngleY 让标牌产生透视倾斜效果，CenterX/CenterY 控制变形轴心：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="倾斜标牌 - SkewTransform" Height="400" Width="440"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="车间标识牌（斜切效果）" Foreground="#58A6FF" FontSize="16" FontWeight="Bold"/>
+>         <StackPanel Grid.Row="1" VerticalAlignment="Center">
+>             <!-- AngleX 让元素沿 X 方向倾斜 -->
+>             <Border Width="240" Height="50" Background="#DA3633" CornerRadius="4"
+>                     HorizontalAlignment="Center">
+>                 <Border.RenderTransform>
+>                     <SkewTransform x:Name="Skew1" AngleX="-20" AngleY="0" CenterX="120" CenterY="25"/>
+>                 </Border.RenderTransform>
+>                 <TextBlock Text="危险区域" Foreground="White" FontWeight="Bold" FontSize="18"
+>                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
+>             </Border>
+>             <!-- AngleY 让元素沿 Y 方向倾斜 -->
+>             <Border Width="240" Height="50" Background="#238636" CornerRadius="4"
+>                     HorizontalAlignment="Center" Margin="0,30,0,0">
+>                 <Border.RenderTransform>
+>                     <SkewTransform x:Name="Skew2" AngleX="0" AngleY="15" CenterX="120" CenterY="25"/>
+>                 </Border.RenderTransform>
+>                 <TextBlock Text="安全通道" Foreground="White" FontWeight="Bold" FontSize="18"
+>                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
+>             </Border>
+>         </StackPanel>
+>         <Slider Grid.Row="2" Minimum="-45" Maximum="45" Value="0" Margin="0,12,0,0"
+>                 ValueChanged="OnSkewChanged"/>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Controls;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>         }
+>
+>         // 拖动滑块同时调节两块标牌的倾斜角度
+>         private void OnSkewChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+>         {
+>             double angle = ((Slider)sender).Value;
+>             Skew1.AngleX = angle;
+>             Skew2.AngleY = -angle;
+>         }
+>     }
+> }
 > ```
 > 
 

@@ -25,9 +25,106 @@ parent: 6.10 动画
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **开机自检动画演示：用 Storyboard 集中编排多个动画（颜色、尺寸、透明度），Begin/Stop/Pause 统一控制，模拟设备开机自检流程：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="开机自检 - Storyboard" Height="420" Width="460"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="设备开机自检（Storyboard）" Foreground="#58A6FF" FontSize="16" FontWeight="Bold"/>
+>         <StackPanel Grid.Row="1" VerticalAlignment="Center">
+>             <!-- 自检条：宽度变化 -->
+>             <Border x:Name="ProgressBar" Width="60" Height="16" CornerRadius="8"
+>                     HorizontalAlignment="Left" Background="#238636"/>
+>             <TextBlock x:Name="ProgressText" Text="自检中…" Foreground="#8B949E" Margin="0,8,0,0"/>
+>             <!-- 指示灯：颜色闪烁 -->
+>             <Ellipse x:Name="Led" Width="34" Height="34" Fill="#21262D" Margin="0,20,0,0"
+>                      HorizontalAlignment="Left"/>
+>         </StackPanel>
+>         <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,12,0,0">
+>             <Button Content="开始自检" Click="OnBegin" Padding="10" Background="#238636"
+>                     Foreground="White" Margin="0,0,10,0"/>
+>             <Button Content="暂停" Click="OnPause" Padding="10" Background="#21262D"
+>                     Foreground="White" Margin="0,0,10,0"/>
+>             <Button Content="重置" Click="OnReset" Padding="10" Background="#DA3633"
+>                     Foreground="White"/>
+>         </StackPanel>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Media;
+> using System.Windows.Media.Animation;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private readonly Storyboard _board = new Storyboard();
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             BuildStoryboard();
+>         }
+>
+>         // 把多个动画编排进同一 Storyboard
+>         private void BuildStoryboard()
+>         {
+>             var widthAnim = new DoubleAnimation(320, new Duration(System.TimeSpan.FromSeconds(2)))
+>             {
+>                 RepeatBehavior = RepeatBehavior.Forever
+>             };
+>             Storyboard.SetTarget(widthAnim, ProgressBar);
+>             Storyboard.SetTargetProperty(widthAnim, new PropertyPath(FrameworkElement.WidthProperty));
+>
+>             var colorAnim = new ColorAnimation(
+>                 Color.FromRgb(0x21, 0x26, 0x2D), Color.FromRgb(0xDA, 0x36, 0x33),
+>                 new Duration(System.TimeSpan.FromMilliseconds(400)))
+>             {
+>                 AutoReverse = true,
+>                 RepeatBehavior = RepeatBehavior.Forever
+>             };
+>             var ledBrush = new SolidColorBrush();
+>             Led.Fill = ledBrush;
+>             Storyboard.SetTarget(colorAnim, ledBrush);
+>             Storyboard.SetTargetProperty(colorAnim, new PropertyPath(SolidColorBrush.ColorProperty));
+>
+>             _board.Children.Add(widthAnim);
+>             _board.Children.Add(colorAnim);
+>         }
+>
+>         private void OnBegin(object sender, RoutedEventArgs e)
+>         {
+>             _board.Begin(this);          // 启动整组动画
+>             ProgressText.Text = "自检中…";
+>         }
+>
+>         private void OnPause(object sender, RoutedEventArgs e)
+>         {
+>             _board.Pause(this);
+>             ProgressText.Text = "已暂停";
+>         }
+>
+>         private void OnReset(object sender, RoutedEventArgs e)
+>         {
+>             _board.Stop(this);           // 停止并回到初始值
+>             ProgressText.Text = "等待自检";
+>         }
+>     }
+> }
 > ```
 > 
 

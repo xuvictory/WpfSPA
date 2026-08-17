@@ -25,9 +25,79 @@ parent: 6.5 Transform 变换
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **风叶旋转演示：用 RotateTransform 控制 Angle 与 RenderTransformOrigin 旋转中心，让风机叶片绕轴旋转，模拟设备运转动画：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="风机演示 - RotateTransform" Height="420" Width="420"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="冷却风机" Foreground="#58A6FF" FontSize="16" FontWeight="Bold"/>
+>         <!-- 叶片组：以中心 (0.5,0.5) 为旋转原点 -->
+>         <Grid Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+>             <Grid x:Name="BladeGroup" RenderTransformOrigin="0.5,0.5">
+>                 <Grid.RenderTransform>
+>                     <RotateTransform x:Name="FanRotate" Angle="0"/>
+>                 </Grid.RenderTransform>
+>                 <!-- 三片叶片 -->
+>                 <Rectangle Width="12" Height="70" RadiusX="6" RadiusY="6" Fill="#58A6FF"
+>                            HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,45"/>
+>                 <Rectangle Width="12" Height="70" RadiusX="6" RadiusY="6" Fill="#58A6FF"
+>                            HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,45">
+>                     <Rectangle.RenderTransform>
+>                         <RotateTransform Angle="120"/>
+>                     </Rectangle.RenderTransform>
+>                 </Rectangle>
+>                 <Rectangle Width="12" Height="70" RadiusX="6" RadiusY="6" Fill="#58A6FF"
+>                            HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,45">
+>                     <Rectangle.RenderTransform>
+>                         <RotateTransform Angle="240"/>
+>                     </Rectangle.RenderTransform>
+>                 </Rectangle>
+>                 <!-- 中心轴 -->
+>                 <Ellipse Width="26" Height="26" Fill="#DA3633" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+>             </Grid>
+>             <TextBlock Text="转" Foreground="#8B949E" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,0"/>
+>         </Grid>
+>         <Button Grid.Row="2" Content="启动 / 停止" Click="OnToggle" Margin="0,12,0,0"
+>                 Padding="8" Background="#21262D" Foreground="White" HorizontalAlignment="Left"/>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Threading;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private readonly DispatcherTimer _timer = new DispatcherTimer();
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             // 定时器每 50ms 旋转一次，模拟实时运转
+>             _timer.Interval = System.TimeSpan.FromMilliseconds(50);
+>             _timer.Tick += (s, e) => FanRotate.Angle = (FanRotate.Angle + 6) % 360;
+>         }
+>
+>         private void OnToggle(object sender, RoutedEventArgs e)
+>         {
+>             if (_timer.IsEnabled) _timer.Stop(); else _timer.Start();
+>         }
+>     }
+> }
 > ```
 > 
 

@@ -25,9 +25,85 @@ parent: 6.2 Shape 基本图形
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **电机转速仪表演示：用 Ellipse 画刻度圆盘与指针底座，Width/Height 决定椭圆形状，点击按钮加速/减速：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="转速仪表 - Ellipse" Height="420" Width="420"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="主轴电机转速（RPM）" Foreground="#58A6FF" FontSize="16" FontWeight="Bold"/>
+>         <!-- 表盘：外圈 + 内圈两个 Ellipse 同心叠加 -->
+>         <Grid Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+>             <Ellipse Width="260" Height="260" Fill="#161B22" Stroke="#30363D" StrokeThickness="4"/>
+>             <Ellipse Width="240" Height="240" Fill="#0D1117" Stroke="#21262D" StrokeThickness="2"/>
+>             <!-- 指针：细长矩形，旋转由后台代码控制 -->
+>             <Rectangle x:Name="Needle" Width="4" Height="100" Fill="#DA3633"
+>                        RenderTransformOrigin="0.5,1" VerticalAlignment="Center" HorizontalAlignment="Center">
+>                 <Rectangle.RenderTransform>
+>                     <RotateTransform x:Name="NeedleRotate" Angle="-120"/>
+>                 </Rectangle.RenderTransform>
+>             </Rectangle>
+>             <TextBlock x:Name="RpmText" Text="0 RPM" Foreground="#8B949E" FontSize="20"
+>                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
+>         </Grid>
+>         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,12,0,0">
+>             <Button Content="加速" Click="OnSpeedUp" Padding="10" Background="#238636"
+>                     Foreground="White" Margin="0,0,10,0"/>
+>             <Button Content="减速" Click="OnSpeedDown" Padding="10" Background="#DA3633"
+>                     Foreground="White"/>
+>         </StackPanel>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Media;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private double _rpm;    // 当前转速
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>         }
+>
+>         private void OnSpeedUp(object sender, RoutedEventArgs e)
+>         {
+>             _rpm = System.Math.Min(3000, _rpm + 300);   // 上限 3000 RPM
+>             UpdateGauge();
+>         }
+>
+>         private void OnSpeedDown(object sender, RoutedEventArgs e)
+>         {
+>             _rpm = System.Math.Max(0, _rpm - 300);      // 下限 0 RPM
+>             UpdateGauge();
+>         }
+>
+>         // 0~3000 RPM 映射到指针角度 -120°~120°
+>         private void UpdateGauge()
+>         {
+>             NeedleRotate.Angle = -120 + (_rpm / 3000.0) * 240;
+>             RpmText.Text = $"{_rpm:F0} RPM";
+>             RpmText.Foreground = _rpm > 2400
+>                 ? new SolidColorBrush(Color.FromRgb(0xDA, 0x36, 0x33)) // 超速告警红色
+>                 : Brushes.LimeGreen;
+>         }
+>     }
+> }
 > ```
 > 
 

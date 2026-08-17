@@ -25,9 +25,80 @@ parent: 6.5 Transform 变换
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **矩阵变换坐标演示：用 MatrixTransform 的 M11/M12/M21/M22/OffsetX/OffsetY 直接以矩阵方式表达缩放、旋转、平移，点击按钮切换变换矩阵：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="坐标矩阵 - MatrixTransform" Height="440" Width="460"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="坐标系变换（矩阵）" Foreground="#58A6FF" FontSize="16" FontWeight="Bold"/>
+>         <!-- 用矩阵描述缩放(1.2,0.8)+旋转30°的组合效果 -->
+>         <Grid Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+>             <Grid x:Name="MatrixBox" Width="130" Height="100" Background="#238636" Opacity="0.85"
+>                   RenderTransformOrigin="0.5,0.5" HorizontalAlignment="Center" VerticalAlignment="Center">
+>                 <Grid.RenderTransform>
+>                     <MatrixTransform x:Name="Matrix1"/>
+>                 </Grid.RenderTransform>
+>                 <TextBlock Text="设备 A" Foreground="White" HorizontalAlignment="Center"
+>                            VerticalAlignment="Center" FontSize="16"/>
+>             </Grid>
+>         </Grid>
+>         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,12,0,0">
+>             <Button Content="切换矩阵" Click="OnSwitchMatrix" Padding="10" Background="#21262D"
+>                     Foreground="White" Margin="0,0,10,0"/>
+>             <TextBlock Text="M11=…" Foreground="#8B949E" VerticalAlignment="Center"/>
+>         </StackPanel>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Media;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private bool _scaled;
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             ApplyMatrix();
+>         }
+>
+>         // 单位矩阵（不变换） 与 缩放+平移矩阵 之间切换
+>         private void OnSwitchMatrix(object sender, RoutedEventArgs e)
+>         {
+>             _scaled = !_scaled;
+>             ApplyMatrix();
+>         }
+>
+>         private void ApplyMatrix()
+>         {
+>             if (_scaled)
+>             {
+>                 // 水平放大 1.3、垂直缩小 0.8，再向右下平移
+>                 Matrix1.Matrix = new Matrix(1.3, 0, 0, 0.8, 60, 30);
+>             }
+>             else
+>             {
+>                 Matrix1.Matrix = Matrix.Identity;
+>             }
+>         }
+>     }
+> }
 > ```
 > 
 

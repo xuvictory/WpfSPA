@@ -25,9 +25,67 @@ parent: 6.2 Shape 基本图形
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **PLC 波形捕获演示：用 Polyline 一次性绘制整段采集波形，Points 存放全部采样点，点击按钮刷新新一批数据：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="PLC 波形 - Polyline" Height="420" Width="480"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="伺服位移波形（Polyline）" Foreground="#58A6FF" FontSize="16" FontWeight="Bold"/>
+>         <Canvas Grid.Row="1" Background="#161B22" Margin="0,10,0,0">
+>             <!-- 坐标轴 -->
+>             <Line X1="20" Y1="20" X2="20" Y2="240" Stroke="#30363D" StrokeThickness="1"/>
+>             <Line X1="20" Y1="240" X2="440" Y2="240" Stroke="#30363D" StrokeThickness="1"/>
+>             <!-- 波形折线：Points 由后台代码填充 -->
+>             <Polyline x:Name="Wave" Stroke="#58A6FF" StrokeThickness="2"
+>                       StrokeStartLineCap="PenLineCap.Round" StrokeEndLineCap="PenLineCap.Round"/>
+>         </Canvas>
+>         <Button Grid.Row="2" Content="重新采集" Click="OnCapture" Margin="0,12,0,0"
+>                 Padding="8" Background="#21262D" Foreground="White" HorizontalAlignment="Left"/>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Media;
+> using System.Windows.Shapes;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private readonly Random _rnd = new Random();
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             OnCapture(this, new RoutedEventArgs());
+>         }
+>
+>         // 模拟 PLC 一次采集 40 个采样点，全部写入 Points 属性
+>         private void OnCapture(object sender, RoutedEventArgs e)
+>         {
+>             Wave.Points = new PointCollection();
+>             for (int i = 0; i < 40; i++)
+>             {
+>                 double x = 20 + i * 10;                         // 每点间隔 10px
+>                 double y = 40 + _rnd.NextDouble() * 180;        // 随机位移
+>                 Wave.Points.Add(new Point(x, y));
+>             }
+>         }
+>     }
+> }
 > ```
 > 
 

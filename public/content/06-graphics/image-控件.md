@@ -25,9 +25,71 @@ parent: 6.7 图像处理
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **产品图切换演示：用 Image 控件展示产品图片，Source 指定图片来源，Stretch 控制缩放，点击按钮在多个产品图间切换：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="产品图 - Image 控件" Height="440" Width="460"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="产品展示（Image 控件）" Foreground="#58A6FF" FontSize="16" FontWeight="Bold"/>
+>         <!-- Image.Source 可以是 pack URI、本地路径或 BitmapImage -->
+>         <Border Grid.Row="1" Margin="0,10,0,0" CornerRadius="6" Background="#161B22" BorderBrush="#30363D" BorderThickness="1">
+>             <Image x:Name="ProductImage" Stretch="Uniform" Margin="20"
+>                    Source="pack://application:,,,/Assets/product.png"/>
+>         </Border>
+>         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,12,0,0">
+>             <Button Content="上一张" Click="OnPrev" Padding="10" Background="#21262D" Foreground="White" Margin="0,0,10,0"/>
+>             <Button Content="下一张" Click="OnNext" Padding="10" Background="#21262D" Foreground="White"/>
+>         </StackPanel>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Windows;
+> using System.Windows.Media.Imaging;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private readonly string[] _images =
+>         {
+>             "pack://application:,,,/Assets/product.png",
+>             "pack://application:,,,/Assets/device.png",
+>             "pack://application:,,,/Assets/workshop.png"
+>         };
+>         private int _index;
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>         }
+>
+>         private void OnPrev(object sender, RoutedEventArgs e)
+>         {
+>             _index = (_index + _images.Length - 1) % _images.Length;
+>             ProductImage.Source = new BitmapImage(new Uri(_images[_index], UriKind.RelativeOrAbsolute));
+>         }
+>
+>         private void OnNext(object sender, RoutedEventArgs e)
+>         {
+>             _index = (_index + 1) % _images.Length;
+>             ProductImage.Source = new BitmapImage(new Uri(_images[_index], UriKind.RelativeOrAbsolute));
+>         }
+>     }
+> }
 > ```
 > 
 

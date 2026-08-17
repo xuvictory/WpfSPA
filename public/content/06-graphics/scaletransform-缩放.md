@@ -25,9 +25,76 @@ parent: 6.5 Transform 变换
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **画面缩放演示：用 ScaleTransform 的 ScaleX/ScaleY 控制缩放比例、ScaleCenterX/ScaleCenterY 控制缩放中心，实现画面整体放大缩小：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="画面缩放 - ScaleTransform" Height="440" Width="460"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="设备画面缩放" Foreground="#58A6FF" FontSize="16" FontWeight="Bold"/>
+>         <!-- 缩放中心取面板中心，保证缩放时居中 -->
+>         <Border Grid.Row="1" Margin="0,10,0,0" CornerRadius="6" Background="#161B22" BorderBrush="#30363D" BorderThickness="1">
+>             <Canvas x:Name="Canvas" RenderTransformOrigin="0.5,0.5" ClipToBounds="True">
+>                 <Canvas.RenderTransform>
+>                     <ScaleTransform x:Name="CanvasScale" ScaleX="1" ScaleY="1"/>
+>                 </Canvas.RenderTransform>
+>                 <!-- 被缩放内容 -->
+>                 <Rectangle Width="180" Height="120" Canvas.Left="40" Canvas.Top="40" Fill="#21262D"
+>                            Stroke="#8B949E" StrokeThickness="2" RadiusX="6" RadiusY="6"/>
+>                 <Ellipse Width="40" Height="40" Canvas.Left="110" Canvas.Top="80" Fill="#DA3633"/>
+>                 <Line X1="40" Y1="200" X2="220" Y2="200" Stroke="#58A6FF" StrokeThickness="3"/>
+>             </Canvas>
+>         </Border>
+>         <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,12,0,0">
+>             <Button Content="放大" Click="OnZoomIn" Padding="10" Background="#238636"
+>                     Foreground="White" Margin="0,0,10,0"/>
+>             <Button Content="缩小" Click="OnZoomOut" Padding="10" Background="#DA3633"
+>                     Foreground="White" Margin="0,0,10,0"/>
+>             <Button Content="复位" Click="OnReset" Padding="10" Background="#21262D"
+>                     Foreground="White"/>
+>         </StackPanel>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>         }
+>
+>         private void OnZoomIn(object sender, RoutedEventArgs e)
+>         {
+>             CanvasScale.ScaleX = CanvasScale.ScaleY = System.Math.Min(3, CanvasScale.ScaleX + 0.2);
+>         }
+>
+>         private void OnZoomOut(object sender, RoutedEventArgs e)
+>         {
+>             CanvasScale.ScaleX = CanvasScale.ScaleY = System.Math.Max(0.5, CanvasScale.ScaleX - 0.2);
+>         }
+>
+>         private void OnReset(object sender, RoutedEventArgs e)
+>         {
+>             CanvasScale.ScaleX = CanvasScale.ScaleY = 1;
+>         }
+>     }
+> }
 > ```
 > 
 

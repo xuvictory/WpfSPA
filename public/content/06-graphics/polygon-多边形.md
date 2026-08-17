@@ -25,9 +25,67 @@ parent: 6.2 Shape 基本图形
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **危险区域标识演示：用 Polygon 的 Points 定义菱形/三角形警示区，点击按钮切换报警状态（闭合区域自动填充）：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="危险区域 - Polygon" Height="420" Width="460"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="厂区危险区域监控" Foreground="#58A6FF" FontSize="16" FontWeight="Bold"/>
+>         <!-- Points 按顺序定义顶点，多边形自动闭合填充 -->
+>         <Canvas Grid.Row="1" Background="#161B22" Margin="0,10,0,0">
+>             <!-- 菱形警戒区：4 个顶点 -->
+>             <Polygon x:Name="DangerZone" Points="100,40 180,120 100,200 20,120"
+>                      Fill="#8B949E" Stroke="#DA3633" StrokeThickness="3"/>
+>             <!-- 三角形设备标记 -->
+>             <Polygon Points="300,150 360,80 420,150"
+>                      Fill="#21262D" Stroke="#58A6FF" StrokeThickness="2"/>
+>             <TextBlock Canvas.Left="70" Canvas.Top="210" Text="A 区（报警）" Foreground="#8B949E"/>
+>             <TextBlock Canvas.Left="290" Canvas.Top="160" Text="B 区（正常）" Foreground="#8B949E"/>
+>         </Canvas>
+>         <Button Grid.Row="2" Content="模拟报警" Click="OnAlarm" Margin="0,12,0,0"
+>                 Padding="8" Background="#21262D" Foreground="White" HorizontalAlignment="Left"/>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Media;
+> using System.Windows.Shapes;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private bool _alarm;
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>         }
+>
+>         // 切换报警状态：报警时填充红色半透明，正常时恢复灰色
+>         private void OnAlarm(object sender, RoutedEventArgs e)
+>         {
+>             _alarm = !_alarm;
+>             DangerZone.Fill = _alarm
+>                 ? new SolidColorBrush(Color.FromArgb(0x66, 0xDA, 0x36, 0x33)) // 半透明红
+>                 : new SolidColorBrush(Color.FromRgb(0x8B, 0x94, 0x9E));
+>             DangerZone.StrokeThickness = _alarm ? 5 : 3;
+>         }
+>     }
+> }
 > ```
 > 
 

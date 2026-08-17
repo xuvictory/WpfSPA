@@ -25,9 +25,68 @@ parent: 6.7 图像处理
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **图片解码演示：用 BitmapImage 从本地文件/资源加载图片，DecodePixelWidth 控制解码尺寸（节省内存），点击按钮重新加载并显示像素信息：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="图片解码 - BitmapImage" Height="440" Width="460"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="监控图片解码（BitmapImage）" Foreground="#58A6FF" FontSize="16" FontWeight="Bold"/>
+>         <Border Grid.Row="1" Margin="0,10,0,0" CornerRadius="6" Background="#161B22" BorderBrush="#30363D" BorderThickness="1">
+>             <Image x:Name="Preview" Stretch="Uniform" Margin="20"/>
+>         </Border>
+>         <StackPanel Grid.Row="2" Margin="0,12,0,0">
+>             <TextBlock x:Name="Info" Foreground="#8B949E" Text="尚未加载图片"/>
+>             <Button Content="重新解码加载" Click="OnLoad" Margin="0,8,0,0" Padding="8"
+>                     Background="#21262D" Foreground="White" HorizontalAlignment="Left"/>
+>         </StackPanel>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.IO;
+> using System.Windows;
+> using System.Windows.Media.Imaging;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             OnLoad(this, new RoutedEventArgs());
+>         }
+>
+>         private void OnLoad(object sender, RoutedEventArgs e)
+>         {
+>             // 1. 构造 BitmapImage
+>             var bmp = new BitmapImage();
+>             bmp.BeginInit();
+>             // 2. 指定图片来源（此处用项目资源，也可改为本地文件路径）
+>             bmp.UriSource = new Uri("pack://application:,,,/Assets/camera.png", UriKind.RelativeOrAbsolute);
+>             // 3. 关键 API：解码时限制宽度，显著降低内存占用
+>             bmp.DecodePixelWidth = 320;
+>             bmp.EndInit();
+>             bmp.Freeze();   // 冻结后可在多线程/多 UI 间共享
+>
+>             Preview.Source = bmp;
+>             Info.Text = $"解码尺寸：{bmp.PixelWidth} × {bmp.PixelHeight}，格式：{bmp.Format.BitsPerPixel} bpp";
+>         }
+>     }
+> }
 > ```
 > 
 

@@ -25,9 +25,90 @@ parent: 6.5 Transform 变换
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **布局对比演示：同时放置 RenderTransform（渲染变换，不影响布局占位）与 LayoutTransform（布局变换，影响后续排版），观察按钮点击后的差异：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="Render vs Layout" Height="420" Width="520"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="RenderTransform 与 LayoutTransform 对比" Foreground="#58A6FF" FontSize="16" FontWeight="Bold"/>
+>         <Grid Grid.Row="1" Margin="0,10,0,0">
+>             <Grid.RowDefinitions>
+>                 <RowDefinition Height="*"/>
+>                 <RowDefinition Height="*"/>
+>             </Grid.RowDefinitions>
+>             <Grid.ColumnDefinitions>
+>                 <ColumnDefinition Width="*"/>
+>                 <ColumnDefinition Width="*"/>
+>             </Grid.ColumnDefinitions>
+>             <!-- RenderTransform：仅影响渲染，右侧按钮布局不变 -->
+>             <StackPanel Grid.Row="0" Grid.Column="0" Margin="10" Background="#161B22">
+>                 <TextBlock Text="RenderTransform" Foreground="#8B949E" Margin="8"/>
+>                 <Button x:Name="BtnRender" Content="旋转 15°" Click="OnRenderBtn" Margin="8" Padding="8"
+>                         Background="#21262D" Foreground="White">
+>                     <Button.RenderTransform>
+>                         <RotateTransform x:Name="RenderRotate" Angle="0"/>
+>                     </Button.RenderTransform>
+>                 </Button>
+>                 <TextBlock Text="（按钮位置不变）" Foreground="#8B949E" Margin="8"/>
+>             </StackPanel>
+>             <!-- LayoutTransform：影响布局，占位随变换变化 -->
+>             <StackPanel Grid.Row="0" Grid.Column="1" Margin="10" Background="#161B22">
+>                 <TextBlock Text="LayoutTransform" Foreground="#8B949E" Margin="8"/>
+>                 <Button x:Name="BtnLayout" Content="旋转 15°" Click="OnLayoutBtn" Margin="8" Padding="8"
+>                         Background="#21262D" Foreground="White">
+>                     <Button.LayoutTransform>
+>                         <RotateTransform x:Name="LayoutRotate" Angle="0"/>
+>                     </Button.LayoutTransform>
+>                 </Button>
+>                 <TextBlock Text="（占位随之变化）" Foreground="#8B949E" Margin="8"/>
+>             </StackPanel>
+>         </Grid>
+>         <Button Grid.Row="2" Content="复位" Click="OnReset" Margin="0,12,0,0" Padding="8"
+>                 Background="#21262D" Foreground="White" HorizontalAlignment="Left"/>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>         }
+>
+>         private void OnRenderBtn(object sender, RoutedEventArgs e)
+>         {
+>             RenderRotate.Angle = RenderRotate.Angle == 0 ? 15 : 0;
+>         }
+>
+>         private void OnLayoutBtn(object sender, RoutedEventArgs e)
+>         {
+>             LayoutRotate.Angle = LayoutRotate.Angle == 0 ? 15 : 0;
+>         }
+>
+>         private void OnReset(object sender, RoutedEventArgs e)
+>         {
+>             RenderRotate.Angle = 0;
+>             LayoutRotate.Angle = 0;
+>         }
+>     }
+> }
 > ```
 > 
 

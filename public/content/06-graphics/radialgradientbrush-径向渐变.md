@@ -25,9 +25,82 @@ parent: 6.4 Brush 画刷
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **球形指示灯演示：用 RadialGradientBrush 的 Center/GradientOrigin 与径向色阶模拟立体球体光泽，点击按钮切换红绿警示：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="球形指示灯 - RadialGradientBrush" Height="400" Width="400"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="运行指示球" Foreground="#58A6FF" FontSize="16" FontWeight="Bold"/>
+>         <!-- Center 是渐变中心，GradientOrigin 是高光位置，颜色由内向外扩散 -->
+>         <Grid Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+>             <Ellipse x:Name="Ball" Width="160" Height="160">
+>                 <Ellipse.Fill>
+>                     <RadialGradientBrush x:Name="BallBrush" Center="0.5,0.5"
+>                                           GradientOrigin="0.35,0.3" RadiusX="0.5" RadiusY="0.5">
+>                         <GradientStop Color="#C6E7FF" Offset="0"/>
+>                         <GradientStop Color="#58A6FF" Offset="0.55"/>
+>                         <GradientStop Color="#0D419D" Offset="1"/>
+>                     </RadialGradientBrush>
+>                 </Ellipse.Fill>
+>             </Ellipse>
+>             <TextBlock x:Name="BallText" Text="运行" Foreground="White" FontSize="20" FontWeight="Bold"/>
+>         </Grid>
+>         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,12,0,0">
+>             <Button Content="运行" Click="OnRun" Padding="10" Background="#238636"
+>                     Foreground="White" Margin="0,0,10,0"/>
+>             <Button Content="报警" Click="OnAlarm" Padding="10" Background="#DA3633"
+>                     Foreground="White"/>
+>         </StackPanel>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Media;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>         }
+>
+>         // 运行：蓝绿色渐变；报警：红橙色渐变
+>         private void OnRun(object sender, RoutedEventArgs e)
+>         {
+>             SetGradient(Colors.LightGreen, Color.FromRgb(0x23, 0x86, 0x36), Color.FromRgb(0x0F, 0x3D, 0x1F));
+>             BallText.Text = "运行";
+>         }
+>
+>         private void OnAlarm(object sender, RoutedEventArgs e)
+>         {
+>             SetGradient(Color.FromRgb(0xFF, 0xC8, 0xB0), Color.FromRgb(0xDA, 0x36, 0x33), Color.FromRgb(0x5F, 0x0A, 0x08));
+>             BallText.Text = "报警";
+>         }
+>
+>         // 动态修改径向渐变的三段色阶
+>         private void SetGradient(Color inner, Color mid, Color outer)
+>         {
+>             BallBrush.GradientStops[0].Color = inner;
+>             BallBrush.GradientStops[1].Color = mid;
+>             BallBrush.GradientStops[2].Color = outer;
+>         }
+>     }
+> }
 > ```
 > 
 

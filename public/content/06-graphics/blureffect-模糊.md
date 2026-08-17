@@ -25,9 +25,70 @@ parent: 6.6 Effect 特效
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **失焦背景演示：用 BlurEffect 的 Radius 控制模糊半径，模拟窗口失焦、弹窗遮罩等场景，点击按钮调节模糊强度：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="模糊背景 - BlurEffect" Height="420" Width="480"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="监控画面失焦演示" Foreground="#58A6FF" FontSize="16" FontWeight="Bold"/>
+>         <!-- 被模糊的内容：模拟实时监控画面 -->
+>         <Grid Grid.Row="1" Margin="0,10,0,0" Background="#161B22">
+>             <Grid x:Name="CamView">
+>                 <Rectangle Width="200" Height="130" Fill="#21262D" Stroke="#8B949E" StrokeThickness="2"
+>                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
+>                 <Ellipse Width="60" Height="60" Fill="#238636" HorizontalAlignment="Center"
+>                          VerticalAlignment="Center" Opacity="0.7"/>
+>                 <TextBlock Text="CAM-01" Foreground="#8B949E" HorizontalAlignment="Center"
+>                            VerticalAlignment="Bottom" Margin="0,0,0,10"/>
+>             </Grid>
+>         </Grid>
+>         <!-- 模糊半径滑杆 -->
+>         <DockPanel Grid.Row="2" Margin="0,12,0,0">
+>             <TextBlock Text="模糊半径" Foreground="#8B949E" Margin="0,0,10,0" VerticalAlignment="Center"/>
+>             <Slider x:Name="BlurSlider" Minimum="0" Maximum="30" Value="0"
+>                     ValueChanged="OnBlurChanged"/>
+>             <TextBlock x:Name="BlurValue" Text="0" Foreground="#8B949E" Width="40"
+>                        TextAlignment="Right" VerticalAlignment="Center"/>
+>         </DockPanel>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Controls;
+> using System.Windows.Media.Effects;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private readonly BlurEffect _blur = new BlurEffect();
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             CamView.Effect = _blur;   // 挂载模糊特效
+>         }
+>
+>         private void OnBlurChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+>         {
+>             _blur.Radius = BlurSlider.Value;
+>             BlurValue.Text = BlurSlider.Value.ToString("F0");
+>         }
+>     }
+> }
 > ```
 > 
 
