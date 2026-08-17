@@ -25,9 +25,72 @@ parent: 8.2 Dispatcher 调度器
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **DispatcherTimer 演示：定时刷新实时数据（UI 线程内计时）：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="DispatcherTimer" Height="380" Width="440"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15" Background="#161B22" Padding="15">
+>         <TextBlock Text="DispatcherTimer 定时刷新" FontSize="16" FontWeight="Bold"
+>                    Foreground="#58A6FF" Margin="0,0,0,10"/>
+>         <!-- 实时数据展示区 -->
+>         <TextBlock x:Name="ValueText" FontSize="28" FontWeight="Bold"
+>                    Foreground="#58A6FF" Margin="0,5,0,5"/>
+>         <TextBlock x:Name="TimeText" Foreground="#8B949E" Margin="0,0,0,10"/>
+>         <!-- 启动/停止定时器 -->
+>         <Button x:Name="ToggleButton" Content="启动定时刷新" Click="OnToggleClick"
+>                 Margin="0,5" Padding="8" Background="#238636" Foreground="White"/>
+>         <TextBlock Text="DispatcherTimer 在 UI 线程触发，可直接更新控件，无需额外调度。"
+>                    Foreground="#8B949E" TextWrapping="Wrap" Margin="0,10,0,0"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Windows;
+> using System.Windows.Media;
+> using System.Windows.Threading;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private readonly DispatcherTimer _timer = new DispatcherTimer();
+>         private readonly Random _random = new Random();
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             // 每 1 秒触发一次 Tick，运行在 UI 线程
+>             _timer.Interval = TimeSpan.FromSeconds(1);
+>             _timer.Tick += OnTimerTick;
+>         }
+>
+>         // 定时刷新：模拟温度、压力等实时数据
+>         private void OnTimerTick(object sender, EventArgs e)
+>         {
+>             double temp = 45 + _random.NextDouble() * 10; // 45~55℃
+>             ValueText.Text = $"{temp:F1} ℃";
+>             TimeText.Text = $"最后刷新：{DateTime.Now:HH:mm:ss}";
+>         }
+>
+>         private void OnToggleClick(object sender, RoutedEventArgs e)
+>         {
+>             _timer.IsEnabled = !_timer.IsEnabled; // 切换启停
+>             ToggleButton.Content = _timer.IsEnabled ? "停止定时刷新" : "启动定时刷新";
+>             // 运行中用绿色表示，停止用红色表示
+>             ToggleButton.Background = _timer.IsEnabled
+>                 ? new SolidColorBrush(Color.FromRgb(0xDA, 0x36, 0x33))
+>                 : new SolidColorBrush(Color.FromRgb(0x23, 0x86, 0x36));
+>         }
+>     }
+> }
 > ```
 > 
 

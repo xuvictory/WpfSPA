@@ -25,9 +25,110 @@ parent: 8.4 BackgroundWorker
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **BackgroundWorker 使用演示：后台执行耗时任务并报告进度：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="BackgroundWorker 使用与对比" Height="400" Width="460"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15" Background="#161B22" Padding="15">
+>         <TextBlock Text="BackgroundWorker 进度报告" FontSize="16" FontWeight="Bold"
+>                    Foreground="#58A6FF" Margin="0,0,0,10"/>
+>         <!-- 进度条展示后台任务进度 -->
+>         <ProgressBar x:Name="Progress" Height="18" Maximum="100"
+>                      Foreground="#58A6FF" Background="#0D1117"/>
+>         <TextBlock x:Name="StatusText" Foreground="#8B949E"
+>                    TextWrapping="Wrap" Margin="0,8,0,10"/>
+>         <!-- 启动与取消 -->
+>         <Button x:Name="StartButton" Content="开始批量处理" Click="OnStartClick"
+>                 Margin="0,5" Padding="8" Background="#238636" Foreground="White"/>
+>         <Button x:Name="CancelButton" Content="取消处理" IsEnabled="False"
+>                 Click="OnCancelClick" Margin="0,5" Padding="8"
+>                 Background="#DA3633" Foreground="White"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.ComponentModel;
+> using System.Threading;
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private BackgroundWorker _worker;
+>
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnStartClick(object sender, RoutedEventArgs e)
+>         {
+>             StartButton.IsEnabled = false;
+>             CancelButton.IsEnabled = true;
+>             Progress.Value = 0;
+>
+>             // 创建并配置 BackgroundWorker
+>             _worker = new BackgroundWorker
+>             {
+>                 WorkerReportsProgress = true,  // 允许报告进度
+>                 WorkerSupportsCancellation = true // 支持取消
+>             };
+>             _worker.DoWork += OnDoWork;                 // 后台线程执行
+>             _worker.ProgressChanged += OnProgressChanged; // 进度回调（UI 线程）
+>             _worker.RunWorkerCompleted += OnCompleted;    // 完成回调（UI 线程）
+>             _worker.RunWorkerAsync("批量处理 100 条记录");
+>         }
+>
+>         // 后台线程：不能直接操作控件
+>         private void OnDoWork(object sender, DoWorkEventArgs e)
+>         {
+>             for (int i = 1; i <= 100; i++)
+>             {
+>                 if (_worker.CancellationPending) // 检查取消请求
+>                 {
+>                     e.Cancel = true;
+>                     return;
+>                 }
+>                 Thread.Sleep(40); // 模拟每条记录的处理耗时
+>                 _worker.ReportProgress(i); // 上报进度
+>             }
+>             e.Result = $"处理完成，共 100 条记录";
+>         }
+>
+>         // 进度更新：自动运行在 UI 线程，可直接操作控件
+>         private void OnProgressChanged(object sender, ProgressChangedEventArgs e)
+>         {
+>             Progress.Value = e.ProgressPercentage;
+>             StatusText.Text = $"正在处理… {e.ProgressPercentage}%";
+>         }
+>
+>         // 完成回调：同样运行在 UI 线程
+>         private void OnCompleted(object sender, RunWorkerCompletedEventArgs e)
+>         {
+>             if (e.Cancelled)
+>                 StatusText.Text = "处理已被用户取消";
+>             else if (e.Error != null)
+>                 StatusText.Text = "处理出错：" + e.Error.Message;
+>             else
+>                 StatusText.Text = e.Result?.ToString();
+>
+>             StartButton.IsEnabled = true;
+>             CancelButton.IsEnabled = false;
+>         }
+>
+>         private void OnCancelClick(object sender, RoutedEventArgs e)
+>         {
+>             _worker?.CancelAsync(); // 请求取消
+>             StatusText.Text = "已请求取消…";
+>         }
+>     }
+> }
 > ```
 > 
 

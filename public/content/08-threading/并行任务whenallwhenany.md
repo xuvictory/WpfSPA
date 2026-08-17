@@ -25,9 +25,87 @@ parent: 8.3 Task 与 async 和 await
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **并行任务 WhenAll / WhenAny 演示：并行读取多台设备状态：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="并行任务 WhenAll WhenAny" Height="400" Width="460"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15" Background="#161B22" Padding="15">
+>         <TextBlock Text="并行任务 WhenAll / WhenAny" FontSize="16" FontWeight="Bold"
+>                    Foreground="#58A6FF" Margin="0,0,0,10"/>
+>         <!-- WhenAll：等待全部设备读取完毕 -->
+>         <Button Content="并行读取 3 台设备（WhenAll）" Click="OnWhenAllClick"
+>                 Margin="0,5" Padding="8" Background="#238636" Foreground="White"/>
+>         <!-- WhenAny：任一台读完立即继续 -->
+>         <Button Content="先到先得（WhenAny）" Click="OnWhenAnyClick"
+>                 Margin="0,5" Padding="8" Background="#21262D" Foreground="White"/>
+>         <TextBlock x:Name="LogText" Foreground="#8B949E" TextWrapping="Wrap"
+>                    MinHeight="160" Margin="0,10,0,0"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Collections.Generic;
+> using System.Diagnostics;
+> using System.Threading.Tasks;
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         // WhenAll：三个任务并行执行，全部完成后统一汇总
+>         private async void OnWhenAllClick(object sender, RoutedEventArgs e)
+>         {
+>             LogText.Text = "";
+>             var watch = Stopwatch.StartNew(); // 计时
+>             Task<string>[] tasks =
+>             {
+>                 ReadDeviceAsync("PLC-1", 1500),
+>                 ReadDeviceAsync("PLC-2", 1200),
+>                 ReadDeviceAsync("PLC-3", 1800),
+>             };
+>             string[] results = await Task.WhenAll(tasks); // 全部完成才继续
+>             watch.Stop();
+>             LogText.Text += string.Join("\r\n", results) + "\r\n";
+>             LogText.Text += $"总耗时 {watch.ElapsedMilliseconds} ms" +
+>                             $"（≈最慢设备，而非三者之和）\r\n";
+>         }
+>
+>         // WhenAny：任一台设备返回即可继续，适合“先到先得”场景
+>         private async void OnWhenAnyClick(object sender, RoutedEventArgs e)
+>         {
+>             LogText.Text = "";
+>             var watch = Stopwatch.StartNew();
+>             Task<string>[] tasks =
+>             {
+>                 ReadDeviceAsync("PLC-1", 2000),
+>                 ReadDeviceAsync("PLC-2", 800),
+>                 ReadDeviceAsync("PLC-3", 1500),
+>             };
+>             string first = await Task.WhenAny(tasks); // 最快完成的那台
+>             watch.Stop();
+>             LogText.Text += $"最先返回：{await first}\r\n";
+>             LogText.Text += $"耗时 {watch.ElapsedMilliseconds} ms（不等其余设备）\r\n";
+>         }
+>
+>         // 模拟读取一台设备，delayMs 代表该设备的响应耗时
+>         private static async Task<string> ReadDeviceAsync(string name, int delayMs)
+>         {
+>             await Task.Delay(delayMs);
+>             return $"{name} 读取完成：运行正常";
+>         }
+>     }
+> }
 > ```
 > 
 

@@ -25,9 +25,78 @@ parent: 8.6 上位机多线程设计模式
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **线程池 vs 专用线程演示：对比线程复用与线程独占的区别：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="线程池 vs 专用线程" Height="420" Width="460"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15" Background="#161B22" Padding="15">
+>         <TextBlock Text="线程池 vs 专用线程" FontSize="16" FontWeight="Bold"
+>                    Foreground="#58A6FF" Margin="0,0,0,10"/>
+>         <!-- 日志区：观察线程 ID 是否重复出现 -->
+>         <TextBlock x:Name="LogText" TextWrapping="Wrap" Foreground="#8B949E"
+>                    MinHeight="180" Margin="0,0,0,10"/>
+>         <!-- 线程池：短任务执行完线程归还池中，可被复用 -->
+>         <Button Content="提交 5 个任务到线程池（线程复用）" Click="OnThreadPoolClick"
+>                 Margin="0,5" Padding="8" Background="#238636" Foreground="White"/>
+>         <!-- 专用线程：每个任务独占一个新线程 -->
+>         <Button Content="创建 5 个专用线程（各用各的）" Click="OnDedicatedClick"
+>                 Margin="0,5" Padding="8" Background="#21262D" Foreground="White"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Threading;
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         // 线程池：适合大量短小任务，线程自动复用，观察日志中线程 Id 会重复
+>         private void OnThreadPoolClick(object sender, RoutedEventArgs e)
+>         {
+>             LogText.Text = "";
+>             for (int i = 0; i < 5; i++)
+>             {
+>                 int index = i; // 避免闭包捕获循环变量
+>                 ThreadPool.QueueUserWorkItem(_ =>
+>                 {
+>                     Thread.Sleep(200); // 模拟轻量任务
+>                     AppendLog($"任务{index}：线程池线程 Id={Thread.CurrentThread.ManagedThreadId}");
+>                 });
+>             }
+>         }
+>
+>         // 专用线程：适合长驻、有独立状态的任务，线程各自独立不复用
+>         private void OnDedicatedClick(object sender, RoutedEventArgs e)
+>         {
+>             LogText.Text = "";
+>             for (int i = 0; i < 5; i++)
+>             {
+>                 int index = i;
+>                 new Thread(() =>
+>                 {
+>                     Thread.Sleep(200);
+>                     AppendLog($"任务{index}：专用线程 Id={Thread.CurrentThread.ManagedThreadId}");
+>                 }).Start();
+>             }
+>         }
+>
+>         // 后台线程写 UI 必须回到主线程调度
+>         private void AppendLog(string line) =>
+>             Dispatcher.Invoke(() => LogText.Text += line + Environment.NewLine);
+>     }
+> }
 > ```
 > 
 

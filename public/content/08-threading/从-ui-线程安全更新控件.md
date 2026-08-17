@@ -25,9 +25,81 @@ parent: 8.3 Task 与 async 和 await
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **从 UI 线程安全更新控件演示：三种推荐写法：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="从 UI 线程安全更新控件" Height="420" Width="460"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15" Background="#161B22" Padding="15">
+>         <TextBlock Text="从 UI 线程安全更新控件" FontSize="16" FontWeight="Bold"
+>                    Foreground="#58A6FF" Margin="0,0,0,10"/>
+>         <!-- 三种更新方式对应三个按钮 -->
+>         <Button Content="方式一：Dispatcher.Invoke（同步）" Click="OnInvokeClick"
+>                 Margin="0,5" Padding="8" Background="#238636" Foreground="White"/>
+>         <Button Content="方式二：Dispatcher.BeginInvoke（异步）" Click="OnBeginInvokeClick"
+>                 Margin="0,5" Padding="8" Background="#21262D" Foreground="White"/>
+>         <Button Content="方式三：await Task + 同步上下文（推荐）" Click="OnAwaitClick"
+>                 Margin="0,5" Padding="8" Background="#21262D" Foreground="White"/>
+>         <TextBlock x:Name="LogText" Foreground="#8B949E" TextWrapping="Wrap"
+>                    MinHeight="120" Margin="0,10,0,0"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Threading;
+> using System.Threading.Tasks;
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         // 方式一：Invoke 同步调度，简单直观，适合少量更新
+>         private void OnInvokeClick(object sender, RoutedEventArgs e)
+>         {
+>             LogText.Text = "";
+>             Task.Run(() =>
+>             {
+>                 string data = "Invoke：温度 48.2℃";
+>                 Dispatcher.Invoke(() => LogText.Text += data + "\r\n");
+>             });
+>         }
+>
+>         // 方式二：BeginInvoke 异步调度，不阻塞后台线程
+>         private void OnBeginInvokeClick(object sender, RoutedEventArgs e)
+>         {
+>             LogText.Text = "";
+>             Task.Run(() =>
+>             {
+>                 string data = "BeginInvoke：压力 0.62 MPa";
+>                 Dispatcher.BeginInvoke(new Action(() => LogText.Text += data + "\r\n"));
+>             });
+>         }
+>
+>         // 方式三：await 会保存 UI 同步上下文，await 后自动回到 UI 线程
+>         private async void OnAwaitClick(object sender, RoutedEventArgs e)
+>         {
+>             LogText.Text = "";
+>             string data = await Task.Run(() =>
+>             {
+>                 Thread.Sleep(300); // 模拟后台采集
+>                 return "await：流量 3.8 m³/h";
+>             });
+>             // 这里已经在 UI 线程，可以直接更新控件
+>             LogText.Text += data + "\r\n";
+>             LogText.Text += "await 之后无需手动调度，自动回到 UI 线程 ✓\r\n";
+>         }
+>     }
+> }
 > ```
 > 
 

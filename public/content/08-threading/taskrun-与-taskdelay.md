@@ -25,9 +25,77 @@ parent: 8.3 Task 与 async 和 await
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **Task.Run 与 Task.Delay 演示：模拟设备轮询采集：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="Task.Run 与 Task.Delay" Height="380" Width="440"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15" Background="#161B22" Padding="15">
+>         <TextBlock Text="Task.Run 与 Task.Delay 演示" FontSize="16" FontWeight="Bold"
+>                    Foreground="#58A6FF" Margin="0,0,0,10"/>
+>         <!-- Task.Run：把重活丢到线程池；Task.Delay：异步等待不阻塞线程 -->
+>         <Button x:Name="StartButton" Content="启动 5 次模拟轮询" Click="OnStartClick"
+>                 Margin="0,5" Padding="8" Background="#238636" Foreground="White"/>
+>         <Button Content="停止轮询" Click="OnStopClick"
+>                 Margin="0,5" Padding="8" Background="#DA3633" Foreground="White"/>
+>         <!-- 日志区：展示每轮采集结果与线程 ID -->
+>         <TextBlock x:Name="LogText" Foreground="#8B949E" TextWrapping="Wrap"
+>                    MinHeight="160" Margin="0,10,0,0"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Threading;
+> using System.Threading.Tasks;
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private volatile bool _running; // 控制轮询的开关标志
+>
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnStartClick(object sender, RoutedEventArgs e)
+>         {
+>             _running = true;
+>             StartButton.IsEnabled = false; // 防止重复启动
+>             LogText.Text = "";
+>             // 把轮询逻辑放到线程池线程，避免阻塞 UI
+>             Task.Run(async () =>
+>             {
+>                 for (int i = 1; i <= 5 && _running; i++)
+>                 {
+>                     await Task.Delay(800); // 异步等待 0.8 秒，不占用线程
+>                     double value = 40 + i * 2.5; // 模拟采集温度
+>                     int threadId = Thread.CurrentThread.ManagedThreadId;
+>                     // 回到 UI 线程更新界面
+>                     await Dispatcher.InvokeAsync(() =>
+>                         LogText.Text += $"第 {i} 次采集：温度 {value:F1}℃" +
+>                                         $"（线程 Id={threadId}）\r\n");
+>                 }
+>                 await Dispatcher.InvokeAsync(() =>
+>                 {
+>                     LogText.Text += _running ? "轮询完成\r\n" : "轮询被停止\r\n";
+>                     StartButton.IsEnabled = true;
+>                 });
+>             });
+>         }
+>
+>         private void OnStopClick(object sender, RoutedEventArgs e)
+>         {
+>             _running = false; // 停止标志，等待中的循环自然退出
+>         }
+>     }
+> }
 > ```
 > 
 

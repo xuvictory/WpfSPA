@@ -25,9 +25,64 @@ parent: 8.1 WPF 线程模型
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **STA 单线程单元演示：对比主线程 STA 与后台线程 MTA：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="STA 单线程单元" Height="360" Width="440"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15" Background="#161B22" Padding="15">
+>         <TextBlock Text="STA 单线程单元演示" FontSize="16" FontWeight="Bold"
+>                    Foreground="#58A6FF" Margin="0,0,0,10"/>
+>         <TextBlock Text="WPF 的 UI 线程由 [STAThread] 标记为 STA，消息循环与控件都依附于它。"
+>                    TextWrapping="Wrap" Foreground="#8B949E" Margin="0,0,0,10"/>
+>         <TextBlock x:Name="MainThreadInfo" Foreground="#8B949E"
+>                    TextWrapping="Wrap" Margin="0,0,0,10"/>
+>         <!-- 查询后台线程默认单元状态 -->
+>         <Button Content="查询后台线程的单元状态（MTA）" Click="OnQueryClick"
+>                 Margin="0,5" Padding="8" Background="#238636" Foreground="White"/>
+>         <TextBlock x:Name="ResultText" Foreground="#8B949E"
+>                    TextWrapping="Wrap" Margin="0,10,0,0"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Threading;
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     // App.xaml.cs 的入口方法带有 [STAThread] 特性，主线程因此是 STA
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             // 展示主线程的单元状态：STA（Single-Threaded Apartment）
+>             var thread = Thread.CurrentThread;
+>             MainThreadInfo.Text = $"主线程 Id={thread.ManagedThreadId}，" +
+>                                   $"单元状态 = {thread.GetApartmentState()}（STA）";
+>         }
+>
+>         // 用 Thread 新建的线程默认是 MTA，适合执行与 UI 无关的计算
+>         private void OnQueryClick(object sender, RoutedEventArgs e)
+>         {
+>             new Thread(() =>
+>             {
+>                 var state = Thread.CurrentThread.GetApartmentState();
+>                 // 结果要显示到界面，仍需调度回主线程
+>                 Dispatcher.Invoke(() => ResultText.Text =
+>                     $"后台线程 Id={Thread.CurrentThread.ManagedThreadId}，" +
+>                     $"单元状态 = {state}（MTA）");
+>             }).Start();
+>         }
+>     }
+> }
 > ```
 > 
 

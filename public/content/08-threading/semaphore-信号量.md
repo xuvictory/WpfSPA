@@ -25,9 +25,76 @@ parent: 8.5 多线程同步与安全
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **Semaphore 信号量演示：限制同时访问设备的线程数量：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="Semaphore 信号量" Height="420" Width="460"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15" Background="#161B22" Padding="15">
+>         <TextBlock Text="Semaphore 信号量演示" FontSize="16" FontWeight="Bold"
+>                    Foreground="#58A6FF" Margin="0,0,0,10"/>
+>         <!-- 并发 6 个任务争抢 2 个串口通道 -->
+>         <Button Content="6 个任务争抢 2 个通道" Click="OnRunClick"
+>                 Margin="0,5" Padding="8" Background="#238636" Foreground="White"/>
+>         <TextBlock Text="同一时刻最多 2 个线程持有信号量（模拟 2 路串口并发上限）"
+>                    Foreground="#8B949E" TextWrapping="Wrap" Margin="0,0,0,10"/>
+>         <TextBlock x:Name="LogText" Foreground="#8B949E" TextWrapping="Wrap"
+>                    MinHeight="200" Margin="0,0,0,0"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Threading;
+> using System.Threading.Tasks;
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         // 初始可用 2 个、最多 2 个：相当于 2 路串口/通道
+>         private readonly SemaphoreSlim _gate = new SemaphoreSlim(2, 2);
+>
+>         public MainWindow() => InitializeComponent();
+>
+>         private async void OnRunClick(object sender, RoutedEventArgs e)
+>         {
+>             LogText.Text = "";
+>             Task[] tasks = new Task[6];
+>             for (int i = 0; i < 6; i++)
+>             {
+>                 int index = i;
+>                 tasks[i] = Task.Run(async () =>
+>                 {
+>                     // 申请通道：可用数减一，满则排队等待
+>                     await _gate.WaitAsync();
+>                     try
+>                     {
+>                         AppendLog($"任务{index} 获得通道，开始读写设备…");
+>                         await Task.Delay(500); // 模拟读写耗时
+>                         AppendLog($"任务{index} 释放通道");
+>                     }
+>                     finally
+>                     {
+>                         _gate.Release(); // 释放：可用数加一
+>                     }
+>                 });
+>             }
+>             await Task.WhenAll(tasks);
+>             AppendLog("全部任务执行完毕");
+>         }
+>
+>         private void AppendLog(string line) =>
+>             Dispatcher.Invoke(() => LogText.Text += line + Environment.NewLine);
+>     }
+> }
 > ```
 > 
 

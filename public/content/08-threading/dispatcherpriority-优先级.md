@@ -25,9 +25,66 @@ parent: 8.2 Dispatcher 调度器
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **DispatcherPriority 优先级演示：后台渲染与高优先级的执行顺序：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="DispatcherPriority 优先级" Height="380" Width="440"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15" Background="#161B22" Padding="15">
+>         <TextBlock Text="DispatcherPriority 优先级" FontSize="16" FontWeight="Bold"
+>                    Foreground="#58A6FF" Margin="0,0,0,10"/>
+>         <!-- 同时按不同优先级投递多个回调 -->
+>         <Button Content="按不同优先级投递回调" Click="OnPostClick"
+>                 Margin="0,5" Padding="8" Background="#238636" Foreground="White"/>
+>         <TextBlock x:Name="LogText" Foreground="#8B949E" TextWrapping="Wrap"
+>                    MinHeight="170" Margin="0,10,0,0"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Windows;
+> using System.Windows.Threading;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnPostClick(object sender, RoutedEventArgs e)
+>         {
+>             LogText.Text = "开始投递（优先级高的先执行）：\r\n";
+>             var dispatcher = Dispatcher;
+>
+>             // 先投递低优先级（后台渲染），再投递高优先级（用户输入）
+>             dispatcher.BeginInvoke(new Action(() =>
+>                 LogText.Text += "[Background] 低优先级：后台图表重绘\r\n"),
+>                 DispatcherPriority.Background);
+>
+>             dispatcher.BeginInvoke(new Action(() =>
+>                 LogText.Text += "[Input] 高优先级：用户输入响应\r\n"),
+>                 DispatcherPriority.Input);
+>
+>             dispatcher.BeginInvoke(new Action(() =>
+>                 LogText.Text += "[DataBind] 中优先级：数据绑定刷新\r\n"),
+>                 DispatcherPriority.DataBind);
+>
+>             // Normal 优先级在 Input 之后执行
+>             dispatcher.BeginInvoke(new Action(() =>
+>                 LogText.Text += "[Normal] 普通优先级：日志刷新\r\n"),
+>                 DispatcherPriority.Normal);
+>
+>             LogText.Text += "投递完成，按优先级排序执行 →\r\n";
+>         }
+>     }
+> }
 > ```
 > 
 

@@ -25,9 +25,76 @@ parent: 8.3 Task 与 async 和 await
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **async / await 详解：异步加载设备参数并返回结果：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="async 与 await 详解" Height="380" Width="440"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15" Background="#161B22" Padding="15">
+>         <TextBlock Text="async / await 详解" FontSize="16" FontWeight="Bold"
+>                    Foreground="#58A6FF" Margin="0,0,0,10"/>
+>         <!-- 同步版：阻塞线程，界面卡住 -->
+>         <Button Content="同步加载设备参数（阻塞 UI）" Click="OnSyncLoadClick"
+>                 Margin="0,5" Padding="8" Background="#DA3633" Foreground="White"/>
+>         <!-- 异步版：await 期间界面可操作 -->
+>         <Button Content="异步加载设备参数（await 不阻塞）" Click="OnAsyncLoadClick"
+>                 Margin="0,5" Padding="8" Background="#238636" Foreground="White"/>
+>         <TextBlock x:Name="ResultText" Foreground="#8B949E" TextWrapping="Wrap"
+>                    Margin="0,10,0,0" MinHeight="120"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Threading;
+> using System.Threading.Tasks;
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         // 同步版：Thread.Sleep 会阻塞调用线程，期间窗口无法响应
+>         private void OnSyncLoadClick(object sender, RoutedEventArgs e)
+>         {
+>             ResultText.Text = "开始同步加载…（窗口已卡住）";
+>             Thread.Sleep(2000); // 模拟串口读超时
+>             ResultText.Text = $"同步加载完成，参数 = {LoadParams()}\r\n" +
+>                               $"耗时 2 秒，期间 UI 被阻塞";
+>         }
+>
+>         // 异步版：await 让出线程，不阻塞 UI
+>         private async void OnAsyncLoadClick(object sender, RoutedEventArgs e)
+>         {
+>             ResultText.Text = "开始异步加载…（窗口可正常操作）";
+>             string param = await LoadParamsAsync(); // 异步等待，UI 不卡
+>             ResultText.Text = $"异步加载完成，参数 = {param}\r\n" +
+>                               $"await 期间界面保持流畅";
+>         }
+>
+>         // 模拟读取设备参数（同步耗时 2 秒）
+>         private string LoadParams()
+>         {
+>             Thread.Sleep(2000);
+>             return "速度 1500 RPM / 电流 3.2 A";
+>         }
+>
+>         // 模拟读取设备参数（异步版本）
+>         private async Task<string> LoadParamsAsync()
+>         {
+>             await Task.Delay(2000); // 异步等待，不占用线程
+>             return "速度 1500 RPM / 电流 3.2 A";
+>         }
+>     }
+> }
 > ```
 > 
 

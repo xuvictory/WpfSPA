@@ -25,9 +25,90 @@ parent: 8.5 多线程同步与安全
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **lock 与 Monitor 演示：多线程竞争计数器，加锁保证原子性：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="lock 与 Monitor" Height="400" Width="460"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15" Background="#161B22" Padding="15">
+>         <TextBlock Text="lock 与 Monitor 演示" FontSize="16" FontWeight="Bold"
+>                    Foreground="#58A6FF" Margin="0,0,0,10"/>
+>         <!-- 10 个线程并发对同一计数器加 100 次 -->
+>         <Button Content="无锁并发累加（结果会错乱）" Click="OnNoLockClick"
+>                 Margin="0,5" Padding="8" Background="#DA3633" Foreground="White"/>
+>         <Button Content="lock 加锁累加（结果准确）" Click="OnLockClick"
+>                 Margin="0,5" Padding="8" Background="#238636" Foreground="White"/>
+>         <TextBlock x:Name="LogText" Foreground="#8B949E" TextWrapping="Wrap"
+>                    MinHeight="150" Margin="0,10,0,0"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Threading;
+> using System.Threading.Tasks;
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private int _counter;          // 共享计数器
+>         private readonly object _lock = new object(); // 锁对象
+>
+>         public MainWindow() => InitializeComponent();
+>
+>         // 无锁版：count++ 非原子，10 个线程互相打断，结果 < 1000
+>         private void OnNoLockClick(object sender, RoutedEventArgs e)
+>         {
+>             LogText.Text = "";
+>             RunConcurrent(false);
+>         }
+>
+>         // 加锁版：lock 保证同一时刻只有一个线程进入临界区
+>         private void OnLockClick(object sender, RoutedEventArgs e)
+>         {
+>             LogText.Text = "";
+>             RunConcurrent(true);
+>         }
+>
+>         private void RunConcurrent(bool useLock)
+>         {
+>             _counter = 0;
+>             var tasks = new Task[10];
+>             for (int i = 0; i < tasks.Length; i++)
+>             {
+>                 tasks[i] = Task.Run(() =>
+>                 {
+>                     for (int j = 0; j < 100; j++)
+>                     {
+>                         if (useLock)
+>                         {
+>                             // lock 等价于 Monitor.Enter/Exit 的 try-finally 写法
+>                             lock (_lock)
+>                             {
+>                                 _counter++;
+>                             }
+>                         }
+>                         else
+>                         {
+>                             _counter++; // 读取-加一-写回三步可能被中断
+>                         }
+>                     }
+>                 });
+>             }
+>             Task.WhenAll(tasks).ContinueWith(_ => Dispatcher.Invoke(() =>
+>                 LogText.Text = $"10 个线程各累加 100 次：结果 = {_counter}" +
+>                                $"（{(useLock ? "加锁，应为 1000" : "未加锁，可能小于 1000")}）"));
+>         }
+>     }
+> }
 > ```
 > 
 

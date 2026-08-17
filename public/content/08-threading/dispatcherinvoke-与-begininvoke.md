@@ -25,9 +25,82 @@ parent: 8.2 Dispatcher 调度器
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **Dispatcher.Invoke 与 BeginInvoke 演示：同步 vs 异步调度到 UI 线程：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="Dispatcher.Invoke 与 BeginInvoke" Height="400" Width="460"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15" Background="#161B22" Padding="15">
+>         <TextBlock Text="Invoke 与 BeginInvoke 对比" FontSize="16" FontWeight="Bold"
+>                    Foreground="#58A6FF" Margin="0,0,0,10"/>
+>         <!-- Invoke：同步阻塞，等 UI 线程执行完才返回 -->
+>         <Button Content="后台线程 Invoke（同步等待结果）" Click="OnInvokeClick"
+>                 Margin="0,5" Padding="8" Background="#238636" Foreground="White"/>
+>         <!-- BeginInvoke：异步投递，立即返回不等待 -->
+>         <Button Content="后台线程 BeginInvoke（异步不等待）" Click="OnBeginInvokeClick"
+>                 Margin="0,5" Padding="8" Background="#21262D" Foreground="White"/>
+>         <TextBlock x:Name="LogText" Foreground="#8B949E" TextWrapping="Wrap"
+>                    MinHeight="150" Margin="0,10,0,0"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Threading;
+> using System.Windows;
+> using System.Windows.Threading;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         // Invoke：同步调度，后台线程会一直等 UI 线程执行完才继续
+>         private void OnInvokeClick(object sender, RoutedEventArgs e)
+>         {
+>             LogText.Text = "";
+>             new Thread(() =>
+>             {
+>                 AppendLog("后台线程：准备调用 Invoke（会阻塞等待）");
+>                 Dispatcher.Invoke(() =>
+>                 {
+>                     AppendLog("UI 线程：正在执行 Invoke 的回调…");
+>                     Thread.Sleep(500); // 模拟 UI 线程忙
+>                     AppendLog("UI 线程：Invoke 回调执行完毕");
+>                 });
+>                 AppendLog("后台线程：Invoke 已返回，继续执行");
+>             }).Start();
+>         }
+>
+>         // BeginInvoke：异步调度，投递后立即返回，不等待 UI 执行
+>         private void OnBeginInvokeClick(object sender, RoutedEventArgs e)
+>         {
+>             LogText.Text = "";
+>             new Thread(() =>
+>             {
+>                 AppendLog("后台线程：准备调用 BeginInvoke（不等待）");
+>                 Dispatcher.BeginInvoke(new Action(() =>
+>                 {
+>                     AppendLog("UI 线程：正在执行 BeginInvoke 的回调…");
+>                     Thread.Sleep(500);
+>                     AppendLog("UI 线程：BeginInvoke 回调执行完毕");
+>                 }), DispatcherPriority.Normal);
+>                 AppendLog("后台线程：BeginInvoke 立即返回，继续执行");
+>             }).Start();
+>         }
+>
+>         // 日志统一回到 UI 线程追加
+>         private void AppendLog(string line) =>
+>             Dispatcher.Invoke(() => LogText.Text += line + Environment.NewLine);
+>     }
+> }
 > ```
 > 
 
