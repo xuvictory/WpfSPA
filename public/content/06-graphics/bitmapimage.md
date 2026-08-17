@@ -7,22 +7,24 @@ parent: 6.7 图像处理
 # BitmapImage
 
 > [!plain] 白话理解
-> "BitmapImage"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"BitmapImage"是一个重要的知识点。上位机的仪表盘、实时曲线、设备图——这些视觉元素都离不开图形编程。掌握了它，你就能更好地构建工业级上位机应用程序。
+> BitmapImage 是"图片的加载引擎"：它负责把一张图片文件/资源**解码**成 WPF 能用的像素数据，而 Image 控件只是"显示框"。为什么要分开？因为解码时可以控制尺寸——`DecodePixelWidth = 320` 就把 4000×3000 的相机原图按宽度 320 解码，内存占用从几十 MB 降到几百 KB。上位机里预览大量监控图片时，这一步是"不卡顿"的关键。
+>
+> 类比：Image 是"电视"，BitmapImage 是"解码器"。直播流太大时解码器可以降分辨率，电视照样能看。
 
 > [!def] 官方定义
-> BitmapImage是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> `System.Windows.Media.Imaging.BitmapImage` 是 `BitmapSource` 的派生类，用于从 `Uri`/`Stream` 解码位图。常用属性：`UriSource`（图片来源）、`DecodePixelWidth`/`DecodePixelHeight`（解码尺寸，等比控制）、`CacheOption`（`BitmapCacheOption.OnLoad` 立即缓存 / `OnDemand` 延迟缓存）、`CreateOptions`（`BitmapCreateOptions.PreservePixelFormat` 等）、`PixelWidth`/`PixelHeight`/`Format`（解码后信息）。构造需在 `BeginInit()` 与 `EndInit()` 之间完成。
+>
+> 官方文档：https://learn.microsoft.com/zh-cn/dotnet/api/system.windows.media.imaging.bitmapimage
 
 > [!origin] 由来背景
-> BitmapImage的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：上位机的仪表盘、实时曲线、设备图——这些视觉元素都离不开图形编程。
+> WPF 的成像管线（`System.Windows.Media.Imaging`）提供"延迟解码"与"按需解码"能力：不设置 DecodePixelWidth 时，图片会以原始尺寸占内存；设置后按目标尺寸解码。这是 WPF 面对"大量高清图片"（如监控截图、产品原图）时的重要优化手段。Freeze() 冻结后还可跨线程共享，配合 MVVM 在后台线程加载图片而不卡 UI。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"BitmapImage"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **BeginInit/EndInit 配对**：`UriSource`、`DecodePixelWidth` 等必须在两者之间设置
+> - **DecodePixelWidth 省内存**：只设宽度即可等比解码，320 预览足够了
+> - **Freeze() 冻结**：解码完成后 `Freeze()`，可跨线程共享、渲染更快
+> - **CacheOption**：`OnLoad` 立即占内存但访问快；`OnDemand` 懒加载省启动时间
+> - **信息来源**：pack URI（资源）、文件 Stream、网络 Uri 均可；Info.Text 可读解码后的实际尺寸
 
 > [!example] 完整示例
 > **图片解码演示：用 BitmapImage 从本地文件/资源加载图片，DecodePixelWidth 控制解码尺寸（节省内存），点击按钮重新加载并显示像素信息：**
@@ -91,34 +93,36 @@ parent: 6.7 图像处理
 > 
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ 监控图片预览：多路相机截图解码后显示（DecodePixelWidth 控制内存）
+> ✅ 产品原图加载：大图按预览尺寸解码，避免整图占内存
+> ✅ 批量图片浏览：图库缩略图统一小尺寸解码
+> ✅ 后台线程加载：Freeze() 后跨线程使用（配合第 8 章线程）
+> ✅ 网络图片：从 Uri 加载远程图片（注意缓存与安全）
+> ❌ 只需要 XAML 静态图片：`Source="pack://..."` 简写足够
+> ❌ 需要逐像素绘制：用 writeablebitmap-可写入位图
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
+> 坑 1：**忘记 BeginInit/EndInit 就赋值** → 现象：运行时报 `InvalidOperationException`"对象已初始化"或属性不生效 → 原因：UriSource/DecodePixelWidth 必须在 BeginInit 与 EndInit 之间设置 → 解决：严格按 `new BitmapImage()` → `BeginInit()` → 设属性 → `EndInit()` 的顺序
 > 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 2：**DecodePixelWidth 设置后仍占用大内存** → 现象：内存没降下来 → 原因：DecodePixelWidth 只在解码时生效，若先解码后设置无效；或 CacheOption 未设 → 解决：在 BeginInit/EndInit 内设 `DecodePixelWidth` 并配合 `CacheOption=OnLoad` 立即释放源文件
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 3：**Uri 相对路径解析错误** → 现象：`new Uri("Assets/camera.png", RelativeOrAbsolute)` 报错或加载失败 → 原因：相对 Uri 相对的是当前目录，不是程序集 → 解决：用 `pack://application:,,,/Assets/camera.png` 绝对资源 URI，或 `Path.Combine(目录, 文件)` 构造文件 Uri
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - 预览图统一 `DecodePixelWidth`（如 320/480），需要原图时再单独全尺寸解码
+> - 解码完成立即 `Freeze()`，可跨线程共享且渲染更快
+> - 图片来源集中成常量/资源，避免字符串散落
+> - 批量加载用 `CacheOption.OnLoad` 释放文件句柄，防止文件被占用
+> - 动态图片更新频率高时，考虑复用 BitmapImage 或改用 writeablebitmap-可写入位图
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"BitmapImage"实现一个上位机中的小功能模块
+> **Lv.1 运行体验**：运行解码示例，点"重新解码加载"，观察图片显示与 Info 文本中的解码尺寸
+> **Lv.2 动手改造**：把 DecodePixelWidth 改成 640 再运行，对比 Info 中像素尺寸变化
+> **Lv.3 综合实战**：加一个"切换图片源"按钮，从资源切换到本地文件路径（FileStream + BitmapImage），观察两种来源的差异
+> **Lv.4 挑战进阶**：做一个"多图预览墙"——用数组加载 8 张图，每张 DecodePixelWidth=160，对比不设解码时的内存占用
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"BitmapImage"
-> - → 后续必学：掌握"BitmapImage"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：image-控件 认识 Source；第 8 章「线程与调度」配合后台加载
+> - → 后续必学：writeablebitmap-可写入位图 主动写像素；rendertargetbitmap-渲染到位图 界面快照
+> - ⇄ 关联概念：imagebrush-图像画刷（ImageSource 的另一种消费方式）；第 7 章绑定驱动图片来源
+> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/api/system.windows.media.imaging.bitmapimage

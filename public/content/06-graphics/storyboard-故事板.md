@@ -7,22 +7,22 @@ parent: 6.10 动画
 # Storyboard 故事板
 
 > [!plain] 白话理解
-> "Storyboard 故事板"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"Storyboard 故事板"是一个重要的知识点。上位机的仪表盘、实时曲线、设备图——这些视觉元素都离不开图形编程。掌握了它，你就能更好地构建工业级上位机应用程序。
+> Storyboard 是"动画导演"：单个动画只管一个属性，Storyboard 把多个动画编成一组，统一"开始→暂停→停止"。就像排练节目，每个演员（动画）有自己的台词（目标属性），导演（Storyboard）喊开始大家才一起动。工控里"开机自检动画"就是一组动画齐步走：进度条变宽 + 指示灯闪烁 + 文字更新，全部由同一个导演调度。
 
 > [!def] 官方定义
-> Storyboard 故事板是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> `System.Windows.Media.Animation.Storyboard` 继承自 `Timeline`，通过 `Children` 集合容纳多个 `AnimationTimeline`。`Storyboard.SetTarget(animation, targetObject)` 与 `Storyboard.SetTargetProperty(animation, new PropertyPath(...))` 为每个动画指定目标对象与目标属性；`Begin(FrameworkElement)`、`Pause`、`Resume`、`Stop`、`Seek` 统一控制整组动画。`FillBehavior`（HoldEnd/Stop）决定动画结束后属性是否保留终值。
+>
+> 官方文档：https://learn.microsoft.com/zh-cn/dotnet/api/system.windows.media.animation.storyboard
 
 > [!origin] 由来背景
-> Storyboard 故事板的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：上位机的仪表盘、实时曲线、设备图——这些视觉元素都离不开图形编程。
+> 多个动画需要"同步启停 + 统一时钟"，否则各自为战难以协调。WPF 提供 Storyboard 作为时间线容器（动画"场景"）：XAML 里可用 `<Storyboard>` 标签声明，配合 EventTrigger/Trigger 纯 XAML 触发；代码里也可组装。工控的开机自检、报警联动、界面切换过渡，本质都是一组属性的协同动画，Storyboard 让它们"同生共死"。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"Storyboard 故事板"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **组装两步**：`Children.Add(anim)` 加入动画，再 `SetTarget` + `SetTargetProperty` 绑定目标对象与属性路径
+> - **统一控制**：`Begin(this)`/`Pause`/`Resume`/`Stop`/`Seek` 作用于整组动画
+> - **XAML 声明**：`EventTrigger` + `BeginStoryboard` 可实现纯 XAML 触发动画（无需后台代码）
+> - **停止行为**：`Stop()` 把属性还原为初始值；需保留终值用 `FillBehavior=HoldEnd`
+> - **与 BeginAnimation 分工**：Storyboard 适合多动画协同，单属性动画用 BeginAnimation 更轻量
 
 > [!example] 完整示例
 > **开机自检动画演示：用 Storyboard 集中编排多个动画（颜色、尺寸、透明度），Begin/Stop/Pause 统一控制，模拟设备开机自检流程：**
@@ -129,34 +129,35 @@ parent: 6.10 动画
 > 
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ 开机自检/启动动画：进度条、指示灯、文字多元素齐步走
+> ✅ 报警联动动画组：灯闪 + 文字抖动 + 弹窗浮现一起触发
+> ✅ 界面切换过渡：页面/面板切换时的淡入、位移组合
+> ✅ 多元素协同动画：一组物料同时流动
+> ❌ 单属性简单动画：用 BeginAnimation 更轻量
+> ❌ 需要精确控制单个动画（暂停/定位单个）：用 Clock 或直接管理动画时间线
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
+> 坑 1：**运行时报"无法解析目标"** → 现象：Begin 时报 InvalidOperationException，目标属性找不到 → 原因：`SetTarget`/`SetTargetProperty` 没配对，或目标对象不在作用域内 → 解决：逐一核对 SetTarget(动画, 对象) 与 SetTargetProperty(动画, 新 PropertyPath(...))，属性路径与类型一致
 > 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 2：**Stop 后状态回退** → 现象：自检完成后所有元素跳回初始值 → 原因：`Storyboard.Stop()` 会把属性还原为动画前状态 → 解决：需要保留终值就设 `FillBehavior=HoldEnd`，或在动画完成后不 Stop
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 3：**反复 Begin 动画叠加/卡顿** → 现象：多次点开始后动画越跑越乱、界面变卡 → 原因：每次 Begin 创建新时钟，旧时钟未释放 → 解决：Begin 前先 `Stop()`，或复用同一个 Storyboard 实例
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - 动画编排集中在一个 `BuildStoryboard()` 方法中，目标与属性路径显式声明，便于维护
+> - 颜色动画目标用独立画刷实例（`new SolidColorBrush()` 赋给元素），避免改元素 Fill 导致引用丢失
+> - 整组控制统一走 Storyboard（Begin/Pause/Stop），不要和 BeginAnimation 混用
+> - XAML 场景用 `EventTrigger` + `BeginStoryboard` 纯声明触发，代码场景用代码组装
+> - 多动画错峰：用各动画的 `BeginTime` 错开起始时刻（如进度条先动、文字后出）
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"Storyboard 故事板"实现一个上位机中的小功能模块
+> **Lv.1 运行体验**：运行示例，点"开始自检"看进度条、指示灯、文字三动画齐步走
+> **Lv.2 动手改造**：在 Storyboard 里加第四个动画（透明度淡入），复用现有控制方式
+> **Lv.3 综合实战**：用 BeginTime 错峰编排三阶段：进度条(0s) → 指示灯(1s) → 文字(1.5s)，模拟自检节奏
+> **Lv.4 挑战进阶**：用 XAML `EventTrigger` + `BeginStoryboard` 重写，实现纯 XAML 触发，后台零代码
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"Storyboard 故事板"
-> - → 后续必学：掌握"Storyboard 故事板"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：基础动画类型 各类动画；动画基础概念 时间线机制
+> - → 后续必学：动画在上位机的应用 综合监控看板
+> - ⇄ 关联概念：第 7 章「命令与路由事件」事件触发动画；第 5 章「什么是样式」视觉统一
+> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/api/system.windows.media.animation.storyboard

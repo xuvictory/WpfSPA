@@ -7,22 +7,24 @@ parent: 6.4 Brush 画刷
 # DrawingBrush 绘图画刷
 
 > [!plain] 白话理解
-> "DrawingBrush 绘图画刷"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"DrawingBrush 绘图画刷"是一个重要的知识点。上位机的仪表盘、实时曲线、设备图——这些视觉元素都离不开图形编程。掌握了它，你就能更好地构建工业级上位机应用程序。
+> DrawingBrush 是"用矢量图形当涂料"：把线条、圆、矩形等绘图指令打包成一个 Drawing，像壁纸一样平铺或拉伸到任意区域。和 imagebrush-图像画刷 的区别是——它不是贴"位图照片"，而是贴"矢量画"，放大永远清晰、占内存极小。上位机里它最适合做**操作台背景纹路**：网格、斜纹、圆点、警示斜线，一个 30×30 的小单元平铺全屏。
+>
+> 类比：DrawingBrush 是"壁纸模板"，图样是一张矢量图纸，打印到墙上（图形区域）可以无限重复。
 
 > [!def] 官方定义
-> DrawingBrush 绘图画刷是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> `System.Windows.Media.DrawingBrush` 继承自 `TileBrush`，`Drawing` 属性（`System.Windows.Media.Drawing`）指定绘图内容，具体有 `GeometryDrawing`（几何+画笔）、`ImageDrawing`（图片）、`GlyphRunDrawing`（文字）、`VideoDrawing`（视频）等类型。配合 `Viewport`/`ViewportUnits`/`TileMode` 控制平铺，`Stretch` 控制缩放。
+>
+> 官方文档：https://learn.microsoft.com/zh-cn/dotnet/api/system.windows.media.drawingbrush
 
 > [!origin] 由来背景
-> DrawingBrush 绘图画刷的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：上位机的仪表盘、实时曲线、设备图——这些视觉元素都离不开图形编程。
+> UI 背景纹路如果用位图会放大模糊、换主题要重新导图；用纯色又太单调。WPF 提供 DrawingBrush：把纹路单元写成矢量（GeometryDrawing），`TileMode="Tile"` 无缝平铺，放大不失真、可编程切换。这与 CSS 的"渐变+平铺"背景、矢量引擎的 pattern 填充同源，是"轻量级纹理"的正规解决方案，也是本系列"操作台背景纹路"示例的设计动机。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"DrawingBrush 绘图画刷"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **Drawing 类型**：GeometryDrawing（几何+Pen/Brush）最常用；ImageDrawing/GlyphRunDrawing 可混搭
+> - **TileMode 平铺**：`Tile` 无缝平铺；`FlipXY` 等镜像平铺可省一半绘制
+> - **Viewport 单元**：`Viewport="0,0,30,30"` + `ViewportUnits="Absolute"` 定义纹路单元尺寸
+> - **矢量优势**：放大不失真、内存开销小，适合大面积背景
+> - **动态切换**：代码里换 `Drawing` 即可整体换纹路（如斜纹↔圆点）
 
 > [!example] 完整示例
 > **水印纹路演示：用 DrawingBrush 以 GeometryDrawing 绘制网格/斜纹作为背景纹路，TileMode 平铺铺满区域，Viewport 控制单元大小：**
@@ -42,7 +44,7 @@ parent: 6.4 Brush 画刷
 >         </Grid.RowDefinitions>
 >         <TextBlock Text="操作台背景纹路（DrawingBrush）" Foreground="#58A6FF" FontSize="16" FontWeight="Bold"/>
 >         <!-- DrawingBrush 使用矢量图元做平铺纹路 -->
->         <Border Grid.Row="1" Margin="0,10,0,0" CornerRadius="6" BorderBrush="#30363D" BorderThickness="1">
+>         <Border x:Name="PatternHost" Grid.Row="1" Margin="0,10,0,0" CornerRadius="6" BorderBrush="#30363D" BorderThickness="1">
 >             <Border.Background>
 >                 <DrawingBrush Viewport="0,0,30,30" ViewportUnits="Absolute" TileMode="Tile">
 >                     <DrawingBrush.Drawing>
@@ -113,9 +115,8 @@ parent: 6.4 Brush 画刷
 >                     Pen = new Pen(new SolidColorBrush(Color.FromRgb(0x8B, 0x94, 0x9E)), 1)
 >                 };
 >             }
->             (sender as System.Windows.Controls.Button).Tag = brush;
->             // 重新赋值背景触发重绘
->             (Parent as Grid).Background = brush;
+>             // 重新赋值 Border 背景触发重绘
+>             PatternHost.Background = brush;
 >         }
 >     }
 > }
@@ -123,34 +124,35 @@ parent: 6.4 Brush 画刷
 > 
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ 操作台/面板背景纹路：网格、斜纹、圆点、警示斜线平铺铺满
+> ✅ 设备分区底纹：不同区域用不同纹路（如料区网格、危险区斜纹）
+> ✅ 大面积纹理背景：不需要真实图片时的轻量矢量纹理
+> ✅ 边框装饰：用 DrawingBrush 平铺做异形边框纹理
+> ❌ 需要照片/实景：用 imagebrush-图像画刷 或 image-控件
+> ❌ 需要带交互的重复元素：用 ItemsControl 数据绑定更合适
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
+> 坑 1：**纹路没有平铺而是被拉伸成一张** → 现象：一个菱形纹路被拉成大格 → 原因：忘了设 `TileMode="Tile"` 或 Viewport 太大 → 解决：`TileMode="Tile"` + `Viewport="0,0,30,30"` + `ViewportUnits="Absolute"` 三件套缺一不可
 > 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 2：**纹路单元错位/接缝不齐** → 现象：相邻单元的对角线对不齐 → 原因：几何坐标超出 Viewport 边界（如 0,30→30,0 写成了 0,32→32,0） → 解决：几何严格落在 Viewport 范围内，且首尾对称（如斜线起点(0,30)终点(30,0)）
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 3：**动态切换纹路时新画刷不显示** → 现象：点了"切换纹路"没反应 → 原因：代码构造的 DrawingBrush 没赋给正确目标，或赋给了不可见容器 → 解决：确保目标元素有 x:Name 并直接赋 Background（如示例的 PatternHost）
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - 纹路单元尽量小（20-40px），几何坐标对称设计，保证无缝平铺
+> - 纹路用半透明/低饱和颜色（如 #2D333A），作为背景不抢内容
+> - 静态纹路在 XAML 声明；可切换纹路在代码动态构造，两者都符合"数据驱动"原则
+> - 用 GeometryDrawing.Pen 统一描边粗细，多个子几何共享样式
+> - 大面积使用注意性能：纹路越简单越好，复杂纹路用 Freeze 冻结画刷
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"DrawingBrush 绘图画刷"实现一个上位机中的小功能模块
+> **Lv.1 运行体验**：运行背景纹路示例，点"切换纹路"，观察斜纹与圆点无缝平铺切换
+> **Lv.2 动手改造**：把 XAML 里的纹路改成"井字格"（两条交叉竖线+横线），并调整 Viewport 为 40 观察疏密
+> **Lv.3 综合实战**：在代码里新增第三种纹路"警示斜纹"（加粗对角斜线 + 红色），三态循环切换
+> **Lv.4 挑战进阶**：做一个"分区面板"——上方操作区用斜纹、下方参数区用圆点，两个 Border 各自用不同 DrawingBrush
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"DrawingBrush 绘图画刷"
-> - → 后续必学：掌握"DrawingBrush 绘图画刷"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：geometry-类型（LineGeometry/RectangleGeometry 组成纹路单元）、imagebrush-图像画刷（平铺思路同源）
+> - → 后续必学：visualbrush-可视画刷 对比"界面元素当画刷"；上位机画刷应用 综合运用
+> - ⇄ 关联概念：所有-shape-共享属性（Pen/Brush 样式）；第 5 章「什么是样式」把纹路定义为资源
+> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/api/system.windows.media.drawingbrush
