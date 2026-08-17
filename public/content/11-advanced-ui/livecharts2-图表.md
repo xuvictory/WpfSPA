@@ -7,22 +7,21 @@ parent: 11.7 第三方 UI 控件库
 # LiveCharts2 图表
 
 > [!plain] 白话理解
-> "LiveCharts2 图表"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"LiveCharts2 图表"是一个重要的知识点。当你掌握了基础控件，高级 UI 开发能让你的上位机从"能用"变成"好用"再变成"出彩"。掌握了它，你就能更好地构建工业级上位机应用程序。
+> LiveCharts2 是给 WPF 做**数据曲线图的现成画板**：你只管把数据喂给它（`Values` 绑定一个集合），它负责坐标轴、网格、缩放、动画全部细节。示例里温度曲线就是：建一条 `LineSeries<double>`（"车间温度"），`Values` 指向 `_temps` 集合，定时器每 500ms 往集合里加一个温度点——曲线自己滚动起来。它底层用 SkiaSharp 渲染（GPU 加速），所以几十上百个点也能流畅刷新。不用自己写 `OnRender` 画折线，把精力留给"数据从哪来"。
 
 > [!def] 官方定义
-> LiveCharts2 图表是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> **LiveCharts2**（LiveChartsCore）是开源跨平台图表库（GitHub: beto-rodriguez/LiveCharts，作者 Beto Rodriguez），v2 基于 SkiaSharp 渲染，支持 WPF / WinUI / Avalonia / MAUI / Blazor 等多框架。WPF 使用需安装 NuGet 包 `LiveChartsCore.SkiaSharpView.WPF`，通过 `CartesianChart`/`PieChart`/`PolarChart` 等控件承载 `Series`（如 `LineSeries<T>`、`ColumnSeries<T>`），配合 `Axis`（`XAxes`/`YAxes`，支持 `MinLimit`/`MaxLimit`/`Labels`）与 `TooltipPosition`/`ZoomMode` 等交互配置。数据集合实现 `INotifyCollectionChanged`（如 `ObservableCollection<T>`）时图表自动增量刷新。详见官方仓库：https://github.com/beto-rodriguez/LiveCharts 。
 
 > [!origin] 由来背景
-> LiveCharts2 图表的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：当你掌握了基础控件，高级 UI 开发能让你的上位机从"能用"变成"好用"再变成"出彩"。
+> WPF 原生没有图表控件（2006 年随 .NET Framework 3.0 发布时只有 `Polyline` 这类绘图原语），上位机要画曲线只能自绘或引入第三方库。**LiveCharts** 第一代（v0，约 2017 年）用 GDI+ 渲染，轻量易用但性能与动画有限；作者 Beto Rodriguez 随后重写为 **LiveCharts2**（v2，约 2021 年起），底层换用 SkiaSharp（Google 的 2D 图形库，.NET 社区常用绑定），实现 GPU 加速渲染、流畅动画、更好的主题支持，并统一了多框架 API。如今它是 .NET 生态最流行的开源图表库之一，上位机实时曲线、历史趋势、统计分析都常用它。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"LiveCharts2 图表"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **安装与命名空间**：NuGet 包 `LiveChartsCore.SkiaSharpView.WPF`；XAML `xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"`（示例）
+> - **图表控件**：`CartesianChart`（直角坐标：折线/柱状/散点）、`PieChart`（饼图）、`PolarChart`（极坐标）
+> - **Series 配置**：`LineSeries<T>` 设 `Values`、`Name`、`Stroke`（`SolidColorPaint` + `SKColor`）、`Fill`（`null` 只描边）
+> - **Axis 配置**：`XAxes`/`YAxes` 数组，`Name` 轴名、`MinLimit`/`MaxLimit` 范围、`Labels` 自定义刻度
+> - **数据驱动刷新**：`Values` 绑定 `ObservableCollection<T>`，`Add`/`RemoveAt` 自动触发图表增量更新（示例滚动窗口）
+> - **实时数据注意**：UI 线程更新集合（用 `DispatcherTimer` 或后台线程 `Dispatcher.Invoke` 调度）
 
 > [!example] 完整示例
 > **LiveCharts2 实时温度曲线演示：NuGet 安装 LiveChartsCore.SkiaSharpView.WPF 后，用 CartesianChart 绑定可观察集合，DispatacherTimer 定时追加数据点，实现上位机实时曲线：**
@@ -115,34 +114,35 @@ parent: 11.7 第三方 UI 控件库
 > 
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ 实时数据曲线：温度、压力、转速、流量随时间变化（示例场景）
+> ✅ 历史趋势查询：从数据库/日志加载时间序列并绘图
+> ✅ 统计分析：柱状图对比班产量、饼图展示故障占比
+> ✅ 需要缩放/悬停查看数据点的交互式图表（`ZoomMode`、`TooltipPosition`）
+> ❌ 数据点极少且样式固定的静态图（普通 `Polyline` 或图片更省事）
+> ❌ 对包体积/启动时间敏感的低配工控机（SkiaSharp 原生依赖会增加部署复杂度）
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
+> 坑 1：**后台线程更新 `ObservableCollection`** → 现象：实时采集时崩溃或图表不更新 → 原因：`Values` 绑定集合必须在 UI 线程改（`ObservableCollection` 非线程安全） → 解决：后台线程采集后 `Dispatcher.Invoke`/`BeginInvoke` 回 UI 线程再加点（示例用 `DispatcherTimer` 规避）
 > 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 2：**点太多导致卡顿** → 现象：数据多了以后拖动/缩放大卡 → 原因：几万点全量渲染 → 解决：滚动窗口限制点数（示例保留 60 点）；或按采样间隔抽稀，`XAxes` 配 `MinStep` 控制刻度
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 3：**包版本不一致（LiveChartsCore 与 SkiaSharp 冲突）** → 现象：编译报版本冲突或运行异常 → 原因：项目引用了多个版本的 SkiaSharp/LiveCharts 组件 → 解决：统一升级到同一大版本，用 NuGet 的"统一版本"或清理多余引用
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - 实时曲线用"滚动窗口 + 固定点数"（示例保留 60 点），长期运行内存稳定
+> - 数据更新走 UI 线程（`DispatcherTimer`/`Dispatcher.Invoke`），曲线数据与采集线程解耦
+> - 曲线样式（`Stroke`/`Fill`）统一配置；多通道曲线用不同 `Name` 并配图例，颜色选工控高对比色
+> - Y 轴设置合理范围（`MinLimit`/`MaxLimit`），避免数据突变时曲线被压扁
+> - 与 ViewModel 解耦：`Series` 在 View 层构建，数据源来自 VM 的可观察集合，便于替换采集源
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"LiveCharts2 图表"实现一个上位机中的小功能模块
+> **Lv.1 照猫画虎**：安装 `LiveChartsCore.SkiaSharpView.WPF`，运行示例点"开始采集"观察温度曲线滚动；把采样间隔改成 200ms 看刷新频率变化
+> **Lv.2 小试牛刀**：添加第二条 `LineSeries<double>`（压力曲线，不同颜色），并给 X 轴配 `Labels` 显示时间刻度
+> **Lv.3 融会贯通**：开启 `Chart.ZoomMode = ZoomAndPanMode.X`，悬停查看数据点 Tooltip；把曲线改成 `StepLineSeries` 观察差异
+> **Lv.4 拆层挑战**：把采集端改为后台 `Task` + `Channel` 生产温度数据，UI 线程 `Dispatcher` 消费并更新曲线，验证真实采集场景下的线程模型（结合 `08-threading`）
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"LiveCharts2 图表"
-> - → 后续必学：掌握"LiveCharts2 图表"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：「第 8 章·DispatcherTimer」「dispatchertimer」（定时采集驱动）、「第 5 章·数据绑定」「什么是数据绑定」（集合绑定）
+> - → 后续必学：`多屏适配拼接屏场景`（大屏图表布局）、`控件重绘（OnRender）`（需要自绘图表时的对比方案）
+> - ⇄ 关联概念：`handycontrol`（Gauge 仪表盘与图表搭配看板）、`materialdesigninxaml`（图表配色与主题库协调）
+> - 📖 官方文档：LiveCharts GitHub：https://github.com/beto-rodriguez/LiveCharts ；LiveCharts2 文档：https://lvcharts.com/ ；NuGet：https://www.nuget.org/packages/LiveChartsCore.SkiaSharpView.WPF

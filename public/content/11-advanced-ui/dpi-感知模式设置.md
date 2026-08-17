@@ -7,22 +7,21 @@ parent: 11.9 高 DPI 适配
 # DPI 感知模式设置
 
 > [!plain] 白话理解
-> "DPI 感知模式设置"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"DPI 感知模式设置"是一个重要的知识点。当你掌握了基础控件，高级 UI 开发能让你的上位机从"能用"变成"好用"再变成"出彩"。掌握了它，你就能更好地构建工业级上位机应用程序。
+> DPI 感知模式就是程序向 Windows 做的"**视力声明**"：系统问你"你知道我的屏幕是 125% 缩放吗？"，你说"知道"（DPI Aware），Windows 就把文字、控件按真实尺寸清晰地渲染给你；你说"不知道"（Unaware），Windows 就把整个窗口当 96 DPI 的图"拍照放大"，放大后的位图全是锯齿和模糊——就像把一张小照片硬拉大。示例用 `app.manifest` 声明了 `dpiAware=true`（System DPI Aware），再用 `GetDpiForWindow` 读出当前窗口的真实 DPI 并换算缩放比例，让你直观看到"声明过"和"没声明"时画面清晰度的天壤之别。
 
 > [!def] 官方定义
-> DPI 感知模式设置是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> DPI 感知模式（DPI Awareness）是 Windows 为高 DPI 显示器定义的应用程序缩放行为分类，共四级：**Unaware**（不感知，由系统位图拉伸）、**System DPI Aware**（感知系统 DPI，即主屏启动时的 DPI，`dpiAware=true`）、**Per-Monitor DPI Aware**（感知各显示器 DPI）、**Per-Monitor V2**（Win10 1703+ 增强版，`dpiAwareness=PerMonitorV2`）。声明方式是在 `app.manifest` 的 `<application><windowsSettings>` 节点写 `dpiAware`（2005 schema）与 `dpiAwareness`（2016 schema）。运行时可通过 P/Invoke 调用 `user32.dll` 的 `GetDpiForWindow`（指定窗口所在显示器 DPI）与 `GetDpiForSystem`（系统 DPI）读取实际值，96 为 100% 基准。WPF 4.6.2 起原生支持 Per-Monitor V2。详见官方文档：[高 DPI 桌面应用程序开发](https://learn.microsoft.com/zh-cn/windows/win32/hidpi/high-dpi-desktop-application-development-on-windows)、[WPF 中的高 DPI 缩放与分辨率](https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/high-dpi-scaling-and-resolution)、[GetDpiForWindow](https://learn.microsoft.com/zh-cn/windows/win32/api/winuser/nf-winuser-getdpiforwindow)。
 
 > [!origin] 由来背景
-> DPI 感知模式设置的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：当你掌握了基础控件，高级 UI 开发能让你的上位机从"能用"变成"好用"再变成"出彩"。
+> 早期 Windows 所有程序都按固定 96 DPI（每英寸 96 像素）设计，显示器分辨率低时无所谓；2000 年代高分辨率屏普及后，Windows XP/Vista 提供"系统缩放"（System DPI scaling），但缩放方式是**整窗位图拉伸**——不感知 DPI 的程序会被系统虚拟化放大，文字边缘一片模糊。微软从 Windows Vista 开始支持 manifest 声明 `dpiAware`，让程序主动声明感知级别以换取清晰渲染；Win8.1 引入 per-monitor 感知但实现粗糙（窗口跨屏拖动会变形），Win10 1703 才推出成熟的 Per-Monitor V2。WPF 自 4.6.2（2017 年）起完整支持该模式。对上位机而言，**工控屏、触摸一体机的缩放档位经常被运维改成 125%/150% 以放大字体**，不设置 DPI 感知，整套监控界面会"糊成一片"，这是现场售后最常见的投诉之一。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"DPI 感知模式设置"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **声明入口**：`app.manifest` 的 `<dpiAware>true</dpiAware>`（System Aware）与 `<dpiAwareness>PerMonitorV2</dpiAwareness>`（Per-Monitor V2，Win10 1703+）
+> - **感知四级**：Unaware（位图拉伸最模糊）→ System Aware（全屏统一缩放）→ Per-Monitor（逐屏感知）→ Per-Monitor V2（推荐，自动处理子窗口与坐标）
+> - **读取 DPI**：`GetDpiForWindow(hwnd)` 拿窗口所在屏 DPI、`GetDpiForSystem()` 拿系统 DPI，均为 `user32.dll` P/Invoke（示例即此用法）
+> - **换算公式**：缩放比例 = DPI / 96；像素 ↔ DIP：`DIP = 像素 × 96 / DPI`
+> - **WPF 默认**：未声明时 WPF 按 System Aware 处理；声明 PerMonitorV2 后跨屏拖动会自动重缩放
+> - **范围差异**：`dpiAware` 只影响启动时所属显示器，多屏混缩放必须用 `dpiAwareness=PerMonitorV2`
 
 > [!example] 完整示例
 > **DPI 感知模式设置演示：通过 app.manifest 声明 System DPI Aware，再用 GetDpiForWindow 读取当前窗口 DPI 并换算缩放因子，展示不同感知模式对界面清晰度的影响：**
@@ -93,37 +92,37 @@ parent: 11.9 高 DPI 适配
 >     }
 > }
 > ```
-> 
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ 触摸一体机 / 工控平板工位：运维为看得清把系统缩放到 150%，界面必须按 DPI 清晰渲染
+> ✅ 一台主机拖多块不同缩放屏幕：主屏 100% 写报表、副屏 150% 投大屏，窗口跨屏切换不糊
+> ✅ 远程桌面（RDP）会话：客户端分辨率与缩放随时变化，程序需实时感知
+> ✅ 现场演示 / 会议投影：演示机缩放到 125%，上位机界面仍保持锐利
+> ❌ 固定 1024×768 的老式工控一体机（系统锁 100% 缩放，声明与否无差别）
+> ❌ 依赖屏幕像素精确定位的旧程序改造（可先保持 System Aware，逐步迁移）
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
+> 坑 1：**不声明 `dpiAware`，整窗被位图拉伸** → 现象：Win10 125% 缩放下，上位机界面字迹模糊、边框发虚，截图却清晰 → 原因：未声明时系统按 Unaware 处理，把 96 DPI 渲染结果整图放大 → 解决：在 `app.manifest` 声明 `<dpiAware>true</dpiAware>`（示例第一步），立即恢复清晰
 > 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 2：**只声明 System Aware，跨屏拖动依然模糊** → 现象：窗口从 100% 主屏拖到 150% 副屏，画面先模糊后恢复，文字短暂虚化 → 原因：System Aware 只按启动屏 DPI 渲染，跨屏不重算 → 解决：声明 `dpiAwareness=PerMonitorV2`（见 `per-monitor-dpi-awareness`），让窗口跨屏自动重缩放
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 3：**`OnRender` 自定义绘制按固定像素画** → 现象：声明 PerMonitorV2 后字体变清晰了，但自绘的曲线、刻度还是错位或糊 → 原因：`DrawingContext` 坐标是 DIP，自绘代码里却按物理像素假设画 → 解决：绘制前用 `VisualTreeHelper.GetDpi(this)` 拿到 `DpiScale`，按 `DpiScale.PixelsPerDip` 换算笔宽/字号
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - 新建 WPF 上位机项目一律声明 Per-Monitor V2（`dpiAwareness` + 旧版 `dpiAware` 兼容字段），一劳永逸避免后期返工
+> - 读取 DPI 统一封装静态类 `DpiHelper`（`GetDpiForWindow` / `GetDpiForSystem` / `PxToDip` / `DipToPx`），业务代码不直接 P/Invoke
+> - 图片、图标等位图资源按 100%/125%/150%/200% 各备一套，或用 `viewbox-缩放适配` 做矢量兜底
+> - 使用系统 DPI 感知声明后，`Window.Left/Top/Width/Height` 均为 DIP，与 `Screen.WorkingArea` 像素比对前先换算（见 `多屏适配拼接屏场景`）
+> - 验收清单：在 100% / 125% / 150% 三档缩放下分别启动程序，检查文字锐利度、控件间距、自绘图形三处
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"DPI 感知模式设置"实现一个上位机中的小功能模块
+> **Lv.1 照猫画虎**：运行示例，把系统缩放切到 125% 再切回 100%，对比声明前后（注释掉 manifest 的 `dpiAware`）界面清晰度差异
+> **Lv.2 小试牛刀**：在示例基础上加"获取系统 DPI"按钮，输出 `GetDpiForSystem()`，并新增换算函数把屏幕像素坐标转成 DIP 坐标
+> **Lv.3 融会贯通**：封装 `DpiHelper` 静态类，在自绘的温度曲线控件 `OnRender` 中按 DPI 缩放画笔粗细，验证 150% 缩放下曲线依然锐利
+> **Lv.4 拆层挑战**：把 manifest 升级为 `PerMonitorV2`，再结合 `per-monitor-dpi-awareness` 的 `DpiChanged` 事件，让自绘控件在窗口跨屏时动态重建绘制参数，实现全 DPI 自适应
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"DPI 感知模式设置"
-> - → 后续必学：掌握"DPI 感知模式设置"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：`p-invoke-基础`（`GetDpiForWindow` 的 P/Invoke 声明）、`viewbox-缩放适配`（UI 内层缩放手段）
+> - → 后续必学：`per-monitor-dpi-awareness`（逐屏感知，多屏混缩放的关键）、`多屏适配拼接屏场景`（多屏定位 + DPI 换算）
+> - ⇄ 关联概念：`常用-win32-api-封装`（DPI 相关 Win32 的工程化封装）
+> - 📖 官方文档：[高 DPI 桌面应用程序开发](https://learn.microsoft.com/zh-cn/windows/win32/hidpi/high-dpi-desktop-application-development-on-windows)、[GetDpiForWindow](https://learn.microsoft.com/zh-cn/windows/win32/api/winuser/nf-winuser-getdpiforwindow)、[WPF 高 DPI 支持](https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/high-dpi-scaling-and-resolution)

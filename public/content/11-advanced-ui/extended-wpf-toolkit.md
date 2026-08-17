@@ -7,22 +7,21 @@ parent: 11.7 第三方 UI 控件库
 # Extended WPF Toolkit
 
 > [!plain] 白话理解
-> "Extended WPF Toolkit"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"Extended WPF Toolkit"是一个重要的知识点。当你掌握了基础控件，高级 UI 开发能让你的上位机从"能用"变成"好用"再变成"出彩"。掌握了它，你就能更好地构建工业级上位机应用程序。
+> Extended WPF Toolkit 是**补 WPF 原生控件缺口的"万能工具箱"**：WPF 自带控件少，很多常用的"小零件"它都没提供——颜色选择器、日期时间选择、数字步进器、带水印的输入框。这个库把这些都补上了，而且用起来和原生控件一样：引用命名空间、拖控件、读属性。示例里 `xctk:ColorPicker` 给设备指示灯选颜色、`xctk:DateTimePicker` 定检修时间、`xctk:IntegerUpDown` 输温度上限、`xctk:WatermarkTextBox` 输备注——四个高频需求，四个现成控件，不用自己写一个。
 
 > [!def] 官方定义
-> Extended WPF Toolkit是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> **Extended WPF Toolkit** 是 Xceed Software 开发并开源的 WPF 控件扩展包（GitHub: xceedsoftware/wpftoolkit，NuGet 包 `Extended.Wpf.Toolkit`），提供 60+ 原生 WPF 没有的控件与组件，如 `ColorPicker`（颜色选择）、`DateTimePicker`（日期时间选择）、`IntegerUpDown`/`DoubleUpDown`（数字步进）、`WatermarkTextBox`（水印输入框）、`BusyIndicator`（加载指示）、`CheckComboBox`、`PropertyGrid`、`DataGrid` 增强等。XAML 引用 `xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"`。详见官方仓库：https://github.com/xceedsoftware/wpftoolkit 。
 
 > [!origin] 由来背景
-> Extended WPF Toolkit的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：当你掌握了基础控件，高级 UI 开发能让你的上位机从"能用"变成"好用"再变成"出彩"。
+> WPF（2006 年随 .NET Framework 3.0 发布）的原始控件集刻意保持精简（Button/TextBox/DataGrid 等基础件），企业软件常用的"颜色选、日期选、数字步进"等控件一直没有内置。加拿大 Xceed Software 公司早年以商业组件闻名（Xceed DataGrid 等），2008 年起把部分控件以 **Extended WPF Toolkit** 名义开源（CodePlex 时代起步，后迁至 GitHub），免费供社区使用。它秉承"补齐原生缺憾、不改原生行为"的设计：控件 API 风格与 WPF 原生一致，`xctk:` 前缀下即插即用。因其覆盖面广、稳定成熟，成为 WPF 生态引用量最高的第三方控件包之一，上位机参数配置界面尤其受益。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"Extended WPF Toolkit"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **安装与命名空间**：NuGet 包 `Extended.Wpf.Toolkit`；XAML `xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"`（示例）
+> - **常用控件**：`ColorPicker`（`SelectedColor`）、`DateTimePicker`（`Value` 为 `DateTime?`）、`IntegerUpDown`/`DoubleUpDown`（`Value`/`Minimum`/`Maximum`/`Increment`）、`WatermarkTextBox`（`Watermark` 提示）
+> - **取值方式**：与原生控件一致——`SelectedColor`/`Value`/`Text` 直接读（示例 `OnReadParams`）
+> - **其他亮点**：`BusyIndicator`（异步加载遮罩）、`PropertyGrid`（属性网格）、`CheckComboBox`、`DropDownButton`、`RichTextBox` 增强
+> - **样式可定制**：`xctk:` 控件同样支持 `Style`/模板/主题资源，可与第三方主题库共存
+> - **版本注意**：部分控件在 NuGet 的不同包（`Extended.Wpf.Toolkit` 覆盖大部分；个别如 DataGrid 增强在 `Extended.Wpf.Toolkit` 同名包内）
 
 > [!example] 完整示例
 > **Extended WPF Toolkit 参数配置演示：NuGet 安装 Extended.Wpf.Toolkit 后，用 xctk: 命名空间的 ColorPicker（颜色选择）、DateTimePicker（时间选择）、IntegerUpDown（数字步进）搭建上位机参数配置界面：**
@@ -99,34 +98,35 @@ parent: 11.7 第三方 UI 控件库
 > 
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ 上位机参数配置界面：颜色、日期、数字、水印输入（示例场景）
+> ✅ 需要"属性网格"式配置（`PropertyGrid` 直接编辑对象属性）
+> ✅ 异步加载时需要遮罩提示（`BusyIndicator`）
+> ✅ 原生 WPF 缺控件时的快速补位：`CheckComboBox`、`DropDownButton`、`TimePicker` 等
+> ❌ 只需要一两个控件的小项目（单独引整个包偏重，可只引所需源码/子包）
+> ❌ 界面风格要求完全统一的深度定制项目（第三方控件默认样式需要额外适配主题）
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
+> 坑 1：**包名与命名空间混淆** → 现象：NuGet 装了 `Extended.Wpf.Toolkit` 但 XAML 命名空间写错报解析失败 → 原因：命名空间是 `http://schemas.xceed.com/wpf/xaml/toolkit`，不是包名 → 解决：严格按示例写 `xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"`
 > 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 2：**`DateTimePicker.Value` 为 `DateTime?`** → 现象：`MaintainTime.Value:yyyy-MM-dd` 格式化报空引用 → 原因：`Value` 是可空类型，可能为 null → 解决：格式化前判空（`Value?.ToString("yyyy-MM-dd HH:mm")`），或在 XAML 里确保已赋值
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 3：**旧版本控件在新 .NET 上报兼容问题** → 现象：升级 .NET 后某个 `xctk:` 控件编译不过或运行时异常 → 原因：Toolkit 各版本对 .NET Framework/.NET 支持范围不同 → 解决：选用与目标框架匹配的版本，遇问题查 GitHub Issues（该库社区活跃，常见问题有解决方案）
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - 配置界面优先用 `xctk:` 现成控件替代手写弹窗/自绘，开发效率高且交互成熟
+> - 控件的值统一在提交时读取校验（示例 `OnReadParams`），不散落监听事件
+> - `WatermarkTextBox` 替代"Label + TextBox"组合，界面更简洁
+> - 与主题库共存时给 `xctk:` 控件统一套 `Style` 适配深色主题，保持视觉一致
+> - 大型项目把配置表单封装成 `UserControl`，`xctk:` 控件值绑定 VM 属性，避免事件满天飞
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"Extended WPF Toolkit"实现一个上位机中的小功能模块
+> **Lv.1 照猫画虎**：安装 `Extended.Wpf.Toolkit`，运行示例操作四个控件后点"读取参数并预览"，确认取值正确
+> **Lv.2 小试牛刀**：再加一个 `xctk:DoubleUpDown`（精度 0.1、Increment 0.5）设置"压力上限"，并加 `xctk:BusyIndicator` 模拟加载遮罩
+> **Lv.3 融会贯通**：把示例表单值绑定到 VM（`INotifyPropertyChanged`），点"保存"生成配置对象并输出 JSON，验证第三方控件与绑定体系无缝衔接
+> **Lv.4 拆层挑战**：用 `xctk:PropertyGrid` 直接编辑 `DeviceConfig` 对象（颜色/温度/时间属性），对比"手写表单"与"属性网格"两种配置界面的取舍
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"Extended WPF Toolkit"
-> - → 后续必学：掌握"Extended WPF Toolkit"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：「第 4 章·控件基础」「textbox-文本框」等原生控件基础、「第 5 章·数据绑定」「什么是数据绑定」（控件值绑定）
+> - → 后续必学：`资源字典组织主题`（给第三方控件适配主题）、`datatemplateselector-选择器`（与表格/网格数据结合）
+> - ⇄ 关联概念：`handycontrol`/`materialdesigninxaml`（同为第三方控件库，取舍对比）、`livecharts2-图表`（数据可视化补充）
+> - 📖 官方文档：Extended WPF Toolkit GitHub：https://github.com/xceedsoftware/wpftoolkit ；NuGet：https://www.nuget.org/packages/Extended.Wpf.Toolkit ；Xceed 官方：https://xceed.com/controls/

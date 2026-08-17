@@ -7,22 +7,21 @@ parent: 11.6 WPF 与 Windows API 交互
 # P/Invoke 基础
 
 > [!plain] 白话理解
-> "P/Invoke 基础"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"P/Invoke 基础"是一个重要的知识点。当你掌握了基础控件，高级 UI 开发能让你的上位机从"能用"变成"好用"再变成"出彩"。掌握了它，你就能更好地构建工业级上位机应用程序。
+> WPF 是"装修好的现代化车间"，但有些老设备（Windows 原生能力）只有 Win32 的"旧接口"——比如原生消息框、屏幕分辨率、系统运行时长，.NET 没直接给。P/Invoke 就是**请一名翻译官（CLR）帮你对接旧接口**：你写一行 `[DllImport("user32.dll")]` 声明"我要找 user32.dll 里的谁"，CLR 负责把 C# 的参数翻译成 C 的格式（封送）、调用、再把返回值翻译回来。示例里 `NativeMessageBox` 就是把 .NET 的窗口句柄交给 Win32 的原生弹窗，两边语言不通但数据照传。
 
 > [!def] 官方定义
-> P/Invoke 基础是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> P/Invoke（Platform Invocation Services，平台调用）是 .NET 提供的调用非托管代码（Win32 API、C/C++ DLL）的机制。用 `System.Runtime.InteropServices.DllImport` 特性标记 `static extern` 方法，声明目标 DLL、`EntryPoint`（函数名，默认与方法名一致）、`CharSet`（字符串编码）等；CLR 在首次调用时加载 DLL、解析函数地址，并按封送规则（`Marshal`）在托管与非托管边界转换参数与返回值。结构体传递需用 `LayoutKind.Sequential` 等布局标记；句柄等资源建议用 `SafeHandle` 派生类封装。详见官方文档：[P/Invoke 平台调用](https://learn.microsoft.com/zh-cn/dotnet/standard/native-interop/pinvoke)、[DllImportAttribute 类](https://learn.microsoft.com/zh-cn/dotnet/api/system.runtime.interopservices.dllimportattribute)。
 
 > [!origin] 由来背景
-> P/Invoke 基础的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：当你掌握了基础控件，高级 UI 开发能让你的上位机从"能用"变成"好用"再变成"出彩"。
+> Win32 API 是 Windows 自 1993 年 Windows NT 3.1 / 1995 年 Windows 95 起提供的 C 语言原生接口（`user32.dll`/`kernel32.dll`/`gdi32.dll`），几十年积累了大量功能。.NET Framework 1.0（2002 年）发布时，不可能把全部 Win32 能力重写一遍，于是提供了 P/Invoke：托管代码按 C 签名声明函数，CLR 自动完成加载与封送。WPF（2006 年）虽自身高度托管化，但底层窗口句柄（`HwndSource`）、系统消息仍绕不开 Win32。上位机场景常借助 P/Invoke 拿系统信息、控制电源、操作串口等 .NET 未直接暴露的能力，但规则同样严格：签名必须与 C 声明一致，否则内存出错甚至崩溃。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"P/Invoke 基础"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **`[DllImport("dll 名")]`**：声明目标库，函数默认同名（可 `EntryPoint` 改名）；`static extern` 是硬性写法
+> - **`CharSet`**：`CharSet.Unicode` 处理字符串，避免 ANSI/Unicode 混用导致乱码（示例 `NativeMessageBox`）
+> - **句柄获取**：WPF 拿窗口句柄用 `new WindowInteropHelper(this).Handle`（示例 `OnNativeMessageBox`）
+> - **常量与枚举**：Win32 常量（`SM_CXSCREEN`）按文档写 `const`，与原生值完全一致（示例）
+> - **返回值类型**：严格按原生签名（`int`/`uint`/`IntPtr`），`GetTickCount` 返回 `uint`（毫秒，49.7 天回绕）
+> - **平台兼容**：P/Invoke 依赖 Windows，跨平台项目要加 `OperatingSystem.IsWindows()` 守卫或只在 Windows 目标编译
 
 > [!example] 完整示例
 > **P/Invoke 调用 Win32 API 演示：用 DllImport 声明 user32.dll / kernel32.dll 中的原生函数（MessageBox、GetSystemMetrics、GetTickCount），在 WPF 按钮中直接调用，展示托管代码与非托管代码互操作：**
@@ -115,34 +114,35 @@ parent: 11.6 WPF 与 Windows API 交互
 > 
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ 读取系统底层信息：屏幕分辨率、系统运行时长、Windows 版本（示例场景）
+> ✅ 调用 .NET 未封装的 Win32 功能：电源管理、系统休眠唤醒、硬件信息（磁盘序列号）
+> ✅ 与老设备驱动/串口 DLL 对接（设备厂商提供的原生 SDK）
+> ✅ 弹原生对话框、置顶窗口、发送系统消息等系统级 UI 操作
+> ❌ .NET 已有等价 API 的功能（优先用托管 API，`SystemParameters` 能拿分辨率就别 P/Invoke）
+> ❌ 跨平台应用的非 Windows 部分（Linux/macOS 没有 Win32 DLL，需逐平台分支）
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
+> 坑 1：**签名与原生函数不一致** → 现象：调用后内存损坏、返回值诡异甚至崩溃 → 原因：`DllImport` 声明与 Win32 实际签名（参数个数/类型/返回值）不符，封送错误 → 解决：严格对照 P/Invoke 文档（pinvoke.net / Microsoft Learn）抄签名；字符串记得 `CharSet`，指针类型用 `IntPtr`
 > 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 2：**句柄/内存泄漏** → 现象：长时间运行后资源耗尽、句柄数上涨 → 原因：调用返回句柄的函数（如打开设备）后没释放 → 解决：用 `SafeHandle` 包装句柄或用 `finally` 释放（详见 `常用-win32-api-封装`）
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 3：**DLL 加载失败** → 现象：`DllNotFoundException`/`EntryPointNotFoundException` → 原因：目标 DLL 不存在（Win7 没有新版 API）、或函数名大小写不对 → 解决：确认目标系统含该 DLL/API；用 `EntryPoint` 指定准确函数名，必要时 `SetDllDirectory` 指定目录
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - 每个 `[DllImport]` 旁写注释标明来源（dll 名、函数用途），签名务必对照官方头文件（`windows.h`）抄
+> - P/Invoke 声明集中到独立类（如 `NativeMethods`），配 `internal static class`，便于复用与审查
+> - 能用 .NET 托管 API 就优先用托管 API，P/Invoke 只补 .NET 没有的缺口
+> - 字符串参数统一 `CharSet.Unicode`；结构体加 `[StructLayout(LayoutKind.Sequential)]` 保证内存布局
+> - 调用返回句柄/内存的 API 用 `SafeHandle` 或 `try/finally` 确保释放，杜绝泄漏
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"P/Invoke 基础"实现一个上位机中的小功能模块
+> **Lv.1 照猫画虎**：运行示例，依次点击三个按钮观察原生弹窗、分辨率与运行时长；把 `GetTickCount` 输出改成"天"单位
+> **Lv.2 小试牛刀**：用 `GetSystemMetrics(SM_CXVIRTUALSCREEN)` 读取虚拟屏幕宽度（多屏时使用），在界面上显示"扩展屏总宽"
+> **Lv.3 融会贯通**：P/Invoke `user32.dll` 的 `GetCursorPos` 获取鼠标全局坐标，用 `DispatcherTimer` 每秒刷新显示，并对比 `Mouse.GetPosition` 的差异
+> **Lv.4 拆层挑战**：把全部 P/Invoke 声明收敛到 `NativeMethods` 静态类，封装 `ScreenInfo`（分辨率、DPI、显示器数量）与 `Uptime` 属性，供 ViewModel 绑定，验证互操作代码与 UI 解耦
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"P/Invoke 基础"
-> - → 后续必学：掌握"P/Invoke 基础"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：「第 4 章·button-按钮」「button-按钮」（示例宿主控件）、「第 8 章·Dispatcher」「dispatcher」相关文章（系统信息定时刷新）
+> - → 后续必学：`常用-win32-api-封装`（句柄封装与常用 API 集合）、`per-monitor-dpi-awareness`（DPI 相关 Win32 调用）
+> - ⇄ 关联概念：`dpi-感知模式设置`（`SetProcessDpiAwareness` 同为 P/Invoke）、`多屏适配拼接屏场景`（`GetSystemMetrics` 多屏扩展）
+> - 📖 官方文档：[P/Invoke 平台调用](https://learn.microsoft.com/zh-cn/dotnet/standard/native-interop/pinvoke)、[DllImportAttribute 类](https://learn.microsoft.com/zh-cn/dotnet/api/system.runtime.interopservices.dllimportattribute)、[Win32 API 索引（Microsoft Learn）](https://learn.microsoft.com/zh-cn/windows/win32/api/)

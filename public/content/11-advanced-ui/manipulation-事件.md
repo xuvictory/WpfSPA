@@ -7,22 +7,21 @@ parent: 11.10 触控与手势
 # Manipulation 事件
 
 > [!plain] 白话理解
-> "Manipulation 事件"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"Manipulation 事件"是一个重要的知识点。当你掌握了基础控件，高级 UI 开发能让你的上位机从"能用"变成"好用"再变成"出彩"。掌握了它，你就能更好地构建工业级上位机应用程序。
+> Manipulation 事件是 WPF 给多点触控配备的"**手势翻译官**"：你用手指在屏幕上拖、捏、转，系统把一堆底层触摸点（`Touch`）收进去，翻译成统一的手势增量——平移了多少、缩放了几倍、转了几度，再通过事件告诉你。如果不用它，你得自己跟踪每根手指的坐标去算手势，就像用手工记账代替收银机。对上位机来说，越来越多工位用触摸一体机代替鼠标键盘（车间环境防水防尘、戴手套也点得动），示例用 `IsManipulationEnabled="True"` 开启手势，订阅 `ManipulationStarting/Delta/Completed` 三个事件，用 `TranslateTransform` 让"1# 泵"设备方块跟着手指走，还顺手做了边界约束防止拖出触控区。
 
 > [!def] 官方定义
-> Manipulation 事件是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> Manipulation 事件是 `UIElement` 上为处理多点触控手势定义的一组路由事件，前提是先设置 `IsManipulationEnabled="True"`。事件序列为：`ManipulationStarting`（手势开始，设置 `e.ManipulationContainer` 定义坐标容器）→ `ManipulationStarted` → `ManipulationDelta`（手势进行中，多次触发，`e.DeltaManipulation` 携带本次增量，`e.CumulativeManipulation` 携带累计值）→ `ManipulationInertiaStarting`（惯性阶段）→ `ManipulationCompleted`（结束）。`ManipulationDeltaEventArgs.DeltaManipulation` 为 `ManipulationDelta` 结构，含 `Translation`（Vector，平移）、`Scale`（Vector，缩放）、`Rotation`（double，旋转角度）、`Expansion`（Vector，缩放像素量）。各事件参数类型见 [ManipulationDeltaEventArgs](https://learn.microsoft.com/zh-cn/dotnet/api/system.windows.input.manipulationdeltaeventargs)（注意：官方 API 拼写为 Manipulation）。详见官方文档：[UIElement.ManipulationStarting](https://learn.microsoft.com/zh-cn/dotnet/api/system.windows.uielement.manipulationstarting)、[Manipulation 概述](https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/advanced/manipulation-overview)。
 
 > [!origin] 由来背景
-> Manipulation 事件的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：当你掌握了基础控件，高级 UI 开发能让你的上位机从"能用"变成"好用"再变成"出彩"。
+> Windows 7 是首个系统级支持多点触控的桌面 Windows：驱动层提供 `WM_TOUCH`（原始触点）与 `WM_GESTURE`（系统预置手势）两类消息，前者信息全但计算量大、后者省事但只支持微软预置的平移/缩放/旋转，自定义性差。WPF 4（2010 年）在两者之上设计了 Manipulation 管线：把所有触点合成一个"流"，逐步累加平移/缩放/旋转增量，还内置惯性引擎（`ManipulationInertiaStarting`，松手后按初速度继续滑动并逐渐减速，源自 Windows Phone 的交互习惯）。对上位机而言，触控从"实验室玩具"变成"车间标配"发生在 Win8/Win10 触屏一体机普及之后——操作员戴手套、双手并用、不能依赖鼠标滚轮，Manipulation 提供的"单指拖、双指捏"正是这类场景的标准交互语言。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"Manipulation 事件"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **前提开关**：目标元素必须设 `IsManipulationEnabled="True"`，否则事件不触发（示例设备方块即开启）
+> - **事件序列**：`ManipulationStarting` → `ManipulationStarted` → `ManipulationDelta`（多次）→ （可选 `ManipulationInertiaStarting`）→ `ManipulationCompleted`
+> - **容器坐标**：`ManipulationStartingEventArgs.ManipulationContainer` 指定手势坐标参照物（示例设为 `this` 窗口），不设置则增量坐标会"漂"
+> - **增量 vs 累计**：`e.DeltaManipulation`（本次增量）用于累加变换；`e.CumulativeManipulation`（手势累计）用于判断总量/阈值
+> - **增量四件套**：`DeltaManipulation.Translation`（平移）、`Scale`（缩放）、`Rotation`（旋转度）、`Expansion`（缩放像素）
+> - **位置记录**：示例用 `TranslateTransform.X/Y` 记录位置——`Canvas.Left/Top` 只在 Canvas 容器生效，Grid/Border 里必须用变换
 
 > [!example] 完整示例
 > **触控面板拖移演示：给方块设置 IsManipulationEnabled，订阅 ManipulationStarting / ManipulationDelta / ManipulationCompleted，用 TranslateTransform 实现手指拖动（注意：Canvas.Left 在非 Canvas 容器中不生效，故用变换实现）：**
@@ -121,37 +120,39 @@ parent: 11.10 触控与手势
 >     }
 > }
 > ```
-> 
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ 车间触摸一体机工位：操作员戴手套直接拖拽设备图标、调整工艺参数滑块（示例场景）
+> ✅ 设备流程图画布：手指拖动设备节点改变布局，比鼠标滚轮+拖拽更直观
+> ✅ 触屏点检 / 巡检程序：勾选、拖动、翻页全用手势，避免鼠标在防水屏上难操作
+> ✅ 演示大屏 / 会议白板：多指手势快速缩放、平移视图
+> ❌ 纯鼠标键盘的办公场景（Manipulation 只在触控输入下触发，鼠标拖动请用普通鼠标事件）
+> ❌ 需要精确到像素的微调操作（手指粗，建议加磁性吸附或步进微调）
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
+> 坑 1：**忘了 `IsManipulationEnabled="True"`，事件一个都不触发** → 现象：手指拖方块毫无反应，但鼠标拖动正常 → 原因：Manipulation 管线默认关闭，未开启则触摸被当作普通鼠标事件 → 解决：在要响应手势的元素（或其容器）上显式设置该属性（示例在 `DeviceBlock` 上）
 > 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 2：**不设置 `ManipulationContainer`，位移量"漂移"** → 现象：方块拖到一半会突然跳一下，或越拖越慢 → 原因：容器默认是手势源自身，增量坐标基准随元素位置变化 → 解决：在 `ManipulationStarting` 里 `e.ManipulationContainer = this;`（示例即此写法），基准固定为窗口
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 3：**用 `Canvas.Left/Top` 记录位置，在 Grid/Border 里不生效** → 现象：拖方块时 `Canvas.Left` 赋值了但视觉不动 → 原因：`Canvas.Left` 是附加属性，只有 Canvas 容器读取它 → 解决：用 `RenderTransform` 的 `TranslateTransform` 记录位置（示例 `BlockMove`），需要边界约束时读取 `ActualWidth/ActualHeight` 计算
+>
+> 坑 4：**手指与按钮点击冲突** → 现象：手势作用区域里的按钮，点击经常没反应或误触发 → 原因：手势与点击事件争抢输入，`Handled` 没设置好 → 解决：手势逻辑后设 `e.Handled = true;`（示例每个事件处理都设置），需要按钮响应的地方改挂手势到父容器而非按钮本身
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - 手势统一从"父容器"接收、把 `ManipulationContainer` 设为窗口或画布，子元素只负责展示，避免多个元素各自开手势互相抢
+> - 位置一律用 `RenderTransform` 记录，配合 `ActualWidth` 做边界约束（示例模式），并处理 `ClipToBounds="True"` 防视觉溢出
+> - 需要惯性时在 `ManipulationInertiaStarting` 里设置 `TranslationBehavior.InitialVelocity` 与 `DesiredDeceleration`（速度用 `e.InitialVelocities.LinearVelocity`）
+> - 触控热区要够大：按钮、拖拽块尺寸建议 ≥ 48×48 DIP（手指点按），并预留误触撤销/复位入口
+> - 手势阈值：`ManipulationStarted` 前可设最小移动距离，防止轻微抖动误触发拖动
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"Manipulation 事件"实现一个上位机中的小功能模块
+> **Lv.1 照猫画虎**：触屏或触控模拟器运行示例，拖动"1# 泵"方块观察跟随与边界约束；把 `IsManipulationEnabled` 改成 False 对比事件失效现象
+> **Lv.2 小试牛刀**：订阅 `ManipulationInertiaStarting`，设置 `TranslationBehavior.InitialVelocity = e.InitialVelocities.LinearVelocity; DesiredDeceleration = 0.002;`，实现松手后滑块惯性滑动
+> **Lv.3 融会贯通**：把示例扩展成"设备列表拖拽排序"：多个设备方块纵向排列，拖动到某位置后交换数据源（结合 `datatemplate-中的事件绑定` 与 `itemcontainerstyle-列表项样式`）
+> **Lv.4 拆层挑战**：封装 `DragCanvas` 用户控件（任意子元素可拖、自动边界、可选惯性、双击复位），把拖拽能力沉淀成可复用组件，并在 MVVM 中通过附加行为接入 ViewModel
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"Manipulation 事件"
-> - → 后续必学：掌握"Manipulation 事件"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：`datatemplate-中的事件绑定`（触控手势作用在数据模板内元素）、`自定义路由事件`（Manipulation 事件本质是路由事件）
+> - → 后续必学：`触控旋转缩放平移`（在 Manipulation 基础上叠加双指缩放/旋转）
+> - ⇄ 关联概念：`itemcontainerstyle-列表项样式`（拖拽排序的视觉反馈）、`p-invoke-基础`（底层 `WM_TOUCH`/`WM_GESTURE`）
+> - 📖 官方文档：[Manipulation 概述](https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/advanced/manipulation-overview)、[UIElement.ManipulationDelta](https://learn.microsoft.com/zh-cn/dotnet/api/system.windows.uielement.manipulationdelta)、[ManipulationDeltaEventArgs](https://learn.microsoft.com/zh-cn/dotnet/api/system.windows.input.manipulationdeltaeventargs)

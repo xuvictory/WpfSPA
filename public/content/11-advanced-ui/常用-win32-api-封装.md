@@ -7,22 +7,21 @@ parent: 11.6 WPF 与 Windows API 交互
 # 常用 Win32 API 封装
 
 > [!plain] 白话理解
-> "常用 Win32 API 封装"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"常用 Win32 API 封装"是一个重要的知识点。当你掌握了基础控件，高级 UI 开发能让你的上位机从"能用"变成"好用"再变成"出彩"。掌握了它，你就能更好地构建工业级上位机应用程序。
+> 上一节学会了"请翻译官"，但如果每个按钮都当场写 `[DllImport]`，代码会散得到处都是、签名抄错风险也高。**封装**就是把所有翻译官集中到一个办公室（`NativeMethods` 静态类），对外只提供"说人话"的方法：`SetTopmost(handle, true)`、`GetForegroundTitle()`、`GetMonitorCount()`——业务代码不用再碰裸 Win32。示例里按钮点一下，`MainWindow` 只调这三个友好方法，具体 `SetWindowPos`/`GetWindowText` 的细节全在封装类里。这就是"接口清晰、实现收敛"。
 
 > [!def] 官方定义
-> 常用 Win32 API 封装是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> Win32 API 封装指把底层 `DllImport` 声明与调用逻辑收敛到独立的托管类（惯例命名 `NativeMethods`/`SafeNativeMethods`/`UnsafeNativeMethods`，微软代码分析建议按"是否处理不可信输入"选用前两者），向业务层暴露强类型、语义化方法。封装内容包括：DLL 函数签名、常量（`HWND_TOPMOST` 等）、结构体布局（`[StructLayout]`）、句柄获取与释放（`SafeHandle`/`WindowInteropHelper`）。这样上层代码不依赖平台细节，便于复用与单元测试。详见官方文档：[SafeNativeMethods 命名约定](https://learn.microsoft.com/zh-cn/dotnet/fundamentals/code-analysis/quality-rules/ca1400)相关规范、[WindowInteropHelper 类](https://learn.microsoft.com/zh-cn/dotnet/api/system.windows.interop.windowinterophelper)。
 
 > [!origin] 由来背景
-> 常用 Win32 API 封装的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：当你掌握了基础控件，高级 UI 开发能让你的上位机从"能用"变成"好用"再变成"出彩"。
+> .NET Framework 1.0（2002 年）提供 P/Invoke 后，社区很快发现"裸用 Win32"的问题：签名抄自不同资料容易出错、常量散落、句柄泄漏难追踪。微软在 .NET Framework 2.0（2005 年）起通过 FxCop/代码分析规则（CA1400 系列）引导开发者把平台调用收敛进 `NativeMethods` 类，并区分 `SafeNativeMethods`（不处理不可信输入）与 `UnsafeNativeMethods`（可能暴露指针）。这一约定沿用至今，成为 .NET 项目的标准实践。WPF 上位机项目里，置顶窗口、读前台窗口、查询显示器数量这些高频需求，都靠这种"集中封装 + 友好方法"的方式管理。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"常用 Win32 API 封装"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **集中声明**：全部 `[DllImport]`、常量、结构体放在 `internal static class NativeMethods`，业务层只调公开方法
+> - **友好方法命名**：`SetTopmost(IntPtr, bool)`/`GetForegroundTitle()`/`GetMonitorCount()`，用业务语义命名而非 Win32 原名
+> - **句柄来源**：WPF 用 `new WindowInteropHelper(this).Handle` 取窗口句柄（示例 `OnToggleTopmost`）
+> - **常量内聚**：`HWND_TOPMOST = new IntPtr(-1)`、`SWP_NOMOVE` 等与函数声明放一起，不散落
+> - **返回值规整**：字符串用 `StringBuilder` 接（示例 `GetForegroundTitle`），指针统一 `IntPtr`
+> - **可测试性**：业务代码只依赖封装方法，便于注入与单元测试；封装内部再考虑平台守卫
 
 > [!example] 完整示例
 > **常用 Win32 API 封装演示：把 P/Invoke 声明收敛到一个 NativeMethods 静态类，对外提供 置顶窗口、获取前台窗口标题、读取屏幕数量 等强类型方法，业务代码只跟友好 API 打交道：**
@@ -141,34 +140,35 @@ parent: 11.6 WPF 与 Windows API 交互
 > 
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ 上位机需要置顶显示关键告警窗口（示例 `SetTopmost` 场景）
+> ✅ 监控/操作站需要读取前台窗口标题（识别操作员当前在哪个窗口操作）
+> ✅ 多屏拼接屏上位机查询显示器数量、布局参数（示例 `GetMonitorCount`）
+> ✅ 多个功能都要 Win32 支撑时统一封装，一处实现多处复用
+> ❌ 只有一个 P/Invoke 的微型项目（先保持简单，别过早抽象）
+> ❌ 跨平台项目（封装层内部也要 `OperatingSystem.IsWindows()` 分支或由平台抽象替代）
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
+> 坑 1：**`SetWindowPos` 后窗口位置被顶飞** → 现象：置顶后窗口跳动或位置异常 → 原因：没带 `SWP_NOMOVE|SWP_NOSIZE` 标志，`x/y/cx/cy` 传 0 被当成真实移动 → 解决：示例中置顶调用传 `SWP_NOMOVE | SWP_NOSIZE`，只改 Z 序不动位置
 > 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 2：**`GetWindowText` 返回乱码/截断** → 现象：中文标题读出乱码 → 原因：`CharSet` 没指定 Unicode，或 `StringBuilder` 容量太小 → 解决：声明加 `CharSet.Unicode`，`StringBuilder` 容量给足（示例 256），返回字符数用于校验
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 3：**封装类方法到处可改造成"隐形耦合"** → 现象：`NativeMethods` 越写越大、谁也说不清哪些 API 在用 → 原因：把整个 `user32` 都抄进来 → 解决：只封装当前业务用到的 API，按模块拆分（`WindowNativeMethods`/`MonitorNativeMethods`），并配注释标明调用方
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - 封装方法用业务语义命名（`SetTopmost`/`GetMonitorCount`），底层 Win32 名留在 `[DllImport]` 声明处
+> - 常量与函数放同一封装类，紧邻声明，避免"魔法数字"散落业务代码
+> - 涉及句柄的封装返回 `IntPtr` 或封装成 `SafeHandle`，调用方用 `WindowInteropHelper` 获取后传入
+> - 同类 API 按领域拆封装类（窗口/显示器/文件/网络），每个类单一职责
+> - 给封装方法加 XML 注释（平台要求、返回语义、调用示例），这层代码是团队复用的公共资产
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"常用 Win32 API 封装"实现一个上位机中的小功能模块
+> **Lv.1 照猫画虎**：运行示例，点"置顶"后打开记事本对比 Z 序变化；点"读取前台窗口标题"观察结果与当前活动窗口一致
+> **Lv.2 小试牛刀**：给 `NativeMethods` 增加 `GetScreenResolution()`（`GetSystemMetrics(SM_CXSCREEN/CYSCREEN)`）与 `IsWindowVisible(IntPtr)` 两个封装并接入按钮
+> **Lv.3 融会贯通**：用 `DispatcherTimer` 每秒读取前台窗口标题并显示"操作员当前在操作 XX 窗口"，验证封装后的 Win32 调用适合高频轮询
+> **Lv.4 拆层挑战**：把 `NativeMethods` 拆成 `WindowNativeMethods` 与 `MonitorNativeMethods`，并写单元测试验证 `GetMonitorCount()` 在多屏/单屏环境下返回正确值
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"常用 Win32 API 封装"
-> - → 后续必学：掌握"常用 Win32 API 封装"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：`p-invoke-基础`（`DllImport`/`CharSet`/封送基础）
+> - → 后续必学：`dpi-感知模式设置`（DPI 相关 Win32 调用同样走封装）、`多屏适配拼接屏场景`（显示器数量/分辨率的实际应用）
+> - ⇄ 关联概念：`焦点管理`（前台窗口与键盘焦点关系）、`动态切换主题`（置顶窗口与主题弹出层共存）
+> - 📖 官方文档：[WindowInteropHelper 类](https://learn.microsoft.com/zh-cn/dotnet/api/system.windows.interop.windowinterophelper)、[SetWindowPos（Microsoft Learn）](https://learn.microsoft.com/zh-cn/windows/win32/api/winuser/nf-winuser-setwindowpos)、[GetSystemMetrics（Microsoft Learn）](https://learn.microsoft.com/zh-cn/windows/win32/api/winuser/nf-winuser-getsystemmetrics)

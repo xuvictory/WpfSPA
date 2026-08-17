@@ -7,22 +7,21 @@ parent: 11.7 第三方 UI 控件库
 # ModernWPF
 
 > [!plain] 白话理解
-> "ModernWPF"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"ModernWPF"是一个重要的知识点。当你掌握了基础控件，高级 UI 开发能让你的上位机从"能用"变成"好用"再变成"出彩"。掌握了它，你就能更好地构建工业级上位机应用程序。
+> WPF 原生控件是"功能齐全但长相朴素"的标准件。ModernWPF 相当于给这批标准件**重新开了一套磨具**：合并它的主题资源字典后，所有原生控件（按钮、输入框、下拉框、开关）不用改一行代码，自动换上 Windows 10/11 的 WinUI/Flutter 风格外观——圆角、亚克力、动效全都有。示例里只是普通的 `TextBox`/`ComboBox`/`ToggleButton`，但合并 `Theme/Dark.xaml` + `Theme/Controls.xaml` 后，整个界面瞬间变成现代 Windows 应用的样子，这就是"隐式样式接管全局"的威力。
 
 > [!def] 官方定义
-> ModernWPF是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> **ModernWPF** 是开源 WPF 控件库（GitHub: Kinnara/ModernWpf，NuGet 包 `ModernWpf`），目标是让 WPF 应用获得 Windows 10/11 的 Fluent Design / WinUI 风格外观。它通过提供整套 `ControlTemplate` 隐式样式（`Theme/Dark.xaml`、`Theme/Light.xaml`、`Theme/Controls.xaml`）替换原生控件默认外观，并支持在 `App.xaml` 合并资源后自动生效。还提供亚克力背景（`BackdropMaterial`）、波纹效果（`Ripple`）、`ModernWindow` 等扩展。详见官方仓库：https://github.com/Kinnara/ModernWpf 。
 
 > [!origin] 由来背景
-> ModernWPF的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：当你掌握了基础控件，高级 UI 开发能让你的上位机从"能用"变成"好用"再变成"出彩"。
+> WPF（2006 年随 .NET Framework 3.0 发布）的默认控件外观停留在"经典灰"时代，十几年未变，与 Windows 10/11 的 Fluent Design（2017 年起微软推行）格格不入。社区因此出现多个"给 WPF 换现代皮"的库：**ModernWpf** 是其中影响力较大的一个，由韩国开发者 Kinnara 维护，目标是尽可能忠实地复刻 WinUI 2 的视觉与交互（圆角卡片、亚克力材质、按压动效），同时**不引入新控件类型**——开发者继续用原生控件名，合并主题后外观自动升级。它靠"隐式样式覆盖"机制实现零侵入改造，也是理解"WPF 主题化"这一理念的绝佳案例。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"ModernWPF"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **安装**：NuGet 安装 `ModernWpf`（示例注释已给出 `Install-Package ModernWpf`）
+> - **资源合并**：`App.xaml` 的 `MergedDictionaries` 合并 `Theme/Dark.xaml`（或 `Theme/Light.xaml`）+ `Theme/Controls.xaml`
+> - **零侵入生效**：合并后原生控件自动应用隐式样式，无需给单个控件改 `Style`
+> - **深色/浅色**：`Dark.xaml` 与 `Light.xaml` 两套主题任选其一，切换方式与其他主题库一致（换资源字典）
+> - **扩展能力**：`ModernWindow`（带标题栏的现代窗口）、`BackdropMaterial`（亚克力背景）、`Ripple`（点击波纹）
+> - **命名空间**：扩展控件与特性使用 `xmlns:ui="http://schemas.modernwpf.com/2019"`
 
 > [!example] 完整示例
 > **ModernWPF 风格化上位机演示：NuGet 安装 ModernWpf 后，App.xaml 合并其主题资源，控件自动获得 WinUI 风格的深色外观，无需逐个改样式：**
@@ -116,34 +115,35 @@ parent: 11.7 第三方 UI 控件库
 > 
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ 想快速获得 Windows 10/11 现代外观的上位机（合并主题即完成整体换装）
+> ✅ 对 WinUI/Fluent 风格有偏好的监控界面（圆角、亚克力、简洁）
+> ✅ 不想引入"新控件类型"、只想换皮的项目（继续写原生控件名）
+> ✅ 新项目的起点皮肤：ModernWpf 提供干净的基础再叠加业务配色
+> ❌ 需要工业感强、按钮密集的传统工控界面（Modern 风格偏"消费级"，信息密度低）
+> ❌ 需要与其他全局主题库混用的项目（多个库的隐式样式会互相覆盖）
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
+> 坑 1：**合并资源后部分控件没变** → 现象：按钮是新的，但 `TextBox` 还是老的 → 原因：`Controls.xaml` 没合并，或该控件显式写了 `Style` 覆盖了隐式样式 → 解决：`Dark.xaml` 与 `Controls.xaml` 必须成对合并；显式 `Style` 的地方用 `BasedOn` 继承库默认样式
 > 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 2：**深色/浅色切换不生效** → 现象：换了 `Light.xaml` 但界面还是深色 → 原因：两套主题都合并了，后合并的覆盖先合并的；或窗口背景写死了深色 → 解决：只合并一套主题，窗口背景用库的 `DynamicResource` 主题色
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 3：**与自定义样式库冲突** → 现象：按钮一会儿是自己的样式一会儿是 Modern → 原因：ModernWpf 的隐式样式与自定义隐式样式存在优先级竞争 → 解决：自定义样式统一用 `BasedOn` 基于 Modern 默认样式扩展，或显式指定 `Style` 归属
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - 主题合并放 `App.xaml` 最前，一套深色或浅色二选一，不要同时合并两套
+> - 业务自定义样式用 `BasedOn` 继承 ModernWpf 默认样式，保证视觉体系一致
+> - 需要亚克力/波纹时引入 `ui:` 命名空间按需使用，避免全局开启影响性能
+> - 更新库版本前先看 Changelog，`Theme/` 资源路径偶有调整（升级后回归一遍关键界面）
+> - 混用第三方库时以 ModernWpf 为主样式库，其他库控件显式指定样式（见 `materialdesigninxaml-与-handycontrol-主题定制`）
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"ModernWPF"实现一个上位机中的小功能模块
+> **Lv.1 照猫画虎**：NuGet 安装 `ModernWpf`，按示例合并两套资源运行，对比"合并不合并"的外观差异
+> **Lv.2 小试牛刀**：把 `Theme/Dark.xaml` 换成 `Theme/Light.xaml` 观察浅色外观；给 `ToggleButton` 加一个 `ui:Ripple` 波纹效果
+> **Lv.3 融会贯通**：用 `ModernWindow` 替换普通 `Window`（自定义标题栏），并把窗口背景改为亚克力（`BackdropMaterial`），体验 Fluent 风格
+> **Lv.4 拆层挑战**：实现 ModernWpf 的深/浅主题运行时切换（替换 `MergedDictionaries`），并验证业务自定义样式通过 `BasedOn` 随主题联动
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"ModernWPF"
-> - → 后续必学：掌握"ModernWPF"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：`资源字典组织主题`（ModernWpf 本质是整套资源字典）、「第 5 章·什么是样式」「什么是样式」（隐式样式机制）
+> - → 后续必学：`livecharts2-图表`（与 Modern 风格搭配的图表）、`dynamicresourc`（主题色引用）
+> - ⇄ 关联概念：`动态切换主题`（深/浅主题切换的通用做法）、`materialdesigninxaml-与-handycontrol-主题定制`（同类的其他主题库）
+> - 📖 官方文档：ModernWpf GitHub：https://github.com/Kinnara/ModernWpf ；NuGet：https://www.nuget.org/packages/ModernWpf ；ModernWpf 文档：https://github.com/Kinnara/ModernWpf/wiki

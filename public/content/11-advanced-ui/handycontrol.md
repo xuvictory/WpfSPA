@@ -7,22 +7,21 @@ parent: 11.7 第三方 UI 控件库
 # HandyControl
 
 > [!plain] 白话理解
-> "HandyControl"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"HandyControl"是一个重要的知识点。当你掌握了基础控件，高级 UI 开发能让你的上位机从"能用"变成"好用"再变成"出彩"。掌握了它，你就能更好地构建工业级上位机应用程序。
+> HandyControl 是国内用得最广的 WPF 开源控件库之一，专门给桌面软件（尤其是工控/上位机）提供"**好看又好用**"的现成控件：仪表盘、进度条、标签、步骤条、通知弹层、导航抽屉一应俱全。用它的流程和别的库一样：`App.xaml` 合并 `SkinDefault.xaml`（皮肤）+ `Theme.xaml`（主题），然后窗口里用 `hc:Gauge`、`hc:Tag`、`hc:StepBar` 直接搭。示例的看板就是工控味十足的搭配：仪表盘显示温度、Tag 显示在线状态、步骤条展示启动流程，报警时 `Growl.Warning(...)` 弹出右上角全局消息——操作员一眼就能抓住重点。
 
 > [!def] 官方定义
-> HandyControl是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> **HandyControl** 是国产开源 WPF 控件库（GitHub: HandyOrg/HandyControl，NuGet 包 `HandyControl`），提供 60+ 控件与完整主题皮肤系统。启用方式：在 `App.xaml` 的 `MergedDictionaries` 中合并 `Themes/SkinDefault.xaml` 与 `Themes/Theme.xaml`（缺一不可），XAML 声明 `xmlns:hc="https://handyorg.github.io/handycontrol"`。特色控件包括 `Gauge`（仪表盘）、`ProgressBar`、`Card`、`Growl`（全局消息）、`StepBar`（步骤条）、`Tag`（标签）、`RangeSlider`、`Drawer`（抽屉）等；皮肤切换用 `HandyControl.Themes.SkinManager`（`Default`/`Dark`/`Violet` 等）。官方文档（中文）：https://handyorg.github.io/handycontrol/ 。
 
 > [!origin] 由来背景
-> HandyControl的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：当你掌握了基础控件，高级 UI 开发能让你的上位机从"能用"变成"好用"再变成"出彩"。
+> WPF 原生控件（2006 年随 .NET Framework 3.0 发布）的默认外观"素"，而上位机/桌面软件想要"工控感"（仪表、状态、清晰的信息密度）往往得自己写一堆控件模板。**HandyControl** 由中国开发者（HandyOrg 团队，主创者 NaBian/顾振宇）于 2017 年前后发起，目标正是补上这块短板：把桌面开发里高频使用的控件做精致并打包，同时提供可换肤的主题系统。因其文档为中文、控件贴合国内工控/办公软件习惯（Gauge、Growl、Drawer、StepBar 等），推出后迅速成为国内 WPF 生态最流行的开源控件库之一，广泛用于上位机、MES、数据监控等项目。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"HandyControl"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **安装**：NuGet 安装 `HandyControl`（示例注释已给出 `Install-Package HandyControl`）
+> - **资源装配**：`SkinDefault.xaml` + `Theme.xaml` 成对合并，缺一不可（示例 App.xaml）
+> - **命名空间**：`xmlns:hc="https://handyorg.github.io/handycontrol"`，控件前缀 `hc:`（示例 `hc:Gauge`）
+> - **常用控件**：`Gauge`（仪表盘，`Value`/`MinValue`/`MaxValue`/`Header`）、`ProgressBar`、`Tag`、`StepBar`（`ItemCount`/`SelectedIndex`）、`Growl`（静态方法弹全局消息）、`Card`、`Drawer`
+> - **皮肤切换**：`SkinManager.Current.Skin` 切换 `Default`/`Dark`/`Violet`，`SkinManager.Current.SetSkin(...)` 运行时换肤
+> - **消息通知**：`Growl.Success/Info/Warning/Error("文本")`，右上角弹出，无需额外容器（示例 `Growl.Warning`）
 
 > [!example] 完整示例
 > **HandyControl 工控仪表盘演示：NuGet 安装 HandyControl 后，App.xaml 合并皮肤与主题资源，窗口用 hc: 命名空间的仪表盘（Gauge）、步骤条（StepBar）、标签（Tag）搭建设备监控看板，配合 Growl 全局消息提示：**
@@ -125,34 +124,35 @@ parent: 11.7 第三方 UI 控件库
 > 
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ 上位机监控看板：仪表盘、进度条、状态标签、步骤条（示例场景）
+> ✅ 需要全局消息通知的界面（`Growl` 替代自写弹窗）
+> ✅ 需要抽屉/侧边导航、卡片布局的现代桌面软件
+> ✅ 想要一键换肤（`SkinManager` 深色/浅色/紫罗兰）的成品项目
+> ❌ 需要极轻量包体的小工具（HandyControl 资源较全，包体相对大）
+> ❌ 与其他全局主题库混用时需注意隐式样式冲突（见 `materialdesigninxaml-与-handycontrol-主题定制`）
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
+> 坑 1：**只合并了 `SkinDefault.xaml` 或 `Theme.xaml` 其中一个** → 现象：`hc:` 控件无样式或运行时报资源找不到 → 原因：皮肤（颜色）与主题（控件模板）是两个文件，缺一不可 → 解决：成对合并（示例 App.xaml 两行）
 > 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 2：**`Growl` 没有显示在窗口上** → 现象：调 `Growl.Warning` 没反应或消息出现在别的窗口 → 原因：`Growl` 默认挂在 `Application.MainWindow` 上，或 `App` 没合并资源 → 解决：确认资源已合并；多窗口时用 `Growl` 指定 `Panel` 或确认主窗口存在
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 3：**皮肤切换后部分控件颜色不对** → 现象：`SkinManager` 切了深色，但某控件还是浅色 → 原因：业务代码写死了颜色，或用了 `StaticResource` 引用皮肤画刷 → 解决：界面颜色用库的 `DynamicResource` 主题资源，避免写死（配合 `动态切换主题`）
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - 装配顺序固定：`SkinDefault.xaml` 在前、`Theme.xaml` 在后，App 级合并
+> - 工控界面优先用 `hc:Gauge`/`hc:ProgressBar`/`hc:Tag` 组合，信息密度高且符合操作员习惯
+> - 全局消息统一用 `Growl.Success/Info/Warning/Error`，按严重级别配色，别自写弹窗
+> - 皮肤切换统一走 `SkinManager`，业务代码不直接改颜色；多窗口注意 `Growl` 挂载窗口
+> - 与 Material/Modern 混用时以 Handy 为主样式库，冲突控件显式指定样式归属
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"HandyControl"实现一个上位机中的小功能模块
+> **Lv.1 照猫画虎**：NuGet 安装 `HandyControl`，按示例装配运行；点"模拟收到报警"观察 Gauge 跳变、LoadBar 上升与 Growl 消息
+> **Lv.2 小试牛刀**：给 `StartStep` 加"上一步/下一步"按钮联动 `SelectedIndex`；再用 `hc:Drawer` 做一个参数设置抽屉
+> **Lv.3 融会贯通**：用 `SkinManager.Current.SetSkin(Skin.Dark)` 与 `Skin.Default` 做深/浅皮肤切换按钮，观察全界面联动
+> **Lv.4 拆层挑战**：把看板改造成 MVVM：`TempGauge.Value` 绑定 VM 属性（模拟温度采集），`Growl` 在 VM 通过事件/服务触发，验证第三方控件库融入 MVVM 架构
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"HandyControl"
-> - → 后续必学：掌握"HandyControl"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：`资源字典组织主题`（`SkinDefault`/`Theme` 就是资源字典装配）、「第 5 章·什么是样式」「什么是样式」
+> - → 后续必学：`materialdesigninxaml-与-handycontrol-主题定制`（与 Material 混用时的主题定制）、`livecharts2-图表`（数据可视化图表搭配）
+> - ⇄ 关联概念：`动态切换主题`（`SkinManager` 底层就是换资源字典）、`modernwpf`（同类的另一风格库）
+> - 📖 官方文档：HandyControl GitHub：https://github.com/HandyOrg/HandyControl ；中文文档：https://handyorg.github.io/handycontrol/ ；NuGet：https://www.nuget.org/packages/HandyControl

@@ -7,22 +7,21 @@ parent: 11.3 主题与换肤
 # MaterialDesignInXAML 与 HandyControl 主题定制
 
 > [!plain] 白话理解
-> "MaterialDesignInXAML 与 HandyControl 主题定制"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"MaterialDesignInXAML 与 HandyControl 主题定制"是一个重要的知识点。当你掌握了基础控件，高级 UI 开发能让你的上位机从"能用"变成"好用"再变成"出彩"。掌握了它，你就能更好地构建工业级上位机应用程序。
+> 第三方控件库像**外购的标准件**：不用自己车螺丝、铣齿轮，直接选型装配就行。`MaterialDesignInXAML` 是"谷歌 Material 风格"的一整套标准件——卡片、悬浮按钮、开关，自带光影和圆角；`HandyControl` 是"国产工控风格"的一整套标准件——仪表盘、进度条、呼吸灯、弹层，更贴近工业上位机的操作习惯。两者都能在 `App.xaml` 里合并它们的主题资源字典，然后用 `md:`/`hc:` 前缀直接用它们控件。示例把两家"标准件"装进同一个面板：`md:Card` 放按钮开关，`hc:Gauge` 显示转速，一个开关联动另一个库的仪表——风格混搭，各取所长。
 
 > [!def] 官方定义
-> MaterialDesignInXAML 与 HandyControl 主题定制是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> **MaterialDesignInXAML**：开源 WPF 控件库（GitHub: MaterialDesignInXAML/MaterialDesignInXAML，NuGet 包 `MaterialDesignThemes`），将 Google Material Design 规范实现为 WPF 控件与主题，通过 `pack://` 方式合并 `MaterialDesignTheme.Light/Dark.xaml` 与 `MaterialDesign2.Defaults.xaml` 资源字典启用。**HandyControl**：国产开源 WPF 控件库（GitHub: HandyOrg/HandyControl，NuGet 包 `HandyControl`），提供 Gauge、ProgressBar、Card、Growl、RangeSlider 等工控风格控件，通过合并 `SkinDefault.xaml` + `Theme.xaml` 启用，支持 `hc:Skin` 皮肤机制。两者均基于标准 WPF 资源系统，可共存。详见官方仓库：MaterialDesignInXAML 文档（github.com/MaterialDesignInXAML/MaterialDesignInXAML）、HandyControl 文档（handyorg.github.io/handycontrol）。
 
 > [!origin] 由来背景
-> MaterialDesignInXAML 与 HandyControl 主题定制的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：当你掌握了基础控件，高级 UI 开发能让你的上位机从"能用"变成"好用"再变成"出彩"。
+> WPF 原生控件（2006 年随 .NET Framework 3.0 发布）功能完整但外观朴素、样式老化，而工业上位机需要的是"直观、醒目、耐看"的界面语言。**MaterialDesignInXAML** 2014 年前后诞生，把谷歌的 Material Design（2014 年发布）扁平化、卡片化设计语言移植到 WPF，提供完整主题与动效；**HandyControl** 则由中国开发者团队于 2017 年发起，针对国内工控/桌面项目常见的"仪表、状态、弹层、导航"需求做了大量本土化控件，文档与社区均为中文，是目前国内 WPF 项目中应用最广的开源控件库之一。两者把"主题定制"从"自己写整套资源字典"降级为"合并资源 + 选控件"。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"MaterialDesignInXAML 与 HandyControl 主题定制"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **安装**：NuGet 安装 `MaterialDesignThemes` 与 `HandyControl` 两个包；XAML 声明命名空间 `xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"`、`xmlns:hc="https://handyorg.github.io/handycontrol"`
+> - **资源合并**：`App.xaml` 的 `MergedDictionaries` 依次合并 Material 的 `MaterialDesignTheme.Light/Dark.xaml` + `MaterialDesign2.Defaults.xaml`，以及 Handy 的 `SkinDefault.xaml` + `Theme.xaml`（示例注释有完整 Source 写法）
+> - **主题切换**：Material 用 `PaletteHelper` 切换 `Theme`；HandyControl 用 `SkinManager.Current.Skin` 切换皮肤（`Default`/`Dark`/`Violet` 等）
+> - **特色控件**：Material 提供 `md:Card`/`md:Button`/`md:ToggleButton`/`md:Snackbar`/`md:DialogHost`；Handy 提供 `hc:Gauge`/`hc:ProgressBar`/`hc:Card`/`hc:Growl`/`hc:RangeSlider`
+> - **混用注意**：两库都会接管全局控件默认样式，混用时注意资源合并顺序与样式覆盖；控件默认样式冲突时显式指定 `Style`
+> - **主题色定制**：通过 `PaletteHelper`/`SkinManager` 的 API 读取主题色并替换（对应"主题定制"）
 
 > [!example] 完整示例
 > **第三方库主题定制演示：在同一个窗口同时引入 MaterialDesignInXAML（md: 命名空间）与 HandyControl（hc: 命名空间），合并两者主题资源字典，用各自的特色控件构建上位机监控面板。运行前需通过 NuGet 安装 MaterialDesignThemes 与 HandyControl 两个包：**
@@ -118,34 +117,35 @@ parent: 11.3 主题与换肤
 > 
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ 上位机监控面板想要现代工业风：Material 卡片布局 + Handy 仪表盘/进度条（示例场景）
+> ✅ 需要现成的"漂亮控件"而不想自己写模板：开关、滑块、弹层、消息通知
+> ✅ 快速出效果的原型/产品：合并主题字典后直接获得完整设计语言
+> ✅ 需要皮肤切换的成品项目（HandyControl `SkinManager`、Material `PaletteHelper`）
+> ❌ 对包体积/启动性能极度敏感的项目（第三方库资源字典较庞大，启动有开销）
+> ❌ 需要完全自控外观的定制项目（第三方库默认样式会接管全局，改造成本高）
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
+> 坑 1：**忘了在 `App.xaml` 合并主题资源字典** → 现象：`md:`/`hc:` 控件能编译但运行时报"资源找不到"或控件无样式 → 原因：只装了 NuGet 包，没合并 `MaterialDesignTheme.*.xaml`/`SkinDefault.xaml`/`Theme.xaml` → 解决：按示例注释把四份资源字典加进 `App.xaml` 的 `MergedDictionaries`
 > 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 2：**两库样式互相覆盖** → 现象：某控件的默认样式一会儿是 Material 一会儿是 Handy → 原因：两库都定义全局隐式样式，`MergedDictionaries` 顺序决定谁覆盖谁 → 解决：调整合并顺序，明确"主样式库"；需要混搭的控件显式指定 `Style`
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 3：**库版本与 .NET 版本不匹配** → 现象：编译报版本冲突或 API 不存在 → 原因：`MaterialDesignThemes`/`HandyControl` 各版本要求不同 .NET Framework/.NET 目标框架 → 解决：先查 NuGet 包依赖说明，选择与项目目标框架匹配的版本
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - 一个项目**选一个主库**做全局主题（建议 HandyControl 用于工控风格），另一个库只取个别控件显式使用，减少样式冲突
+> - 主题定制优先用库 API（`SkinManager.Current.Skin`、`PaletteHelper.SetTheme`）而非手改资源字典，升级不破坏
+> - 两库控件混用时给易冲突的控件（Button/TextBox 等基础控件）显式指定 `Style` 归属
+> - 版本锁定：写进 `Directory.Packages.props` 或 lock 文件，团队统一版本避免"我这儿能跑你那儿不行"
+> - 上位机长期运行项目，升级控件库前先跑一遍全界面截图对比，防止默认样式变化影响工控配色
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"MaterialDesignInXAML 与 HandyControl 主题定制"实现一个上位机中的小功能模块
+> **Lv.1 照猫画虎**：NuGet 安装两个包并合并资源字典（示例注释四步），运行示例切换 `MdSwitch` 观察 Gauge 与 LoadBar 联动
+> **Lv.2 小试牛刀**：用 `hc:Growl.SuccessGlobal("采集完成")` 加一个通知；把 `SpeedGauge` 最大值改为 200 并实时刷新一个随机转速值
+> **Lv.3 融会贯通**：用 `SkinManager.Current.Skin` 在深色/浅色皮肤间切换，并用 `PaletteHelper` 修改 Material 主色调为工控蓝，验证两库主题联动
+> **Lv.4 拆层挑战**：把示例改造成 MVVM：`Gauge.Value` 绑定 VM 属性，`MdSwitch` 绑定 `IsAuto` 并触发命令更新转速，验证第三方控件同样遵循绑定/命令体系
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"MaterialDesignInXAML 与 HandyControl 主题定制"
-> - → 后续必学：掌握"MaterialDesignInXAML 与 HandyControl 主题定制"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：`资源字典组织主题`（第三方库的合并机制同根同源）、`动态切换主题`（`SkinManager`/`PaletteHelper` 底层就是换字典）
+> - → 后续必学：`livecharts2-图表`（与 Handy/Material 搭配的图表库）、`extended-wpf-toolkit`（另一类专业控件补充）
+> - ⇄ 关联概念：「第 5 章·什么是样式」「什么是样式」（库默认样式接管全局的机制）、`itemcontainerstyle-列表项样式`（库内列表控件容器定制）
+> - 📖 官方文档：MaterialDesignInXAML：https://github.com/MaterialDesignInXAML/MaterialDesignInXAML ；HandyControl：https://github.com/HandyOrg/HandyControl ；HandyControl 文档：https://handyorg.github.io/handycontrol/ ；NuGet：https://www.nuget.org/packages/MaterialDesignThemes

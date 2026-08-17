@@ -7,22 +7,21 @@ parent: 11.1 自定义控件深度开发
 # 控件重绘（OnRender）
 
 > [!plain] 白话理解
-> "控件重绘（OnRender）"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"控件重绘（OnRender）"是一个重要的知识点。当你掌握了基础控件，高级 UI 开发能让你的上位机从"能用"变成"好用"再变成"出彩"。掌握了它，你就能更好地构建工业级上位机应用程序。
+> 把控件重绘想象成**画图工重新画一块工牌**：`OnRender` 就是"发图纸、领画笔"的时刻，你在这段时间里把要显示的东西一笔一笔画进 `DrawingContext`（一支"即画即录"的画笔，画完直接进入渲染缓存，不能回头擦改）。平时界面上盖了别的窗口、拖动改变大小，系统会自动通知"重画"，不用你操心。但你想让灯从红变绿时，要主动喊一声 `InvalidateVisual()`——相当于"我这块工牌过时了，请重新画"。重绘只在需要时发生（保留模式渲染），所以不能在里面做耗时操作，否则一拖动窗口就卡成幻灯片。
 
 > [!def] 官方定义
-> 控件重绘（OnRender）是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> `OnRender(DrawingContext drawingContext)` 是 `UIElement` 的受保护虚方法，在元素进入渲染管线时由系统调用，开发者通过 `DrawingContext` 指令（`DrawLine`/`DrawRectangle`/`DrawEllipse`/`DrawText`/`DrawImage`/`PushTransform` 等）描述"要画什么"，系统负责把这些指令编译为渲染缓存。调用 `InvalidateVisual()` 可使元素被标记为需重绘，在下一渲染帧触发新的 `OnRender`。注意 `OnRender` 中绘制的内容**不会被命中测试**（点击检测需要 `OnRender` 之外配合 `IsHitTestVisible` 或命中测试覆盖），且不能用 `dc` 之外的方式保存状态。详见官方文档：[UIElement.OnRender](https://learn.microsoft.com/zh-cn/dotnet/api/system.windows.uielement.onrender)、[DrawingContext 类](https://learn.microsoft.com/zh-cn/dotnet/api/system.windows.media.drawingcontext)。
 
 > [!origin] 由来背景
-> 控件重绘（OnRender）的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：当你掌握了基础控件，高级 UI 开发能让你的上位机从"能用"变成"好用"再变成"出彩"。
+> WPF 的渲染模型继承自 WinFX 时代为高 DPI、GPU 加速而设计的**保留模式渲染**（Retained Mode）架构：2003 年微软在 Longhorn 演示（Avalon 前身）中首次展示"矢量化的声明式 UI"，其核心思想是把"绘制命令"保留为渲染树而非像 GDI 那样立即绘入像素。2006 年 WPF 随 .NET Framework 3.0 发布后，`OnRender` 成为自定义绘制的标准入口：系统只在布局或属性变化使视觉无效时重绘，`DrawingContext` 收集的命令会被 `MIL`（Media Integration Layer）硬件加速合成。相比 WinForms 的 `OnPaint` + GDI+（每次都要完整重画、易闪烁），WPF 让"重绘"变得声明式、增量式且可硬件加速。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"控件重绘（OnRender）"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **`OnRender` 只描述不执行**：`DrawingContext` 收集指令，实际绘制由系统合成，不能在其中取现成结果或保存中间状态
+> - **主动重绘用 `InvalidateVisual()`**：属性变化时调用，系统在下一帧重新调用 `OnRender`；连续多次调用自动合并为一帧
+> - **`DrawingContext` 核心 API**：`DrawLine`/`DrawRectangle`/`DrawEllipse`/`DrawGeometry`/`DrawText`/`DrawImage`，`PushClip`/`PushTransform` 成对使用后要 `Pop()`
+> - **画刷与画笔应冻结**：`brush.Freeze()` 后在渲染线程共享，避免每次 `OnRender` 新建对象造成 GC 压力
+> - **命中测试**：`OnRender` 画出的内容默认不响应鼠标，需要配合 `HitTestCore` 重写或把元素当可点击区域处理
+> - **与 `FrameworkElement` 的关系**：需要自绘的轻量元素直接继承 `FrameworkElement` 重写 `OnRender` 即可，无需 `Control` 模板
 
 > [!example] 完整示例
 > **实时温度曲线演示：自定义 TrendChart 控件重写 OnRender，用 DrawingContext 绘制网格与折线，点击按钮追加数据点并调用 InvalidateVisual 触发重绘：**
@@ -134,34 +133,34 @@ parent: 11.1 自定义控件深度开发
 > 
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ 上位机自绘仪表：环形进度、温度计、液位、转速表盘（矢量绘制 + `InvalidateVisual` 实时刷新）
+> ✅ 轻量自绘元素：指示灯、分隔线、信号波形、网格刻度（无需模板，直接继承 `FrameworkElement`）
+> ✅ 需要把数据实时映射为图形的场景：采集曲线、报警闪烁点、总线拓扑图
+> ❌ 内容主要是"组合标准控件"的场景（用 `Control` + 模板更合适，可换肤、可绑定）
+> ❌ 需要复杂交互、键盘导航、无障碍支持的自定义控件（`OnRender` 只管画，交互能力有限）
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
+> 坑 1：**在 `OnRender` 里做耗时计算** → 现象：拖动窗口、切页时界面卡顿 → 原因：`OnRender` 在渲染线程每帧执行，繁重逻辑阻塞渲染 → 解决：把计算缓存到字段，`OnRender` 只做绘制指令；`DrawingContext` 对象用完释放
 > 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 2：**每次重绘都 new 画笔/画刷** → 现象：内存与 GC 压力大、长时间运行卡顿 → 原因：`OnRender` 高频执行，未冻结的对象无法跨线程共享还被反复创建 → 解决：静态只读画刷并在首次 `Freeze()`，或缓存于字段
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 3：**只改属性忘记 `InvalidateVisual`** → 现象：数据变了但界面不刷新 → 原因：普通 CLR 属性变化不通知渲染系统 → 解决：依赖属性元数据加 `FrameworkPropertyMetadataOptions.AffectsRender`，系统自动在值变化时触发重绘
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - 数据刷新用依赖属性 + `AffectsRender` 元数据，让系统在值变化时自动重绘，避免手动到处调 `InvalidateVisual`
+> - 画刷、画笔、几何对象尽量 `Freeze()` 并复用；频繁变化的文字用 `FormattedText` 缓存
+> - 先按 `ActualWidth`/`ActualHeight` 计算布局，支持控件尺寸变化自动适配（拖动窗口不失真）
+> - 复杂图形优先用 `StreamGeometry`/`PathGeometry` 而非逐像素绘制，交给 GPU 合成
+> - `OnRender` 抛异常会中断渲染，绘制前对 `Value`/`Max` 做范围钳制（示例里 `Math.Max/Min`）
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"控件重绘（OnRender）"实现一个上位机中的小功能模块
+> **Lv.1 照猫画虎**：运行示例，点击"追加一个数据点"观察曲线增长、点"清空曲线"观察归零；连续追加 60 个点后看是否自动滚动
+> **Lv.2 小试牛刀**：在 `TrendChart.OnRender` 中增加一条 80℃ 的虚线"上限警示线"（`DashStyle` 画刷），并给网格加 20%/40%/60%/80% 刻度文字
+> **Lv.3 融会贯通**：用 `DispatcherTimer` 每 500ms 自动调用 `AddPoint()` 模拟实时采集，并给曲线增加第二通道（红色）表示另一台设备温度
+> **Lv.4 拆层挑战**：把曲线数据源抽成 `INotifyPropertyChanged` 的 ViewModel，`TrendChart` 只订阅数据集合变化，通过依赖属性绑定注入，验证"数据层与绘制层"解耦
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"控件重绘（OnRender）"
-> - → 后续必学：掌握"控件重绘（OnRender）"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：「第 5 章·什么是依赖属性」「什么是依赖属性」（`AffectsRender` 元数据）、`控件生命周期`（`OnRender` 在布局后由系统调用）
+> - → 后续必学：`焦点管理`（自绘元素的键盘/鼠标命中测试）、`per-monitor-dpi-awareness`（`OnRender` 中 DIP 与物理像素的换算）
+> - ⇄ 关联概念：「第 5 章·控件模板」「控件模板-controltemplate」（模板 vs 自绘两种表现方式）、`customcontrol-自定义控件`（选择 `Control` 模板还是 `FrameworkElement` 自绘）
+> - 📖 官方文档：[UIElement.OnRender](https://learn.microsoft.com/zh-cn/dotnet/api/system.windows.uielement.onrender)、[DrawingContext 类](https://learn.microsoft.com/zh-cn/dotnet/api/system.windows.media.drawingcontext)、[UIElement.InvalidateVisual](https://learn.microsoft.com/zh-cn/dotnet/api/system.windows.uielement.invalidatevisual)

@@ -7,22 +7,21 @@ parent: 11.7 第三方 UI 控件库
 # MaterialDesignInXAML
 
 > [!plain] 白话理解
-> "MaterialDesignInXAML"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"MaterialDesignInXAML"是一个重要的知识点。当你掌握了基础控件，高级 UI 开发能让你的上位机从"能用"变成"好用"再变成"出彩"。掌握了它，你就能更好地构建工业级上位机应用程序。
+> MaterialDesignInXAML 是把**谷歌 Material Design 设计语言搬进 WPF** 的控件库：卡片式面板、悬浮按钮、波纹点击、浮动标签输入框、对话框、通知条，全是 Material 风格"即插即用"的现成件。装配方式两步：`App.xaml` 里放一个 `BundledTheme`（选深色/浅色 + 主色/辅色），再合并 `MaterialDesign2.Defaults.xaml`（给所有控件装默认样式）；然后窗口里用 `md:Card`、`md:Button` 等直接搭界面。示例右侧的浮动标签输入框（`HintAssist.Hint`）就是 Material 的招牌交互——输入框里始终显示"温度上限"提示，聚焦时才让位。
 
 > [!def] 官方定义
-> MaterialDesignInXAML是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> **MaterialDesignInXAML** 是开源 WPF 控件库（GitHub: MaterialDesignInXAML/MaterialDesignInXAML，NuGet 包 `MaterialDesignThemes`），实现 Google Material Design（2014 年发布的设计语言）的 WPF 控件集与主题系统。启用方式：在 `App.xaml` 的 `MergedDictionaries` 中加入 `materialDesign:BundledTheme`（设置 `BaseTheme`、`PrimaryColor`、`SecondaryColor`）并合并 `MaterialDesign2.Defaults.xaml`。提供 `Card`、`FloatingHintTextBox`、`DialogHost`、`Snackbar`、`PaletteHelper`（运行时改主题色）等控件与 API。详见官方仓库：https://github.com/MaterialDesignInXAML/MaterialDesignInXAML 。
 
 > [!origin] 由来背景
-> MaterialDesignInXAML的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：当你掌握了基础控件，高级 UI 开发能让你的上位机从"能用"变成"好用"再变成"出彩"。
+> Google 2014 年发布 Material Design，确立了"纸片层级、阴影、波纹、动效"的设计语言，安卓/iOS/Web 都迅速跟进。WPF 社区也想用这套语言，于是 2014 年前后 MaterialDesignInXAML 项目启动：把 Material 规范逐项实现为 WPF 控件与主题资源（沿用 2006 年 WPF 的资源字典 + `ControlTemplate` 机制）。经过多年迭代，它成为 WPF 世界最流行的 Material 风格库之一，支持 Material Design 2 规范，提供 `BundledTheme` 一条配置完成主题装配。上位机用它做"现代感"界面（卡片化设备面板、悬浮操作按钮、Snackbar 提示）非常顺手，代价是 Material 风格偏消费级、信息密度相对低。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"MaterialDesignInXAML"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **安装**：NuGet 安装 `MaterialDesignThemes`（示例注释已给出）
+> - **主题装配**：`BundledTheme`（`BaseTheme="Dark/Light"` + `PrimaryColor`/`SecondaryColor`）+ `MaterialDesign2.Defaults.xaml`，缺一不可（示例 App.xaml）
+> - **命名空间**：`xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"`，控件前缀 `materialDesign:`（示例 `materialDesign:Card`）
+> - **常用控件**：`Card`（卡片）、`Button`（`MaterialDesignRaisedButton`/`MaterialDesignOutlinedButton` 等按钮样式）、`DialogHost`（对话框）、`Snackbar`（消息条）
+> - **浮动标签**：`materialDesign:HintAssist.Hint` 给输入框加浮动提示（示例）
+> - **运行时换色**：`PaletteHelper` 的 `SetTheme`/`ReplacePrimaryColor` 实现主题色动态调整
 
 > [!example] 完整示例
 > **MaterialDesignInXAML 上位机面板演示：NuGet 安装 MaterialDesignThemes 后，在 App.xaml 合并 BundledTheme 与默认样式，窗口用 md: 命名空间下的卡片、按钮、对话框等控件搭建设备控制面板：**
@@ -133,34 +132,35 @@ parent: 11.7 第三方 UI 控件库
 > 
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ 想要"卡片化 + 现代感"的设备控制面板（示例场景）
+> ✅ 操作界面需要清晰视觉层级：卡片分区、悬浮按钮、浮动标签输入
+> ✅ 需要现成对话框/消息条组件（`DialogHost`/`Snackbar`）快速搭建交互
+> ✅ 品牌色统一：`BundledTheme` 一处配置主色/辅色，全界面跟随
+> ❌ 传统密集工控界面（Material 风格留白多、信息密度低，不适合大量表格仪表）
+> ❌ 对启动体积/渲染性能敏感的低配工控机（主题资源较庞大）
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
+> 坑 1：**只加 `BundledTheme` 忘了合并 `Defaults.xaml`** → 现象：`md:` 控件能编译但运行时无样式、或报"找不到资源" → 原因：主题色只是画刷，控件默认样式在 `MaterialDesign2.Defaults.xaml` 里 → 解决：两段资源必须成对合并（示例 App.xaml）
 > 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 2：**`Button` 用了通用样式后无 Material 外观** → 现象：按钮还是原生样子 → 原因：直接 `Style` 覆盖了库的隐式样式，或没引用库按钮样式 → 解决：用库提供的 `MaterialDesignRaisedButton`/`MaterialDesignOutlinedButton` 等命名样式（示例）
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 3：**运行时改主题色不生效** → 现象：`PaletteHelper` 改了主色但界面没变 → 原因：控件里写死颜色或用了 `StaticResource` 引用主题画刷 → 解决：界面颜色统一引用库主题资源（`MaterialDesign.*`），改动后 `PaletteHelper.SetTheme` 全链路刷新
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - 装配顺序固定：`BundledTheme` 在前、`MaterialDesign2.Defaults.xaml` 在后，App 级合并
+> - 界面用库的命名样式（`MaterialDesignRaisedButton` 等）而非裸 `Style`，保持视觉体系一致
+> - 输入控件用 `HintAssist.Hint` 做浮动标签，减少界面上额外的标签文字控件
+> - 主题色统一走 `PaletteHelper` 调整（主色/辅色/深浅），不要在业务代码里直接 new 画刷
+> - 与其他库混用时以 Material 为主样式库，冲突控件显式指定样式（见 `materialdesigninxaml-与-handycontrol-主题定制`）
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"MaterialDesignInXAML"实现一个上位机中的小功能模块
+> **Lv.1 照猫画虎**：NuGet 安装 `MaterialDesignThemes`，按示例装配运行；把 `BaseTheme` 改为 `Light`、`PrimaryColor` 改为 `Teal` 观察整体变化
+> **Lv.2 小试牛刀**：给窗口加一个 `materialDesign:Snackbar`，启动/停止设备时弹出提示条；再用 `DialogHost` 做一个"确认停机"对话框
+> **Lv.3 融会贯通**：用 `PaletteHelper` 实现运行时主色切换（下拉框选色），验证主题色全界面联动（配合 `动态切换主题`）
+> **Lv.4 拆层挑战**：把示例改造成 MVVM：按钮绑定 `RelayCommand`，`StateText` 绑定 VM 状态属性，`HintAssist` 输入框绑定参数属性，验证第三方控件库与命令/绑定的兼容性
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"MaterialDesignInXAML"
-> - → 后续必学：掌握"MaterialDesignInXAML"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：`资源字典组织主题`（`BundledTheme`/`Defaults.xaml` 就是资源字典装配）、「第 5 章·什么是样式」「什么是样式」（库隐式样式机制）
+> - → 后续必学：`materialdesigninxaml-与-handycontrol-主题定制`（Material 与 Handy 混用主题定制）、`livecharts2-图表`（Material 风格图表搭配）
+> - ⇄ 关联概念：`动态切换主题`（主题色运行时切换）、`modernwpf`（同类的另一风格库）
+> - 📖 官方文档：MaterialDesignInXAML GitHub：https://github.com/MaterialDesignInXAML/MaterialDesignInXAML ；NuGet：https://www.nuget.org/packages/MaterialDesignThemes ；官方 Wiki：https://github.com/MaterialDesignInXAML/MaterialDesignInXAML/wiki

@@ -7,22 +7,21 @@ parent: 11.4 多语言与国际化
 # 资源文件（.resx）与动态读取
 
 > [!plain] 白话理解
-> "资源文件（.resx）与动态读取"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"资源文件（.resx）与动态读取"是一个重要的知识点。当你掌握了基础控件，高级 UI 开发能让你的上位机从"能用"变成"好用"再变成"出彩"。掌握了它，你就能更好地构建工业级上位机应用程序。
+> `.resx` 文件就像车间的**标识牌总表**：界面上所有文字——标题、按钮、提示——不直接写在 XAML 里，而是先登记进这张总表（key → 文案），界面只引用 key。好处有两个：一是文案集中管理，改一个词不用翻遍所有窗口；二是给这张表做"英文版/中文版"副本就能整厂换语言。示例里的 `ResourceManager.GetString(key)` 就是"按编号查标识牌"的动作，程序运行时查哪份表、显示哪种语言，完全由 `CultureInfo` 决定。
 
 > [!def] 官方定义
-> 资源文件（.resx）与动态读取是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> `.resx` 是 .NET 的资源文件格式（XML 结构），通过 `ResourceManager`（`System.Resources`）在运行时按 key 读取资源值，支持按 `CultureInfo` 加载不同语言的本地化资源（如 `Strings.zh-CN.resx`、`Strings.en-US.resx`）。编译后资源嵌入程序集（或卫星程序集），`new ResourceManager("命名空间.资源名", assembly)` 创建管理器，`GetString(key)`/`GetString(key, culture)` 动态读取。WPF 中还可通过 `x:Static` 引用强类型资源类，或绑定 `ResourceManager` 实现界面多语言。详见官方文档：[ResourceManager 类](https://learn.microsoft.com/zh-cn/dotnet/api/system.resources.resourcemanager)、[.resx 文件](https://learn.microsoft.com/zh-cn/dotnet/fundamentals/resources/).
 
 > [!origin] 由来背景
-> 资源文件（.resx）与动态读取的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：当你掌握了基础控件，高级 UI 开发能让你的上位机从"能用"变成"好用"再变成"出彩"。
+> 资源文件的思路可以追溯到 Win32 时代的 `.rc` 资源脚本（1990 年代）：可执行文件里集中存放字符串、图标、对话框，按资源 ID 读取。.NET Framework 1.0（2002 年）延续并升级了这一设计，用 XML 格式的 `.resx` 管理资源，编译器（`ResGen`）把 `.resx` 编译为二进制 `.resources` 嵌入程序集，并支持按语言生成**卫星程序集**（`xx-YY` 子目录）实现多语言分发。WPF（2006 年）的 XAML 资源与 .NET 资源是两套体系：XAML 资源管界面对象（画刷/样式），`.resx` 管本地化文本与嵌入文件。示例正是用后者做"运行时按 key 动态读取"。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"资源文件（.resx）与动态读取"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **创建资源**：项目里新增 `Resources/Strings.resx`，逐条添加 Name（key）与 Value（文案）；对应语言版 `Strings.zh-CN.resx`/`Strings.en-US.resx`
+> - **读取管理器**：`new ResourceManager("HmiDemo.Resources.Strings", typeof(MainWindow).Assembly)`，注意名字是"命名空间.资源文件名"，不含 `.resx`
+> - **动态读取**：`GetString(key)` 用当前 `CurrentUICulture`；`GetString(key, culture)` 显式指定语言
+> - **回退机制**：找不到指定语言的资源时，`ResourceManager` 自动回退到中性语言（默认 `Strings.resx`），不会崩溃
+> - **强类型资源**：`.resx` 的"访问修饰符"设为 public 后生成 `Strings` 强类型类，可用 `Strings.WindowTitle` 编译期访问
+> - **WPF 绑定**：`x:Static` 引用强类型资源，或自定义绑定源在切换语言后通知界面刷新
 
 > [!example] 完整示例
 > **参数描述资源动态读取演示：资源文件（.resx）集中管理界面文案，用 ResourceManager.GetString 在运行时按 key 动态读取，并支持按资源名称预览全部条目：**
@@ -96,34 +95,35 @@ parent: 11.4 多语言与国际化
 > 
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ 界面文案集中管理：所有窗口标题、按钮文字、提示语收进一个 `.resx`，改词只改一处（示例场景）
+> ✅ 多语言版本：中/英/俄等语言各一份 `.resx`，按 `CultureInfo` 分发，出口设备必备
+> ✅ 界面与代码分离：文案不写死在 XAML/代码里，便于翻译团队独立维护
+> ✅ 运行时切换语言：加载不同的 `.resx` 并刷新界面（配合下一节本地化方案）
+> ❌ 纯技术性短字符串（异常消息、日志格式）放资源文件反而增加跳转成本，直接写代码即可
+> ❌ 界面对象类资源（画刷、样式、模板）应放 XAML 资源字典，`.resx` 不适合管理
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
+> 坑 1：**资源名写错（命名空间/文件名不匹配）** → 现象：构造 `ResourceManager` 时抛 `MissingManifestResourceException` → 原因：字符串"命名空间.资源名"与实际资源位置不一致，或资源未编译嵌入 → 解决：检查 `Properties` 下资源生成的完整名（`typeof(Resources.Strings).FullName`），再拼接前缀
 > 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 2：**`GetString` 返回 null 而不是报错** → 现象：界面显示空白 → 原因：key 不存在时 `ResourceManager` 返回 null 而非抛异常 → 解决：读取后判空或用 `GetResourceSet` 遍历确认 key；强类型访问能编译期兜底
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 3：**切换语言后界面不刷新** → 现象：改了 `CurrentUICulture` 但窗口文字没变 → 原因：XAML 里的静态引用（`x:Static`）在启动时求值一次，不会随语言变化 → 解决：用绑定 + `INotifyPropertyChanged` 资源包装类，切换语言时通知全界面刷新（详见 `wpf-本地化方案`）
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - 资源 key 命名用"业务语义"（`MainTitle`/`DeviceName`）而非序号（`R1`/`R2`），避免翻译与维护混乱
+> - 文案统一走资源文件，连 XAML 里的按钮文字也引用，保证"一处修改、全局生效"
+> - `.resx` 的访问修饰符设为 public 生成强类型类，编译期就能发现 key 拼写错误
+> - 语言切换统一由 `ResourceManager` + `CultureInfo.CurrentUICulture` 驱动，不要在业务代码里 if 语言分支
+> - 界面刷新用绑定 + 资源代理类（`Resx` 包装 `INotifyPropertyChanged`），比手动遍历控件改文字可靠
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"资源文件（.resx）与动态读取"实现一个上位机中的小功能模块
+> **Lv.1 照猫画虎**：项目里新建 `Strings.resx` 填入 `WindowTitle` 等示例 key，运行示例从下拉框逐个读取并核对输出
+> **Lv.2 小试牛刀**：新增 `Strings.en-US.resx`（英文副本），在 `OnReadResource` 里用 `GetString(key, new CultureInfo("en-US"))` 对比中英文输出
+> **Lv.3 融会贯通**：把 `.resx` 访问修饰符设为 public，改用强类型 `Strings.WindowTitle` 读取，并让 `MainWindow.Title` 绑定该值
+> **Lv.4 拆层挑战**：实现"切换语言"完整功能：`ComboBox` 选语言 → 设置 `CurrentUICulture` → 通过资源代理类触发全界面刷新，验证中英文一键切换
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"资源文件（.resx）与动态读取"
-> - → 后续必学：掌握"资源文件（.resx）与动态读取"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：「第 5 章·数据绑定」「什么是数据绑定」（资源值绑定到界面）、「第 4 章·combobox-下拉选择控件」「combobox-下拉选择控件」
+> - → 后续必学：`wpf-本地化方案`（完整的多语言框架与刷新机制）
+> - ⇄ 关联概念：「第 5 章·资源字典」「资源字典」（XAML 资源 vs .resx 资源的边界）、`动态切换主题`（主题换肤与语言切换的界面刷新机制相通）
+> - 📖 官方文档：[ResourceManager 类](https://learn.microsoft.com/zh-cn/dotnet/api/system.resources.resourcemanager)、[.NET 资源](https://learn.microsoft.com/zh-cn/dotnet/fundamentals/resources/)、[打包和部署资源](https://learn.microsoft.com/zh-cn/dotnet/core/extensions/resources)

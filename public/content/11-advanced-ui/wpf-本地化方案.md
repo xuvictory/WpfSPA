@@ -7,22 +7,21 @@ parent: 11.4 多语言与国际化
 # WPF 本地化方案
 
 > [!plain] 白话理解
-> "WPF 本地化方案"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"WPF 本地化方案"是一个重要的知识点。当你掌握了基础控件，高级 UI 开发能让你的上位机从"能用"变成"好用"再变成"出彩"。掌握了它，你就能更好地构建工业级上位机应用程序。
+> 本地化就是给上位机**配多套"方言"**：同一台设备卖到国外，界面要从中文换成英文，但业务逻辑一个字都不用改。做法是上一节说的"标识牌总表"（`.resx`）做多份：`Strings.resx` 存默认中文、`Strings.en-US.resx` 存英文。切换语言时，把当前区域（`CurrentUICulture`）换成"en-US"，资源管理器自动去读英文表，代码里再把界面文字重新刷一遍。示例点"Switch to English"，标题、提示、窗口标题全部变英文——就像给车间换了一套英文标识牌，机器还是那些机器。
 
 > [!def] 官方定义
-> WPF 本地化方案是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> WPF 本地化（Localization）指让应用界面文字、日期格式等按语言/区域（`CultureInfo`）变化的技术。完整方案由三部分组成：**资源层**（`.resx` 按区域分文件 + `ResourceManager` 按 `CurrentUICulture` 选择）、**区域层**（`Thread.CurrentThread.CurrentUICulture` 控制资源语言、`CurrentCulture` 控制数字/日期格式）、**界面层**（切换后重读资源刷新 UI）。微软还提供 `LocBaml` 工具（基于 BAML 的 XAML 本地化），但社区更常用 resx + 强类型资源类方案。详见官方文档：[CultureInfo 类](https://learn.microsoft.com/zh-cn/dotnet/api/system.globalization.cultureinfo)、[桌面应用本地化](https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/advanced/wpf-globalization-and-localization-overview)。
 
 > [!origin] 由来背景
-> WPF 本地化方案的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：当你掌握了基础控件，高级 UI 开发能让你的上位机从"能用"变成"好用"再变成"出彩"。
+> .NET Framework 1.0（2002 年）就内置了完整的本地化设施：`CultureInfo` 定义语言/区域，`.resx` + 卫星程序集（`zh-CN`/`en-US` 子目录下的附属 DLL）实现"一份代码、多语言分发"，`ResourceManager` 负责按当前 UI 文化选择资源。WPF（2006 年）沿用了这套机制，并增加了面向 XAML 的 `BAML` 本地化（`LocBaml`）与 `UICulture` 编译选项。相比 WinForms 的资源内嵌，WPF 的本地化难点在"XAML 里写死的文字"与"运行时动态生成的文字"两类都要覆盖——示例展示了 code-behind 侧最常用的强类型资源 + 切文化 + 刷新 UI 的闭环。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"WPF 本地化方案"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **资源分层**：`Strings.resx`（默认/中文）+ `Strings.zh-CN.resx` + `Strings.en-US.resx`，同 key 不同值
+> - **强类型访问**：`.resx` 访问修饰符设 public 生成 `Resources.Strings` 类，`_strings.MainTitle` 编译期取资源（示例）
+> - **设置文化**：`Thread.CurrentThread.CurrentUICulture`（资源语言）+ `Thread.CurrentThread.CurrentCulture`（数字/日期），示例同时设置两者
+> - **自动选择**：`ResourceManager` 按 `CurrentUICulture` 匹配资源，无对应语言时回退默认资源
+> - **界面刷新**：切换语言后需要手动把资源值赋回各控件（示例 `ApplyLanguage`），或绑定资源代理类实现自动刷新
+> - **启动语言**：构造里先 `ApplyLanguage(默认)`，或从 `Properties.Settings`/系统区域读取初始语言
 
 > [!example] 完整示例
 > **上位机中英文切换演示：通过 CultureInfo + ResourceManager 读取 resx 资源文件实现界面本地化，点击按钮在中文/英文之间动态切换（依赖 System.Resources 资源文件，需先在项目中新建 Strings.resx 与 Strings.en-US.resx）：**
@@ -94,34 +93,35 @@ parent: 11.4 多语言与国际化
 > 
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ 出口设备的上位机：同一程序按客户地区显示中/英/俄界面（示例场景）
+> ✅ 工厂多国籍操作员共用一台设备，界面语言可现场切换
+> ✅ 界面文案与代码分离的规范化项目：翻译由专职人员维护 `.resx`，开发不参与
+> ✅ 与日期/数字格式联动的场景：`CurrentCulture` 影响小数分隔符、日期显示（本地化不只是文字）
+> ❌ 仅内部使用的单语种工具（本地化框架的复杂度大于收益）
+> ❌ 界面文字极少且不会变的演示程序（直接写死即可）
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
+> 坑 1：**只设置 `CurrentCulture` 没设置 `CurrentUICulture`** → 现象：界面语言不变，但日期格式变了 → 原因：资源选择看 `CurrentUICulture`，格式看 `CurrentCulture`，两者职责不同 → 解决：两个都设置（示例 `ApplyLanguage`）
 > 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 2：**强类型资源类没生成** → 现象：`Resources.Strings` 编译不过或属性不存在 → 原因：`.resx` 的"访问修饰符"默认 internal，或没保存生成 → 解决：把 `.resx` 访问修饰符改为 public 后重新生成项目
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 3：**XAML 里写死的文字不跟随语言切换** → 现象：窗口标题等 code-behind 更新了，但 XAML 里的 TextBlock 文字没变 → 原因：XAML 静态文字只在启动时渲染，不会自动换语言 → 解决：XAML 文字也走资源绑定（`x:Static` + 切换后 `UpdateDefaultStyle`/重绑定），或统一由资源代理类驱动刷新
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - 资源 key 用语义名，所有语言版本 key 严格一致；缺词宁可显示 key 名也要保证结构统一（便于发现漏译）
+> - 切换语言统一入口：`SetLanguage(CultureInfo)` 只改文化与刷新，所有按钮/菜单都调它，禁止散落 `if` 分支
+> - 语言选择持久化到 `Properties.Settings`，启动时先恢复用户上次选择
+> - 界面刷新用"资源代理类 + 绑定"方案（`Resx` 实现 `INotifyPropertyChanged`），比逐控件赋值更可靠、更 MVVM
+> - 涉及数字/日期显示的控件，切换语言后同步更新格式（`CurrentCulture`），避免"文字英文、日期中文"的混搭
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"WPF 本地化方案"实现一个上位机中的小功能模块
+> **Lv.1 照猫画虎**：项目新建 `Strings.resx`（`MainTitle`/`MainHint`/`WindowTitle`）与 `Strings.en-US.resx`，运行示例点击两个按钮观察中英文切换
+> **Lv.2 小试牛刀**：新增第三个语言（如俄语 `ru-RU`）与切换按钮，验证"多语言可扩展"；给 `Strings` 加一个 `DeviceStatus` key 并显示
+> **Lv.3 融会贯通**：把 `ApplyLanguage` 改成资源代理类（`Resx` 实现 `INotifyPropertyChanged`），界面用绑定引用资源，验证切换时全界面自动刷新而无需手动赋值
+> **Lv.4 拆层挑战**：把语言选择做成 `Settings` 持久化 + 启动恢复，并让日期/数字格式随语言变化（如英文用 `MM/dd/yyyy`），完成完整本地化工程
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"WPF 本地化方案"
-> - → 后续必学：掌握"WPF 本地化方案"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：`资源文件resx与动态读取`（`ResourceManager` 按 key 读取是本地化的地基）
+> - → 后续必学：`多屏适配拼接屏场景`（多语言 + 多屏的分辨率适配常一起出现在出口项目）、`per-monitor-dpi-awareness`（不同语言字体差异与 DPI 适配）
+> - ⇄ 关联概念：「第 5 章·数据绑定」「什么是数据绑定」（资源代理类绑定方案）、`动态切换主题`（主题与语言切换的界面刷新思路同构）
+> - 📖 官方文档：[CultureInfo 类](https://learn.microsoft.com/zh-cn/dotnet/api/system.globalization.cultureinfo)、[WPF 全球化与本地化](https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/advanced/wpf-globalization-and-localization-overview)、[打包与部署资源](https://learn.microsoft.com/zh-cn/dotnet/core/extensions/resources)
