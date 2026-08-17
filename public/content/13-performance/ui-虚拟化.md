@@ -25,9 +25,99 @@ parent: 13.2 UI 性能优化
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **ListView 大数据虚拟化：10 万条报警记录，开关 VirtualizingStackPanel 对比内存与速度：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="UI 虚拟化" Height="420" Width="620"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15" Background="#161B22" Padding="10">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>         <StackPanel Orientation="Horizontal">
+>             <Button Content="加载 10 万条报警记录" Click="OnLoad" Padding="8"
+>                     Background="#21262D" Foreground="White"/>
+>             <CheckBox x:Name="VirtualCheck" Content="启用 UI 虚拟化" IsChecked="True"
+>                       Checked="OnVirtualChanged" Unchecked="OnVirtualChanged"
+>                       Foreground="#8B949E" Margin="12,0,0,0" VerticalAlignment="Center"/>
+>         </StackPanel>
+>         <ListView x:Name="AlertList" Grid.Row="1" Margin="0,10,0,10"
+>                   ScrollViewer.CanContentScroll="True"
+>                   VirtualizingStackPanel.IsVirtualizing="True"
+>                   VirtualizingStackPanel.VirtualizationMode="Recycling"
+>                   Background="#0D1117" Foreground="#8B949E" BorderBrush="#21262D">
+>             <ListView.View>
+>                 <GridView>
+>                     <GridViewColumn Header="序号" Width="70" DisplayMemberBinding="{Binding Id}"/>
+>                     <GridViewColumn Header="时间" Width="130" DisplayMemberBinding="{Binding Time}"/>
+>                     <GridViewColumn Header="级别" Width="70" DisplayMemberBinding="{Binding Level}"/>
+>                     <GridViewColumn Header="内容" Width="300" DisplayMemberBinding="{Binding Message}"/>
+>                 </GridView>
+>             </ListView.View>
+>         </ListView>
+>         <TextBlock x:Name="StatusText" Grid.Row="2" Foreground="#58A6FF" TextWrapping="Wrap"/>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Collections.Generic;
+> using System.Diagnostics;
+> using System.Linq;
+> using System.Windows;
+> using System.Windows.Controls;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         // 生成 10 万条报警记录，验证虚拟化下滚动依旧流畅
+>         private void OnLoad(object sender, RoutedEventArgs e)
+>         {
+>             var sw = Stopwatch.StartNew();
+>             var alerts = Enumerable.Range(1, 100000).Select(i => new AlertItem
+>             {
+>                 Id = i,
+>                 Time = DateTime.Now.AddSeconds(-i).ToString("HH:mm:ss"),
+>                 Level = i % 5 == 0 ? "故障" : "警告",
+>                 Message = $"设备 D-{i % 50 + 1} 报警，编号 {i}"
+>             }).ToList();
+>             sw.Stop();
+>             AlertList.ItemsSource = alerts;
+>             StatusText.Text = $"生成 100000 条记录耗时 {sw.Elapsed.TotalMilliseconds:F0} ms，" +
+>                               "启用虚拟化后滚动时只实例化可见项，内存与渲染开销极小";
+>         }
+>
+>         // 动态切换虚拟化开关
+>         private void OnVirtualChanged(object sender, RoutedEventArgs e)
+>         {
+>             bool on = VirtualCheck.IsChecked == true;
+>             VirtualizingStackPanel.SetIsVirtualizing(AlertList, on);
+>             VirtualizingStackPanel.SetVirtualizationMode(AlertList, VirtualizationMode.Recycling);
+>             StatusText.Text = on
+>                 ? "已开启 UI 虚拟化：仅可见项被实例化，10 万条数据流畅滚动"
+>                 : "已关闭 UI 虚拟化：将为全部 10 万条记录创建控件，内存剧增、滚动卡顿";
+>         }
+>     }
+>
+>     public class AlertItem
+>     {
+>         public int Id { get; set; }
+>         public string Time { get; set; }
+>         public string Level { get; set; }
+>         public string Message { get; set; }
+>     }
+> }
 > ```
 > 
 

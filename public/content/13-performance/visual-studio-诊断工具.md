@@ -25,9 +25,71 @@ parent: 13.4 性能分析工具
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **诊断观测点演示：CPU 热点制造与进程指标监控，配合 VS 性能探查器使用：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="Visual Studio 诊断工具" Height="360" Width="520"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15" Background="#161B22" Padding="15">
+>         <TextBlock Text="诊断观测点（配合 VS 性能探查器 / 诊断工具使用）"
+>                    Foreground="#58A6FF" FontSize="16" FontWeight="Bold"/>
+>         <TextBlock x:Name="TimeText" Foreground="#58A6FF" FontSize="20" Margin="0,12,0,0"/>
+>         <TextBlock x:Name="ThreadCountText" Foreground="#8B949E" Margin="0,8,0,0"/>
+>         <TextBlock x:Name="CpuText" Foreground="#8B949E" Margin="0,8,0,0"/>
+>         <Button Content="运行高负载计算（制造 CPU 热点）" Click="OnRunLoad" Padding="8" Margin="0,14,0,0"
+>                 Background="#21262D" Foreground="White" HorizontalAlignment="Left"/>
+>         <TextBlock x:Name="LogText" Foreground="#238636" Margin="0,14,0,0" TextWrapping="Wrap"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Diagnostics;
+> using System.Windows;
+> using System.Windows.Threading;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private readonly Stopwatch _sw = Stopwatch.StartNew();
+>         private readonly Random _rnd = new Random(3);
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+>             timer.Tick += (s, e) => OnRefresh();
+>             timer.Start();
+>         }
+>
+>         // 模拟高负载计算：在 VS“性能探查器”中可观察到 CPU 热点
+>         private void OnRunLoad(object sender, RoutedEventArgs e)
+>         {
+>             var sw = Stopwatch.StartNew();
+>             double sum = 0;
+>             for (int i = 0; i < 20_000_000; i++)
+>                 sum += Math.Sqrt(_rnd.NextDouble());
+>             sw.Stop();
+>             LogText.Text = $"完成 2000 万次浮点运算，耗时 {sw.ElapsedMilliseconds} ms（可在 CPU 用量图中定位该热点）";
+>             Debug.WriteLine($"[性能] 2000 万次运算耗时 {sw.ElapsedMilliseconds} ms");
+>         }
+>
+>         // 刷新进程指标，与 VS 诊断工具对照验证
+>         private void OnRefresh()
+>         {
+>             TimeText.Text = $"运行时长：{_sw.Elapsed.TotalSeconds:F0} 秒";
+>             ThreadCountText.Text = $"进程线程数：{Process.GetCurrentProcess().Threads.Count}";
+>             CpuText.Text = $"进程 CPU 时间：{Process.GetCurrentProcess().TotalProcessorTime.TotalSeconds:F2} 秒";
+>         }
+>     }
+> }
 > ```
 > 
 

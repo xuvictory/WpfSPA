@@ -25,9 +25,96 @@ parent: 13.6 调试技巧
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **绑定状态可视化：配合 Live Property Explorer 检查绑定值，热重载即时生效：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="XAML 调试与热重载" Height="360" Width="520"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15" Background="#161B22" Padding="15">
+>         <TextBlock Text="绑定状态可视化（配合实时属性资源管理器检查绑定）"
+>                    Foreground="#58A6FF" FontSize="16" FontWeight="Bold"/>
+>         <StackPanel Margin="0,12,0,0">
+>             <TextBlock Text="设备名称" Foreground="#8B949E"/>
+>             <TextBlock x:Name="NameView" Text="{Binding Name}" Foreground="#58A6FF" FontSize="18"/>
+>         </StackPanel>
+>         <StackPanel Margin="0,10,0,0">
+>             <TextBlock Text="当前转速（每 0.5 秒自动变化）" Foreground="#8B949E"/>
+>             <TextBlock x:Name="SpeedView" Text="{Binding Speed, StringFormat={}{0:F0} RPM}"
+>                        Foreground="#238636" FontSize="22"/>
+>         </StackPanel>
+>         <StackPanel Margin="0,10,0,0">
+>             <TextBlock Text="运行状态" Foreground="#8B949E"/>
+>             <TextBlock x:Name="StatusView" Text="{Binding Status}" Foreground="#58A6FF"/>
+>         </StackPanel>
+>         <TextBlock Foreground="#8B949E" Margin="0,14,0,0" TextWrapping="Wrap"
+>                    Text="在 Visual Studio 中使用“实时可视化树 / 实时属性资源管理器”可查看每个元素的绑定表达式与当前值；修改 XAML 后用热重载可即时看到效果。"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.ComponentModel;
+> using System.Windows;
+> using System.Windows.Threading;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private readonly DeviceModel _model = new DeviceModel
+>         {
+>             Name = "伺服驱动器 1",
+>             Speed = 1500,
+>             Status = "运行中"
+>         };
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             DataContext = _model;
+>             // 模拟转速实时变化，方便观察绑定值更新
+>             var timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
+>             timer.Tick += (s, e) => _model.Speed += 10;
+>             timer.Start();
+>         }
+>     }
+>
+>     public class DeviceModel : INotifyPropertyChanged
+>     {
+>         private string _name;
+>         private double _speed;
+>         private string _status;
+>
+>         public string Name
+>         {
+>             get => _name;
+>             set { _name = value; OnPropertyChanged(nameof(Name)); }
+>         }
+>
+>         public double Speed
+>         {
+>             get => _speed;
+>             set { _speed = value; OnPropertyChanged(nameof(Speed)); }
+>         }
+>
+>         public string Status
+>         {
+>             get => _status;
+>             set { _status = value; OnPropertyChanged(nameof(Status)); }
+>         }
+>
+>         public event PropertyChangedEventHandler PropertyChanged;
+>
+>         private void OnPropertyChanged(string name) =>
+>             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+>     }
+> }
 > ```
 > 
 

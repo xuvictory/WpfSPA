@@ -25,9 +25,130 @@ parent: 13.4 性能分析工具
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **综合性能仪表盘：FPS + 内存 + 视觉树节点 + 控件数一体监控：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="WPF 性能综合仪表盘" Height="420" Width="620"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15" Background="#161B22" Padding="10">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="WPF 性能综合监控仪表盘"
+>                    Foreground="#58A6FF" FontSize="16" FontWeight="Bold"/>
+>         <Grid Grid.Row="1" Margin="0,10,0,0">
+>             <Grid.ColumnDefinitions>
+>                 <ColumnDefinition/>
+>                 <ColumnDefinition/>
+>                 <ColumnDefinition/>
+>                 <ColumnDefinition/>
+>             </Grid.ColumnDefinitions>
+>             <TextBlock x:Name="FpsText" Grid.Column="0" Foreground="#58A6FF" TextWrapping="Wrap"/>
+>             <TextBlock x:Name="MemText" Grid.Column="1" Foreground="#8B949E" TextWrapping="Wrap"/>
+>             <TextBlock x:Name="NodesText" Grid.Column="2" Foreground="#8B949E" TextWrapping="Wrap"/>
+>             <TextBlock x:Name="ControlText" Grid.Column="3" Foreground="#238636" TextWrapping="Wrap"/>
+>         </Grid>
+>         <ScrollViewer Grid.Row="2" Margin="0,10,0,10" VerticalScrollBarVisibility="Auto">
+>             <WrapPanel x:Name="WrapPanel"/>
+>         </ScrollViewer>
+>         <StackPanel Grid.Row="3" Orientation="Horizontal">
+>             <Button Content="添加一个控件" Click="OnAddControls" Padding="8"
+>                     Background="#21262D" Foreground="White"/>
+>             <Button x:Name="EffectBtn" Content="添加阴影特效" Click="OnToggleEffect"
+>                     Padding="8" Margin="8,0,0,0" Background="#21262D" Foreground="White"/>
+>         </StackPanel>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Diagnostics;
+> using System.Windows;
+> using System.Windows.Controls;
+> using System.Windows.Media;
+> using System.Windows.Media.Effects;
+> using System.Windows.Threading;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private int _frames;
+>         private readonly Stopwatch _watch = Stopwatch.StartNew();
+>         private int _createdCount;
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             // 每秒刷新一次仪表盘
+>             var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+>             timer.Tick += (s, e) => RefreshPanel();
+>             timer.Start();
+>             // 渲染线程帧率统计
+>             CompositionTarget.Rendering += (s, e) => _frames++;
+>             RefreshPanel();
+>         }
+>
+>         private void RefreshPanel()
+>         {
+>             double fps = _frames / _watch.Elapsed.TotalSeconds;
+>             _frames = 0;
+>             _watch.Restart();
+>
+>             FpsText.Text = $"帧率：{fps:F1} FPS";
+>             MemText.Text = $"托管内存：{GC.GetTotalMemory(false) / 1024 / 1024:F1} MB";
+>             NodesText.Text = $"视觉树节点：{CountNodes(this)} 个";
+>             ControlText.Text = $"已创建控件：{_createdCount} 个";
+>         }
+>
+>         // 向面板添加控件，观察控件数与节点数增长
+>         private void OnAddControls(object sender, RoutedEventArgs e)
+>         {
+>             var btn = new Button
+>             {
+>                 Content = $"控件 {++_createdCount}",
+>                 Padding = new Thickness(4),
+>                 Background = new SolidColorBrush(Color.FromRgb(0x21, 0x26, 0x2D)),
+>                 Foreground = Brushes.White,
+>                 Margin = new Thickness(2)
+>             };
+>             WrapPanel.Children.Add(btn);
+>             RefreshPanel();
+>         }
+>
+>         // 切换阴影特效，观察帧率变化
+>         private void OnToggleEffect(object sender, RoutedEventArgs e)
+>         {
+>             bool hasEffect = WrapPanel.Children.Count > 0 &&
+>                              (WrapPanel.Children[0] as UIElement)?.Effect != null;
+>             foreach (var child in WrapPanel.Children)
+>             {
+>                 (child as UIElement).Effect = hasEffect ? null :
+>                     new DropShadowEffect { BlurRadius = 8, ShadowDepth = 3, Color = Colors.Black, Opacity = 0.6 };
+>             }
+>             EffectBtn.Content = hasEffect ? "添加阴影特效" : "移除阴影特效";
+>             RefreshPanel();
+>         }
+>
+>         // 递归统计视觉树节点总数
+>         private int CountNodes(DependencyObject root)
+>         {
+>             int count = 1;
+>             for (int i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
+>                 count += CountNodes(VisualTreeHelper.GetChild(root, i));
+>             return count;
+>         }
+>     }
+> }
 > ```
 > 
 

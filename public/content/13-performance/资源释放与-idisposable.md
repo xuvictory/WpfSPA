@@ -25,9 +25,115 @@ parent: 13.3 内存管理
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **串口设备资源管理：实现 IDisposable 释放句柄，窗口关闭时自动清理：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="资源释放与 IDisposable" Height="340" Width="520"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15" Background="#161B22" Padding="15">
+>         <TextBlock Text="串口设备资源管理（IDisposable）"
+>                    Foreground="#58A6FF" FontSize="16" FontWeight="Bold"/>
+>         <TextBlock x:Name="StatusText" Foreground="#8B949E" Margin="0,12,0,0" TextWrapping="Wrap"/>
+>         <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
+>             <Button Content="打开串口" Click="OnOpen" Padding="8"
+>                     Background="#21262D" Foreground="White"/>
+>             <Button Content="释放串口" Click="OnDispose" Padding="8" Margin="8,0,0,0"
+>                     Background="#DA3633" Foreground="White"/>
+>             <Button Content="置空并强制 GC" Click="OnCollect" Padding="8" Margin="8,0,0,0"
+>                     Background="#21262D" Foreground="White"/>
+>         </StackPanel>
+>         <TextBlock x:Name="TipText" Foreground="#8B949E" Margin="0,14,0,0" TextWrapping="Wrap"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private SerialDevice _device;
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             _device = new SerialDevice("COM1");
+>             // 窗口关闭时确保释放资源
+>             Closed += (s, e) => Dispose();
+>             TipText.Text = "串口等持有非托管句柄的对象必须实现 IDisposable，用 using 或显式调用 Dispose 及时释放。";
+>         }
+>
+>         private void OnOpen(object sender, RoutedEventArgs e)
+>         {
+>             _device ??= new SerialDevice("COM1");
+>             _device.Open();
+>             StatusText.Text = "串口 COM1 已打开（模拟占用句柄）";
+>         }
+>
+>         private void OnDispose(object sender, RoutedEventArgs e)
+>         {
+>             _device.Dispose();
+>             StatusText.Text = "串口已关闭，句柄已归还系统";
+>         }
+>
+>         private void OnCollect(object sender, RoutedEventArgs e)
+>         {
+>             _device.Dispose();
+>             _device = null;
+>             GC.Collect();
+>             GC.WaitForPendingFinalizers();
+>             StatusText.Text = "已释放串口引用并强制 GC，对象可被回收";
+>         }
+>
+>         // 窗口实现 IDisposable：统一释放内部资源
+>         public void Dispose()
+>         {
+>             _device?.Dispose();
+>             GC.SuppressFinalize(this);
+>         }
+>     }
+>
+>     // 模拟串口设备：持有非托管句柄，必须实现 IDisposable 及时释放
+>     public class SerialDevice : IDisposable
+>     {
+>         private readonly string _port;
+>         private IntPtr _handle;     // 模拟操作系统句柄
+>         private bool _disposed;     // 防止重复释放
+>
+>         public SerialDevice(string port) => _port = port;
+>
+>         public void Open()
+>         {
+>             ThrowIfDisposed();
+>             _handle = new IntPtr(0x1234);   // 模拟 CreateFile 取得句柄
+>         }
+>
+>         public void Dispose()
+>         {
+>             if (_disposed) return;
+>             if (_handle != IntPtr.Zero)
+>             {
+>                 _handle = IntPtr.Zero;      // 模拟 CloseHandle 释放句柄
+>                 Console.WriteLine($"[{_port}] 句柄已释放");
+>             }
+>             _disposed = true;
+>             GC.SuppressFinalize(this);      // 抑制终结器，避免二次释放
+>         }
+>
+>         private void ThrowIfDisposed()
+>         {
+>             if (_disposed) throw new ObjectDisposedException(nameof(SerialDevice));
+>         }
+>     }
+> }
 > ```
 > 
 

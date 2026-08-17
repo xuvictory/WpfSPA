@@ -25,9 +25,65 @@ parent: 13.4 性能分析工具
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **可被 Snoop/Inspector 检查的示例布局：遍历可视化树列出所有命名元素：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="Snoop 与 WPF Inspector" Height="380" Width="520"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15" Background="#161B22" Padding="15">
+>         <TextBlock x:Name="TitleText" Text="Snoop / Inspector 可检查的布局结构"
+>                    Foreground="#58A6FF" FontSize="16" FontWeight="Bold"/>
+>         <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+>             <TextBox x:Name="NameBox" Text="点位 1" Width="120" Background="#0D1117"
+>                      Foreground="#8B949E" Padding="4" BorderBrush="#21262D"/>
+>             <TextBlock x:Name="ValueText" Text="1450" Foreground="#238636"
+>                        Margin="10,0,0,0" VerticalAlignment="Center"/>
+>             <Button x:Name="RefreshBtn" Content="刷新" Click="OnInspect" Margin="10,0,0,0" Padding="6"
+>                     Background="#21262D" Foreground="White"/>
+>         </StackPanel>
+>         <TextBlock x:Name="TreeText" Foreground="#8B949E" Margin="0,14,0,0" TextWrapping="Wrap"/>
+>         <TextBlock Foreground="#8B949E" Margin="0,10,0,0" TextWrapping="Wrap"
+>                    Text="用 Snoop 附加本窗口：点击最上层元素可在可视化树中高亮定位，并实时查看/修改任意属性。"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Collections.Generic;
+> using System.Windows;
+> using System.Windows.Media;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private readonly List<string> _names = new List<string>();
+>
+>         public MainWindow() => InitializeComponent();
+>
+>         // 模拟 Snoop 的核心功能：遍历可视化树，收集所有 x:Name 元素
+>         private void OnInspect(object sender, RoutedEventArgs e)
+>         {
+>             ValueText.Text = NameBox.Text;   // 模拟 Inspector 读取/修改属性
+>             _names.Clear();
+>             Walk(this);
+>             TreeText.Text = "当前已命名元素（Snoop 会在可视化树中显示）：\n" + string.Join("\n", _names);
+>         }
+>
+>         private void Walk(DependencyObject node)
+>         {
+>             if (node is FrameworkElement fe && !string.IsNullOrEmpty(fe.Name))
+>                 _names.Add(fe.Name);
+>             for (int i = 0; i < VisualTreeHelper.GetChildrenCount(node); i++)
+>                 Walk(VisualTreeHelper.GetChild(node, i));
+>         }
+>     }
+> }
 > ```
 > 
 

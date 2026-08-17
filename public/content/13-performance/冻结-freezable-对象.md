@@ -25,9 +25,91 @@ parent: 13.2 UI 性能优化
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **Freezable 冻结与共享：对比 10000 个独立画刷 vs 1 个冻结画刷共享的差异：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="冻结 Freezable 对象" Height="400" Width="520"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15" Background="#161B22" Padding="15">
+>         <TextBlock Text="Freezable 冻结与共享（SolidColorBrush）"
+>                    Foreground="#58A6FF" FontSize="16" FontWeight="Bold"/>
+>         <TextBlock x:Name="StateText" Foreground="#8B949E" Margin="0,12,0,0" TextWrapping="Wrap"/>
+>         <Button Content="创建 10000 个未冻结画刷" Click="OnCreateUnfrozen" Padding="8" Margin="0,12,0,0"
+>                 Background="#21262D" Foreground="White" HorizontalAlignment="Left"/>
+>         <Button Content="创建 1 个冻结画刷共享" Click="OnCreateFrozen" Padding="8" Margin="0,8,0,0"
+>                 Background="#21262D" Foreground="White" HorizontalAlignment="Left"/>
+>         <Button Content="尝试修改冻结画刷" Click="OnTryModify" Padding="8" Margin="0,8,0,0"
+>                 Background="#DA3633" Foreground="White" HorizontalAlignment="Left"/>
+>         <Border x:Name="DemoBox" Height="40" Background="#21262D" CornerRadius="4" Margin="0,16,0,0"/>
+>         <TextBlock x:Name="ResultText" Foreground="#8B949E" Margin="0,10,0,0" TextWrapping="Wrap"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Collections.Generic;
+> using System.Diagnostics;
+> using System.Windows;
+> using System.Windows.Media;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private readonly SolidColorBrush _accent = new SolidColorBrush(Color.FromRgb(0x58, 0xA6, 0xFF));
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             _accent.Freeze();   // 冻结：对象变为只读，可跨线程安全共享
+>             DemoBox.Background = _accent;
+>             StateText.Text = $"演示画刷 IsFrozen = {_accent.IsFrozen}（已冻结，可跨线程共享，修改会抛异常）";
+>         }
+>
+>         // 未冻结：每个实例都是独立对象，无法跨线程共享
+>         private void OnCreateUnfrozen(object sender, RoutedEventArgs e)
+>         {
+>             var sw = Stopwatch.StartNew();
+>             var brushes = new List<Brush>();
+>             for (int i = 0; i < 10000; i++)
+>                 brushes.Add(new SolidColorBrush(Color.FromRgb(0x58, 0xA6, 0xFF)));
+>             sw.Stop();
+>             ResultText.Text = $"创建 10000 个未冻结画刷：耗时 {sw.Elapsed.TotalMilliseconds:F0} ms，" +
+>                               $"产生 {brushes.Count} 个独立实例";
+>         }
+>
+>         // 冻结：一个实例被所有目标共享，开销极小
+>         private void OnCreateFrozen(object sender, RoutedEventArgs e)
+>         {
+>             var sw = Stopwatch.StartNew();
+>             var shared = new SolidColorBrush(Color.FromRgb(0x58, 0xA6, 0xFF));
+>             shared.Freeze();
+>             for (int i = 0; i < 10000; i++) { /* 全部引用同一个 shared 画刷 */ }
+>             sw.Stop();
+>             ResultText.Text = $"创建并冻结 1 个画刷共享给 10000 个目标：耗时 {sw.Elapsed.TotalMilliseconds:F0} ms，" +
+>                               "内存与开销远小于 10000 个独立实例";
+>         }
+>
+>         // 冻结对象不可修改：需要变更时先 Clone()
+>         private void OnTryModify(object sender, RoutedEventArgs e)
+>         {
+>             try
+>             {
+>                 _accent.Color = Colors.Red;
+>             }
+>             catch (InvalidOperationException ex)
+>             {
+>                 ResultText.Text = $"修改冻结画刷失败：{ex.Message}（冻结对象只读，可调用 Clone() 得到可变副本）";
+>             }
+>         }
+>     }
+> }
 > ```
 > 
 

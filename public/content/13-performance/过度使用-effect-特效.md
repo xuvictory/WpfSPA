@@ -25,9 +25,139 @@ parent: 13.5 常见性能陷阱
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **DropShadowEffect 性能对比：200 个方块添加/移除阴影特效前后的帧率变化：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="过度使用 Effect 特效" Height="440" Width="640"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15" Background="#161B22" Padding="10">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>         <StackPanel Orientation="Horizontal">
+>             <Button Content="给 200 个方块加阴影特效" Click="OnAddEffects" Padding="8"
+>                     Background="#21262D" Foreground="White"/>
+>             <Button Content="移除全部特效" Click="OnRemoveEffects" Padding="8" Margin="8,0,0,0"
+>                     Background="#21262D" Foreground="White"/>
+>             <Button Content="开始动画" Click="OnAnimate" Padding="8" Margin="8,0,0,0"
+>                     Background="#58A6FF" Foreground="White"/>
+>             <Button Content="停止动画" Click="OnStop" Padding="8" Margin="8,0,0,0"
+>                     Background="#DA3633" Foreground="White"/>
+>         </StackPanel>
+>         <WrapPanel x:Name="BoxPanel" Grid.Row="1" Margin="0,10,0,10"/>
+>         <StackPanel Grid.Row="2">
+>             <TextBlock x:Name="FpsText" Foreground="#58A6FF" FontSize="18"/>
+>             <TextBlock x:Name="StatusText" Foreground="#8B949E" Margin="0,6,0,0" TextWrapping="Wrap"/>
+>         </StackPanel>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Diagnostics;
+> using System.Windows;
+> using System.Windows.Controls;
+> using System.Windows.Media;
+> using System.Windows.Media.Effects;
+> using System.Windows.Threading;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private readonly Random _rnd = new Random(7);
+>         private int _frames;
+>         private Stopwatch _watch = Stopwatch.StartNew();
+>         private DispatcherTimer _animTimer;
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             // 渲染线程帧率统计
+>             CompositionTarget.Rendering += (s, e) =>
+>             {
+>                 if (++_frames >= 60) UpdateFps();
+>             };
+>             // 生成 200 个彩色方块
+>             for (int i = 0; i < 200; i++)
+>             {
+>                 var brush = new SolidColorBrush(Color.FromRgb(
+>                     (byte)_rnd.Next(256), (byte)_rnd.Next(256), (byte)_rnd.Next(256)));
+>                 brush.Freeze();
+>                 BoxPanel.Children.Add(new Border
+>                 {
+>                     Width = 30,
+>                     Height = 30,
+>                     Margin = new Thickness(2),
+>                     Background = brush
+>                 });
+>             }
+>         }
+>
+>         private void UpdateFps()
+>         {
+>             double fps = _frames / _watch.Elapsed.TotalSeconds;
+>             FpsText.Text = $"当前帧率：{fps:F1} FPS";
+>             _frames = 0;
+>             _watch.Restart();
+>         }
+>
+>         // 每个特效都会增加 GPU 渲染负担，特效越多帧率越低
+>         private void OnAddEffects(object sender, RoutedEventArgs e)
+>         {
+>             foreach (Border b in BoxPanel.Children)
+>             {
+>                 b.Effect = new DropShadowEffect
+>                 {
+>                     BlurRadius = 10,
+>                     ShadowDepth = 4,
+>                     Color = Colors.Black,
+>                     Opacity = 0.6
+>                 };
+>             }
+>             StatusText.Text = "已给 200 个方块添加 DropShadowEffect，观察帧率下降";
+>         }
+>
+>         private void OnRemoveEffects(object sender, RoutedEventArgs e)
+>         {
+>             foreach (Border b in BoxPanel.Children) b.Effect = null;
+>             StatusText.Text = "已移除全部特效，帧率应回升";
+>         }
+>
+>         // 动画让特效反复重绘，放大特效带来的性能开销
+>         private void OnAnimate(object sender, RoutedEventArgs e)
+>         {
+>             if (_animTimer != null) return;
+>             _animTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(16) };
+>             _animTimer.Tick += (s, ev) =>
+>             {
+>                 foreach (Border b in BoxPanel.Children)
+>                 {
+>                     var t = b.RenderTransform as TranslateTransform ?? new TranslateTransform();
+>                     t.X = _rnd.Next(-20, 21);
+>                     t.Y = _rnd.Next(-20, 21);
+>                     b.RenderTransform = t;
+>                 }
+>             };
+>             _animTimer.Start();
+>             StatusText.Text = "动画运行中：有特效时每帧都要重绘阴影，开销远大于无特效";
+>         }
+>
+>         private void OnStop(object sender, RoutedEventArgs e)
+>         {
+>             _animTimer?.Stop();
+>             _animTimer = null;
+>         }
+>     }
+> }
 > ```
 > 
 

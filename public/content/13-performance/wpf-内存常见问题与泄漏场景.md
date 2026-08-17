@@ -25,9 +25,109 @@ parent: 13.3 内存管理
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **事件订阅导致的内存泄漏演示：强事件订阅无法回收，弱事件/解除订阅可正常回收：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="WPF 内存泄漏场景" Height="380" Width="580"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15" Background="#161B22" Padding="15">
+>         <TextBlock Text="事件订阅导致的内存泄漏演示"
+>                    Foreground="#58A6FF" FontSize="16" FontWeight="Bold"/>
+>         <TextBlock x:Name="ExplainText" Foreground="#8B949E" Margin="0,10,0,0" TextWrapping="Wrap"/>
+>         <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
+>             <Button Content="创建强事件订阅（泄漏）" Click="OnCreateLeaky" Padding="8"
+>                     Background="#DA3633" Foreground="White"/>
+>             <Button Content="创建弱事件订阅（安全）" Click="OnCreateClean" Padding="8" Margin="8,0,0,0"
+>                     Background="#21262D" Foreground="White"/>
+>         </StackPanel>
+>         <Button Content="执行 GC 并检查对象存活" Click="OnCheck" Padding="8" Margin="0,10,0,0"
+>                 Background="#21262D" Foreground="White" HorizontalAlignment="Left"/>
+>         <TextBlock x:Name="ResultText" Foreground="#58A6FF" Margin="0,14,0,0" TextWrapping="Wrap"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private readonly AlarmSource _source = new AlarmSource();
+>         private WeakReference _leakyRef;   // 强事件订阅对象引用
+>         private WeakReference _cleanRef;   // 弱事件订阅对象引用
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             ExplainText.Text = "事件源被强引用时，订阅了它的对象无法被 GC 回收，这就是最常见的泄漏场景。";
+>         }
+>
+>         // 制造泄漏：订阅对象被事件源强引用，即使局部变量置空也无法回收
+>         private void OnCreateLeaky(object sender, RoutedEventArgs e)
+>         {
+>             var sub = new LeakySubscriber(_source);
+>             _leakyRef = new WeakReference(sub);
+>             sub = null;
+>         }
+>
+>         // 正确做法：用 WeakEventManager 订阅，不阻止 GC 回收
+>         private void OnCreateClean(object sender, RoutedEventArgs e)
+>         {
+>             var sub = new CleanSubscriber(_source);
+>             _cleanRef = new WeakReference(sub);
+>             sub = null;
+>         }
+>
+>         // 强制 GC 后检查两个订阅对象是否仍存活
+>         private void OnCheck(object sender, RoutedEventArgs e)
+>         {
+>             GC.Collect();
+>             GC.WaitForPendingFinalizers();
+>             GC.Collect();
+>             bool leak = _leakyRef?.IsAlive == true;
+>             bool clean = _cleanRef?.IsAlive == true;
+>             ResultText.Text = $"强事件订阅对象存活：{leak}（true = 已被事件源持有，泄漏）；" +
+>                               $"弱事件订阅对象存活：{clean}（false = 已正常回收）";
+>         }
+>     }
+>
+>     // 事件源：长期存活（比如上位机主机的数据服务）
+>     public class AlarmSource
+>     {
+>         public event EventHandler<AlarmEventArgs> AlarmRaised;
+>         public void Raise(string msg) => AlarmRaised?.Invoke(this, new AlarmEventArgs(msg));
+>     }
+>
+>     public class AlarmEventArgs : EventArgs
+>     {
+>         public AlarmEventArgs(string message) => Message = message;
+>         public string Message { get; }
+>     }
+>
+>     // 强事件订阅：事件源持有对自身的强引用，形成泄漏
+>     public class LeakySubscriber
+>     {
+>         public LeakySubscriber(AlarmSource source) => source.AlarmRaised += OnAlarm;
+>         private void OnAlarm(object sender, AlarmEventArgs e) { }
+>     }
+>
+>     // 弱事件订阅：事件源只持有弱引用，不再阻止回收
+>     public class CleanSubscriber
+>     {
+>         public CleanSubscriber(AlarmSource source) =>
+>             WeakEventManager<AlarmSource, AlarmEventArgs>.AddHandler(
+>                 source, nameof(AlarmSource.AlarmRaised), OnAlarm);
+>         private void OnAlarm(object sender, AlarmEventArgs e) { }
+>     }
+> }
 > ```
 > 
 
