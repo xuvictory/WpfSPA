@@ -7,22 +7,25 @@ parent: 8.2 Dispatcher 调度器
 # Dispatcher.Invoke 与 BeginInvoke
 
 > [!plain] 白话理解
-> "Dispatcher.Invoke 与 BeginInvoke"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"Dispatcher.Invoke 与 BeginInvoke"是一个重要的知识点。上位机最大的噩梦：界面卡死。线程与异步就是解决这个问题的钥匙。掌握了它，你就能更好地构建工业级上位机应用程序。
+> 假设你是产线调度员（后台线程），要把一批生产数据交给主控室（UI 线程）刷新屏幕。`Dispatcher.Invoke` 就像**发传真并盯着对方签收**：你把数据传过去，站在原地等对方回复"收到"才去干下一件事；`Dispatcher.BeginInvoke` 则像**发完邮件就走**：把数据发到主控室的收件箱（消息队列），立刻转身继续处理新任务，主控室有空了自然会看。传真适合"必须确认结果再继续"的场景（比如取界面上的用户输入）；邮件适合"刷状态、记日志、不阻塞采集"的高频场景。
+>
+> 一句话：**Invoke 等结果、BeginInvoke 不等结果**——选错会造成死锁或界面卡顿。
 
 > [!def] 官方定义
-> Dispatcher.Invoke 与 BeginInvoke是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> - **`Dispatcher.Invoke`（同步调度）**：`System.Windows.Threading.Dispatcher.Invoke(Delegate)` 将委托压入 UI 线程的调度队列，**阻塞调用方线程**直到委托在 UI 线程执行完成并返回结果（或抛出异常）。适合需要返回值、需要确认执行完毕的场景。
+> - **`Dispatcher.BeginInvoke`（异步调度）**：`Dispatcher.BeginInvoke(Delegate, DispatcherPriority)` 将委托**异步排队**后立即返回一个 `System.Windows.Threading.DispatcherOperation`，调用方不等待 UI 线程执行，也不接收其结果。适合高频、非关键路径的 UI 更新。
+> - **`DispatcherPriority`**：排队优先级，决定委托在队列中的顺序（`Background` 最低、`Normal` 默认、`Render` 在渲染前执行、`Send` 最高即等效同步），详见 `dispatcherpriority-优先级`。
+> - 📖 官方文档：[Dispatcher 类](https://learn.microsoft.com/zh-cn/dotnet/api/system.windows.threading.dispatcher)、[DispatcherPriority 枚举](https://learn.microsoft.com/zh-cn/dotnet/api/system.windows.threading.dispatcherpriority)
 
 > [!origin] 由来背景
-> Dispatcher.Invoke 与 BeginInvoke的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：上位机最大的噩梦：界面卡死。线程与异步就是解决这个问题的钥匙。
+> Dispatcher 的消息泵源自 Win32 消息循环（`GetMessage`/`DispatchMessage`）与 WinForms 的 `Control.Invoke` 机制。WPF 把它升级为"调度器（Dispatcher）"：UI 线程运行一个消息循环，`Invoke`/`BeginInvoke` 把工作项投递到该循环。`Invoke` 语义对应 WinForms 的 `Invoke`（同步），`BeginInvoke` 对应 `BeginInvoke`（异步）。随着 `async/await`（C# 5.0，2012）普及，多数场景可用 `await` 代替手动调度，但理解二者的同步/异步语义仍是排查死锁、卡顿的基础。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"Dispatcher.Invoke 与 BeginInvoke"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **`Invoke` 会阻塞调用线程**：后台线程调用 `Invoke` 后停住，直到 UI 线程执行完委托——UI 线程忙（如渲染大窗口）时后台会一直等
+> - **`BeginInvoke` 不阻塞**：排队后立即返回，委托按优先级在 UI 线程空闲时执行
+> - **同线程调用 `Invoke` 会死锁**：UI 线程内 `Dispatcher.Invoke(...)` 会等待一个永远不会执行的队列项，必须先 `CheckAccess()` 或只用 `BeginInvoke`
+> - **`DispatcherOperation.Status`**：`BeginInvoke` 返回的操作对象可查询状态（`Pending`/`Executing`/`Completed`），也可 `Abort()` 撤销未执行项
+> - **异常处理差异**：`Invoke` 把委托异常直接抛给调用方；`BeginInvoke` 的委托异常会进入 `DispatcherUnhandledException` 或 Task 的异常流程，不 try/catch 则容易"静默丢失"
 
 > [!example] 完整示例
 > **Dispatcher.Invoke 与 BeginInvoke 演示：同步 vs 异步调度到 UI 线程：**
@@ -105,34 +108,35 @@ parent: 8.2 Dispatcher 调度器
 > 
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ **Invoke：需要 UI 线程的执行结果**——后台线程要读取 `TextBox` 里的参数再继续计算，`Invoke` 能拿返回值
+> ✅ **Invoke：必须保证顺序**——采集到一条数据、立刻确认它已显示到界面（如单次确认消息），再取下一条
+> ✅ **BeginInvoke：高频状态刷新**——模拟量、状态灯每秒更新几十次，异步排队不拖累采集循环
+> ✅ **BeginInvoke：日志/流水追加**——多个后台线程并发写日志，异步排队天然串行、不乱序
+> ❌ **BeginInvoke：需要立即确认结果**——用错会读到旧值/空值，出现"数据看起来没更新"
+> ❌ **Invoke：UI 线程正忙时调用**——UI 在渲染大界面时，后台线程的 `Invoke` 会长时间阻塞，形成假死
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
-> 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 1：**UI 线程里调 `Dispatcher.Invoke` 等自己** → 现象：程序完全卡死，无响应 → 原因：UI 线程排队一个"需要 UI 线程执行"的委托，而 UI 线程正等它完成，形成自死锁 → 解决：调用前 `Dispatcher.CheckAccess()`，同线程直接执行；或把方法整体做成 `async` 用 `await`
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 2：**后台线程 `Invoke` + UI 线程也等后台** → 现象：两边都卡住（经典交叉死锁）→ 原因：后台 `Invoke` 等 UI，UI 事件处理又 `.Wait()` 等后台 Task → 解决：UI 侧不要 `.Wait()`/`.Result`，用 `async/await`（详见 `async-与-await-详解` 的死锁章节）
+>
+> 坑 3：**`BeginInvoke` 委托里抛异常"没反应"** → 现象：功能没生效但控制台也看不到错误 → 原因：`BeginInvoke` 异步执行，异常不进调用方 try/catch → 解决：委托内部自己 try/catch，或在 `Application.DispatcherUnhandledException` 里统一记录
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - **优先 `async/await`**：`await` 后自然回 UI 上下文，比手动 `Invoke` 少一层心智负担（见 `async-与-await-详解`）
+> - **高频刷新用 `BeginInvoke` + 降频**：采集循环里每 100ms 才投递一次，避免 UI 队列积压
+> - **`Invoke` 的返回值用 `Dispatcher.Invoke<T>(Func<T>)`**：后台线程读界面参数时类型安全、不用 cast
+> - **用 `Dispatcher.CurrentDispatcher` 前先确认上下文**：它拿的是"当前线程"的 Dispatcher，后台线程调用会拿到一个没有窗口的 Dispatcher，白忙
+> - **`IProgress<T>` 内部也走调度**：MVVM/采集场景用 `Progress<T>` 汇报进度，代码比手写 `BeginInvoke` 更干净
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"Dispatcher.Invoke 与 BeginInvoke"实现一个上位机中的小功能模块
+> **Lv.1 运行改参数**：运行示例分别点两个按钮，观察日志顺序：Invoke 是"后台→UI→UI→后台"，BeginInvoke 是"后台→后台→UI→UI"；把 UI 线程 `Thread.Sleep(500)` 改成 2000，对比阻塞差异
+> **Lv.2 加属性**：给 BeginInvoke 的 `DispatcherOperation` 存到字段，再点一个"撤销未执行操作"按钮调用 `operation.Abort()`，观察日志不再追加
+> **Lv.3 改造**：把 OnInvokeClick 改造成 `async`：`await Dispatcher.InvokeAsync(...)`（WPF 4.5+），验证 `InvokeAsync` 是"异步等待"语义，后台不再阻塞
+> **Lv.4 挑战**：实现"带返回值"的 Invoke：后台线程用 `Dispatcher.Invoke(() => txtParam.Text)` 读取界面上的间隔秒数，据此动态调整采集循环的睡眠时长
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"Dispatcher.Invoke 与 BeginInvoke"
-> - → 后续必学：掌握"Dispatcher.Invoke 与 BeginInvoke"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：`为什么不能跨线程访问控件`（为什么必须调度）、`主线程与后台线程`（线程模型）
+> - → 后续必学：`dispatcherpriority-优先级`（排队顺序如何决定）、`检查是否需要调度`（CheckAccess 优化）
+> - ⇄ 关联概念：`async-与-await-详解`（现代替代方案）、`从-ui-线程安全更新控件`（IProgress 方式）、`死锁的成因与避免`（交叉等待的本质）
+> - 📖 官方文档：[Dispatcher 类](https://learn.microsoft.com/zh-cn/dotnet/api/system.windows.threading.dispatcher)、[DispatcherPriority 枚举](https://learn.microsoft.com/zh-cn/dotnet/api/system.windows.threading.dispatcherpriority)

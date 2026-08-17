@@ -7,22 +7,27 @@ parent: 8.3 Task 与 async 和 await
 # Task.Run 与 Task.Delay
 
 > [!plain] 白话理解
-> "Task.Run 与 Task.Delay"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"Task.Run 与 Task.Delay"是一个重要的知识点。上位机最大的噩梦：界面卡死。线程与异步就是解决这个问题的钥匙。掌握了它，你就能更好地构建工业级上位机应用程序。
+> `Task.Run` 就像**把一箱重货交给"装卸队"（线程池）搬运**：你把要干的重活（函数）装进箱子里，交给装卸队，装卸队立刻派一个空闲工人去搬，而你（UI 线程）不用等，直接去干别的。`Task.Delay` 则是**"设个闹钟到点再叫醒"**：闹钟期间不占用任何工人（线程），到点后自动安排人继续——它和 `Thread.Sleep`（傻坐着占着一个工人）完全不同。两者配合就能写出"后台干活、按节奏推进、不阻塞 UI"的轮询采集代码：`Task.Run` 开干，`Task.Delay` 控制节奏，`await` 负责"回来时还在原线程"。
+>
+> 一句话：**Task.Run 把活派给线程池，Task.Delay 不占线程地等待，await 让 UI 线程"等得起"**。
 
 > [!def] 官方定义
-> Task.Run 与 Task.Delay是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> - **`System.Threading.Tasks.Task.Run(Action/Func<Task>)`**：把委托调度到线程池（`ThreadPool`）执行，返回表示该工作的 `Task`。`Task.Run(Func<Task>)` 是异步包装：工作项内部可 `await` 其他异步操作。
+> - **`System.Threading.Tasks.Task.Delay(int/TimeSpan)`**：返回一个**在指定时间后完成**的 `Task`，底层使用系统定时器，不占用线程；配合 `await` 实现"异步版 Sleep"。可传 `CancellationToken` 提前取消。
+> - 对比 `Thread.Sleep`：`Sleep` 阻塞当前线程（占着不放）；`Task.Delay` 挂起 Task 不占线程，等的时间可以处理其他事。
+> - **`Task`**：.NET 4.0（2010）TPL 的核心类型，表示一个异步操作单元，`IsCompleted`、`Status`、`Exception` 等成员描述其状态；`Task.Run` 与 `Task.Delay` 是 TPL 最常用的两个工厂方法。
+> - 📖 官方文档：[Task.Run 方法](https://learn.microsoft.com/zh-cn/dotnet/api/system.threading.tasks.task.run)、[Task.Delay 方法](https://learn.microsoft.com/zh-cn/dotnet/api/system.threading.tasks.task.delay)、[Task-based Asynchronous Pattern](https://learn.microsoft.com/zh-cn/dotnet/standard/asynchronous-programming-patterns/task-based-asynchronous-pattern-tap)
 
 > [!origin] 由来背景
-> Task.Run 与 Task.Delay的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：上位机最大的噩梦：界面卡死。线程与异步就是解决这个问题的钥匙。
+> .NET 4.0（2010）引入 Task Parallel Library（TPL），用 `Task` 抽象取代手写 `Thread` + 回调的繁琐模式：线程池负责复用线程、`Task.Run` 负责"派活"，把并发复杂度藏进框架。`Task.Delay` 在 .NET 4.5（2012）随 async/await 一起普及，解决了"异步代码里想等一会儿却没法 Sleep"的难题（Sleep 会阻塞线程）。从此"轮询采集"这类周期任务从 `Thread.Sleep + 手动 Dispatcher` 演进为 `Task.Run + Task.Delay + await`，代码量更少、可取消性更好。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"Task.Run 与 Task.Delay"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **`Task.Run` 走线程池**：线程池自动管理线程数量，短任务用完归还，避免每个任务独占线程
+> - **`Task.Delay` 不占线程**：await 它时当前线程被释放，可处理其他工作，这是与 `Thread.Sleep` 的本质区别
+> - **`await` 解包结果**：`Task.Run(() => Heavy())` 返回 `Task<T>`，用 `await` 拿结果，不要 `.Result`
+> - **`Task.Run` 内抛异常会存进 Task**：`await` 时重新抛出，所以 `try/catch` 包住 `await Task.Run(...)` 就能捕获
+> - **`Task.Delay` 支持取消**：传 `CancellationToken`，令牌取消时 `Delay` 抛 `TaskCanceledException`（见 `取消异步操作`）
+> - **`volatile`/`CancellationToken` 控制循环退出**：轮询循环用标志位（`volatile bool` 或令牌）优雅停止，不要用"杀线程"
 
 > [!example] 完整示例
 > **Task.Run 与 Task.Delay 演示：模拟设备轮询采集：**
@@ -100,34 +105,37 @@ parent: 8.3 Task 与 async 和 await
 > 
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ **CPU 密集型计算放后台**：图像模板匹配、大数据排序、报表生成——`await Task.Run(() => HeavyCompute())`
+> ✅ **周期轮询采集**：`Task.Run(async () => { while(flag) { await Task.Delay(ms); 读数据; } })`（见 `定时数据采集模式`）
+> ✅ **短时延时的非阻塞等待**：重试前的等待、心跳间隔——`await Task.Delay(...)` 不占线程
+> ✅ **把同步 API 异步化**：老库只有同步方法，用 `Task.Run` 包一层让 UI 不被阻塞（过渡方案）
+> ❌ **IO 等待场景**：串口/网络有真正的异步 API，直接 `await` 它们比 `Task.Run` 包同步阻塞更省线程（见 `async-与-await-详解`）
+> ❌ **超高频小任务**：毫秒级小活开 `Task.Run` 的调度开销大于收益，直接同步执行
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
-> 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 1：**用 `Task.Delay` 后忘了 `await`** → 现象：循环直接飞过，间隔无效 → 原因：`Task.Delay(800)` 返回 Task 没 await，立即返回 → 解决：`await Task.Delay(800);`，编译器警告 CS4014 时优先 `await`
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 2：**把 `Task.Delay` 当 `Thread.Sleep` 用（占线程）** → 现象：循环里 `await Task.Delay` 没错，但有的人写成 `Task.Delay(...).Wait()` → 原因：`.Wait()` 又把线程占住了，还可能在 UI 线程死锁 → 解决：永远用 `await`，绝不 `.Wait()`/`.Result`
+>
+> 坑 3：**轮询停止用"杀线程"思想** → 现象：任务无法取消，或界面关了后台还在跑 → 原因：没有停止标志，`Task.Run` 的线程池任务不受控 → 解决：用 `volatile bool` 或 `CancellationToken` 让循环自然退出，后台收尾后回 UI 更新状态
+>
+> 坑 4：**`Task.Run` 里访问共享变量不加同步** → 现象：偶尔数据错乱 → 原因：线程池线程并发访问非线程安全集合 → 解决：加锁（`lock-与-monitor`）或换 `并发集合`
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - **UI 线程只做"派活 + 收结果"**：`await Task.Run(重活)` 拿到结果再更新界面，重活本身不放 UI
+> - **轮询循环用 `CancellationToken` 替代裸 bool**：代码更规范、可配合超时（见 `取消异步操作`）
+> - **`Task.Delay` 间隔放在"干活之后"**：先干活再延时，循环周期更准；把延时放干活前会漂移
+> - **短任务频繁创建用线程池**：`Task.Run` 开箱即用；长驻线程（串口监听）才考虑专用线程（见 `线程池-vs-专用线程`）
+> - **并发任务聚合用 `Task.WhenAll`**：多个 `Task.Run` 并行后统一等待，别一个接一个 `await`（见 `并行任务whenallwhenany`）
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"Task.Run 与 Task.Delay"实现一个上位机中的小功能模块
+> **Lv.1 运行改参数**：运行示例观察 5 次轮询日志与线程 ID；把 `Task.Delay(800)` 改为 100 和 3000，观察节奏变化；点"停止轮询"验证中途退出
+> **Lv.2 加属性**：给轮询加一个"采集次数" `TextBlock` 实时显示；把模拟温度改成 `Random` 波动（40~60℃），日志加最大/最小值统计
+> **Lv.3 改造**：用 `CancellationTokenSource` 替换 `_running` 标志：`Start` 时建 `cts`，`Stop` 时 `cts.Cancel()`，循环里 `token.ThrowIfCancellationRequested()`，体会标准取消模式
+> **Lv.4 挑战**：写"双通道并行采集"：用两个 `Task.Run` 分别模拟温度、压力采集（不同延时），配合 `await Task.WhenAll` 汇总后一次刷新界面；尝试给两个通道分别设置采集周期
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"Task.Run 与 Task.Delay"
-> - → 后续必学：掌握"Task.Run 与 Task.Delay"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：`主线程与后台线程`（后台任务的意义）、`async-与-await-详解`（await 机制）
+> - → 后续必学：`取消异步操作`（CancellationToken 规范）、`从-ui-线程安全更新控件`（结果回 UI 的正确姿势）
+> - ⇄ 关联概念：`dispatchertimer`（UI 线程定时器对比）、`定时数据采集模式`（轮询实战）、`线程池-vs-专用线程`（选型）
+> - 📖 官方文档：[Task.Run 方法](https://learn.microsoft.com/zh-cn/dotnet/api/system.threading.tasks.task.run)、[Task.Delay 方法](https://learn.microsoft.com/zh-cn/dotnet/api/system.threading.tasks.task.delay)、[基于任务的异步模式](https://learn.microsoft.com/zh-cn/dotnet/standard/asynchronous-programming-patterns/task-based-asynchronous-pattern-tap)

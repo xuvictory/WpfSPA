@@ -7,22 +7,26 @@ parent: 8.2 Dispatcher 调度器
 # DispatcherTimer
 
 > [!plain] 白话理解
-> "DispatcherTimer"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"DispatcherTimer"是一个重要的知识点。上位机最大的噩梦：界面卡死。线程与异步就是解决这个问题的钥匙。掌握了它，你就能更好地构建工业级上位机应用程序。
+> `DispatcherTimer` 就像**主控室墙上挂的"整点报时钟"**：它挂在 UI 线程这面墙上，每到设定时间就敲一下钟（触发 `Tick` 事件），而敲钟的"手"就是 UI 线程自己。因为钟和手都在 UI 线程，**Tick 里更新控件不需要任何跨线程调度**，直接写就行。但代价是：如果 UI 线程被耗时操作占住，钟也会"迟到"——它只在 UI 线程有空时才能敲。想要"后台线程准时敲钟、绝不迟到"，就该用 `System.Timers.Timer` 或 `System.Threading.Timer`（后台线程触发，但更新控件需 `Dispatcher` 调度）。选择哪种计时器，取决于"是 UI 任务优先还是准时优先"。
+>
+> 一句话：**DispatcherTimer = 跑在 UI 线程上的闹钟，方便但不保证准时**。
 
 > [!def] 官方定义
-> DispatcherTimer是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> - **`System.Windows.Threading.DispatcherTimer`**：基于 `Dispatcher` 队列集成的计时器。它把 `Tick` 事件以 `DispatcherPriority.Background`（默认）优先级投递到 UI 线程调度队列，因此**事件处理器运行在 UI 线程**，可直接访问控件。
+> - 核心成员：`Interval`（`System.TimeSpan` 触发间隔）、`IsEnabled`（启停开关，置 true 即开始）、`Tick` 事件、`Start()`/`Stop()`、`Tag`（可挂业务数据）。
+> - 与 .NET 标准计时器对比：`System.Timers.Timer` / `System.Threading.Timer` 的 `Elapsed` 在**线程池线程**触发，须调度回 UI 线程更新控件；`DispatcherTimer` 免调度但受 UI 线程负载影响。
+> - 📖 官方文档：[DispatcherTimer 类](https://learn.microsoft.com/zh-cn/dotnet/api/system.windows.threading.dispatchertimer)、[System.Timers.Timer](https://learn.microsoft.com/zh-cn/dotnet/api/system.timers.timer)
 
 > [!origin] 由来背景
-> DispatcherTimer的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：上位机最大的噩梦：界面卡死。线程与异步就是解决这个问题的钥匙。
+> 早期 WinForms 提供 `System.Windows.Forms.Timer`（消息泵计时器，跑在 UI 线程），WPF 沿用并升级为 `DispatcherTimer`：每个 Tick 通过 Dispatcher 排队而非直接基于系统时钟中断，因此它天然与 UI 渲染节奏协调。与此同时，.NET 的 `System.Timers.Timer`（.NET 2.0）和 `System.Threading.Timer`（.NET 1.0）都基于线程池回调，属于"后台准时、需调度"。两类计时器并存让开发者有了明确分工：**UI 轮询显示用 DispatcherTimer，后台采集/定时任务用 System.Timers.Timer**。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"DispatcherTimer"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **Tick 在 UI 线程执行**：处理器内可直接改控件、不必 `Dispatcher.Invoke`，这是它最大的便利
+> - **受 UI 线程负载影响**：UI 线程被长任务阻塞时，Tick 会累积延迟，到点不触发是正常现象
+> - **`Interval` 是"目标间隔"不是"精确间隔"**：实际触发时间 = UI 线程空闲时最近的一个调度点
+> - **`IsEnabled = true` 即启动**，不必显式 `Start()`；窗口关闭时记得置 false 防止内存泄漏
+> - **默认优先级 `Background`**：可在构造函数传 `DispatcherPriority` 调整（如 `new DispatcherTimer(DispatcherPriority.Normal)`）
+> - **与 `System.Timers.Timer` 的本质区别**：线程归属不同，UI 更新免调度 vs 需调度
 
 > [!example] 完整示例
 > **DispatcherTimer 演示：定时刷新实时数据（UI 线程内计时）：**
@@ -95,34 +99,34 @@ parent: 8.2 Dispatcher 调度器
 > 
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ **界面自刷新轮询**：每秒刷新系统时间、PLC 在线状态、报警灯闪烁，用 `DispatcherTimer` 最省事
+> ✅ **轻量级 UI 动画/倒计时**：进度条演示、连接超时倒计时，UI 线程内直接改控件
+> ✅ **与 UI 节奏对齐的周期任务**：确保"每次刷新都发生在 UI 空闲时"，避免与渲染争抢
+> ❌ **必须准时的后台采集**：数据采集错过节拍会丢数据，应用 `System.Timers.Timer`（见 `定时数据采集模式`）
+> ❌ **Tick 里有重计算/长 IO**：会把 UI 线程拖死，Tick 里只做"取数据、更新控件"，重活放 `Task.Run`
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
-> 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 1：**以为 `DispatcherTimer` 保证准时** → 现象：UI 卡一下，刷新就"跳一次" → 原因：Tick 依赖 UI 线程空闲，长任务期间不触发 → 解决：对实时性有硬要求的数据采集改用 `System.Timers.Timer` + `Dispatcher` 更新
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 2：**Tick 里做耗时操作** → 现象：界面越用越卡，其他控件也变慢 → 原因：Tick 直接占 UI 线程，重计算阻塞了整个消息循环 → 解决：Tick 只读最新值刷新控件，计算丢 `Task.Run`（见 `taskrun-与-taskdelay`）
+>
+> 坑 3：**窗口关闭没停定时器** → 现象：关闭窗口后进程不退出/内存缓慢增长 → 原因：`DispatcherTimer` 仍挂在该 Dispatcher 上，事件持续触发 → 解决：`Window.Closed` 里 `_timer.Stop()`，或 `IsEnabled = false`
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - **UI 轮询刷新首选 `DispatcherTimer`**：它免调度、与渲染协调，代码最简洁
+> - **采集类定时任务选 `System.Timers.Timer`**：后台准时触发，采集完成再调度回 UI（见 `定时数据采集模式`）
+> - **Tick 处理器保持轻量**：只做"读值 + 更新控件"，超过 10ms 的工作全部外移
+> - **统一管理启停**：窗口关闭、切页、进入后台都记得停掉，防止空转与泄漏
+> - **用 `DispatcherTimer` 模拟"平滑轮询"**：需要 10Hz 刷新时设 `Interval = 100ms`，配合 `Background` 优先级不抢交互
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"DispatcherTimer"实现一个上位机中的小功能模块
+> **Lv.1 运行改参数**：运行示例启动/停止定时刷新；把 `Interval` 从 1 秒改成 100ms，观察刷新频率；把范围改 0~100 观察数值分布
+> **Lv.2 加属性**：在界面加一个 `TextBlock` 显示"运行总次数"，每次 Tick 计数；加一个"暂停 5 秒"按钮（UI 线程 `Thread.Sleep(5000)`），观察定时器"跳钟"现象
+> **Lv.3 改造**：再放一个 `System.Timers.Timer` 做同样的温度刷新（后台触发 + `Dispatcher.Invoke` 更新），对比两者在"UI 暂停 5 秒"时是否都会跳过
+> **Lv.4 挑战**：实现"在线/离线状态机"：用 `DispatcherTimer` 每 2 秒轮询一个"模拟 PLC"（用 Random 模拟丢包），连续 3 次失败显示离线、恢复一次在线，状态灯变色
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"DispatcherTimer"
-> - → 后续必学：掌握"DispatcherTimer"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：`dispatcherinvoke-与-begininvoke`（调度机制）、`dispatcherpriority-优先级`（Tick 默认优先级）
+> - → 后续必学：`定时数据采集模式`（采集计时器的正确选型）、`taskrun-与-taskdelay`（Tick 内重活怎么外移）
+> - ⇄ 关联概念：`主线程与后台线程`（UI 线程负载的影响）、`生产者-消费者模式`（采集线程 + UI 刷新的协作）
+> - 📖 官方文档：[DispatcherTimer 类](https://learn.microsoft.com/zh-cn/dotnet/api/system.windows.threading.dispatchertimer)、[System.Timers.Timer 类](https://learn.microsoft.com/zh-cn/dotnet/api/system.timers.timer)

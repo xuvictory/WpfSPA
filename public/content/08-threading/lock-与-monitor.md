@@ -7,22 +7,28 @@ parent: 8.5 多线程同步与安全
 # lock 与 Monitor
 
 > [!plain] 白话理解
-> "lock 与 Monitor"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"lock 与 Monitor"是一个重要的知识点。上位机最大的噩梦：界面卡死。线程与异步就是解决这个问题的钥匙。掌握了它，你就能更好地构建工业级上位机应用程序。
+> 多个后台线程同时改同一个变量，就像**几个人抢同一支笔在同一个本子上记账**：A 刚把笔拿起写了一半，B 就抢走笔接着写，最后账本上的数字完全对不上。`lock` 就是给这本账本配的**"排队锁"**：谁想记账先拿锁，记完再交出来，其他人排队等——同一时刻只有一个人能动这本账本。C# 的 `lock` 语句只是 `Monitor.Enter`/`Monitor.Exit` 的语法糖：编译器自动在进入时拿锁、退出时（包括异常时）释放锁。**核心价值：把"读-改-写"这种非原子操作变成原子操作，避免竞态条件**。
+>
+> 一句话：**lock 给共享数据上"排队锁"，保证同一时刻只有一个线程能改它**。
 
 > [!def] 官方定义
-> lock 与 Monitor是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> - **`lock (lockObject) { ... }`**：C# 语句，等价于 `Monitor.Enter(obj)` + `try { ... } finally { Monitor.Exit(obj); }`（C# 4.0 起推荐重载 `Monitor.Enter(obj, ref lockTaken)` 模式，编译器的 lock 已自动处理）。确保临界区在任何路径（含异常）下都释放锁。
+> - **`System.Threading.Monitor`**：提供线程同步的静态类。核心方法：`Enter`（获取排他锁）、`Exit`（释放）、`TryEnter`（带超时地尝试获取）、`Wait`/`Pulse`（配合条件等待，生产环境较少直接用）。
+> - **锁对象约定**：锁对象通常是一个 `private readonly object _lock = new object();`，**不要锁** `this`、字符串、`typeof(...)` 等公共对象（易被其他代码锁同一对象造成意外死锁）。
+> - **`Interlocked`**：对于 `count++` 这类简单原子操作，`System.Threading.Interlocked.Increment(ref _counter)` 是比 lock 更轻量的选择（无锁，硬件级原子指令）。
+> - **`lock` 与 `async`**：`lock` 内不能 `await`（编译错误 CS1996），因为锁的持有线程不能跨越 await 切换；异步锁需 `SemaphoreSlim`。
+> - 📖 官方文档：[lock 语句](https://learn.microsoft.com/zh-cn/dotnet/csharp/language-reference/statements/lock)、[Monitor 类](https://learn.microsoft.com/zh-cn/dotnet/api/system.threading.monitor)、[Interlocked 类](https://learn.microsoft.com/zh-cn/dotnet/api/system.threading.interlocked)
 
 > [!origin] 由来背景
-> lock 与 Monitor的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：上位机最大的噩梦：界面卡死。线程与异步就是解决这个问题的钥匙。
+> 多线程编程中的"竞态条件"从操作系统诞生起就存在：两个线程并发执行 `count++`（读取-加一-写回三步）时可能互相覆盖。早期 C 用互斥量（mutex）/临界区（critical section）手动加锁，繁琐且易漏释放。.NET 1.0 引入 `Monitor` 类；C# 2.0（2005）把最常用的加锁场景语法化为 `lock` 语句，自动生成 try-finally 保证释放。之后 .NET 4.0 提供 `Interlocked` 与并发集合（`ConcurrentQueue` 等），进一步把"常用同步"内置化。`lock` 至今仍是 .NET 进程内互斥的首选，上位机中保护共享缓存、状态变量、计数器时几乎天天用到。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"lock 与 Monitor"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **`lock` 是互斥锁**：同一时刻只有一个线程能持有锁进入临界区，其他线程阻塞等待
+> - **锁对象必须稳定**：用 `private readonly object` 专用字段，锁对象不可变、不对外暴露
+> - **临界区越小越好**：只在"读-改-写"那几行加锁，别把无关代码包进去（锁太大性能差）
+> - **`lock` 内禁止 `await`**：C# 编译器直接报错；需要"异步互斥"用 `SemaphoreSlim(1,1)`（见 `semaphore-信号量`）
+> - **能不用锁就不用锁**：原子变量用 `Interlocked`、只读数据用不可变集合、容器用 `并发集合`
+> - **锁不是"万能安全"**：不变量（invariant）跨多个字段时，锁的范围要覆盖全部相关字段，否则仍可能读到中间态
 
 > [!example] 完整示例
 > **lock 与 Monitor 演示：多线程竞争计数器，加锁保证原子性：**
@@ -113,34 +119,40 @@ parent: 8.5 多线程同步与安全
 > 
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ **保护共享计数器/状态标志**：采集线程与 UI 线程共享"在线次数、报文计数"，`lock` 或 `Interlocked`
+> ✅ **保护共享集合的"检查后修改"**：`if (list.Count > 0) list.RemoveAt(0)` 必须整体加锁，否则检查与移除之间被插队
+> ✅ **多线程写同一个配置对象**：后台线程更新设备参数，UI 线程读显示，锁保证读到一致快照
+> ✅ **日志队列的入队操作**：多个采集线程同时 `Enqueue`，加锁保证不丢
+> ❌ **纯 CPU 并行计算**：`Parallel.For` 内各线程处理独立数据时无需锁，加锁反而拖慢
+> ❌ **高性能读多写少**：读写锁 `ReaderWriterLockSlim` 或原子操作更合适，`lock` 把所有读者也互斥了
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
-> 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 1：**锁了 `this` / 字符串 / `typeof(T)`** → 现象：偶发死锁且极难排查 → 原因：这些对象全局可见，其他代码可能锁同一对象 → 解决：永远用 `private readonly object _lock = new object();` 私有锁对象
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 2：**`lock` 里 `await`** → 现象：编译错误 CS1996（无法在锁内 await）→ 原因：锁跨 await 无法保持线程所有权 → 解决：重活放 `await` 前算好，临界区只保留同步短操作；必须异步互斥用 `SemaphoreSlim(1,1)` + `await WaitAsync()`
+>
+> 坑 3：**锁的粒度太大** → 现象：并发性能骤降，多个无关操作排队 → 原因：把整个方法都包进 lock → 解决：临界区最小化；不同数据用不同锁对象；先 `lock` 拷贝副本再在锁外处理
+>
+> 坑 4：**"检查-再执行"没整体加锁** → 现象：数据偶发错乱、集合越界 → 原因：`if(Count>0)` 与 `RemoveAt(0)` 之间别的线程把元素取走 → 解决：检查+操作必须同一把锁内完成
+>
+> 坑 5：**死锁（多把锁顺序不一致）** → 现象：程序卡死 → 原因：线程 A 持有锁 1 等锁 2，线程 B 持有锁 2 等锁 1 → 解决：全局统一加锁顺序，或尽量减少同时持有多把锁（详见 `死锁的成因与避免`）
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - **锁对象私有且只读**：`private readonly object _lock = new object();` 是标准写法
+> - **临界区最小化**：只保护共享数据操作，计算、IO 放锁外
+> - **简单计数用 `Interlocked`**：`Interlocked.Increment/Add/CompareExchange` 免锁、更快
+> - **集合优先 `并发集合`**：ConcurrentQueue/ConcurrentDictionary 自带同步，比自己加锁更不易错（见 `并发集合`）
+> - **锁内禁止异步与重 IO**：违反会造成持锁过久、死锁风险
+> - **跨进程互斥用 `Mutex`**：`lock` 只在进程内有效，跨进程需 `Mutex`（见 `mutex-跨进程互斥`）
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"lock 与 Monitor"实现一个上位机中的小功能模块
+> **Lv.1 运行改参数**：运行示例对比无锁（结果<1000）与加锁（结果=1000）；把线程数改 100、每线程累加 1000 次，更明显看到无锁丢失
+> **Lv.2 加属性**：把计数器换成"共享 List"：无锁并发 `Add` 到 `List<int>`，观察报错或丢元素；加锁后正常
+> **Lv.3 改造**：用 `Interlocked.Increment` 替代 `lock` 重写加锁版，验证结果一致且代码更短
+> **Lv.4 挑战**：实现"线程安全的共享缓存"：`Cache` 类用 `lock` 保护 `Dictionary<string,double>`，支持 `Get`/`Set`；用 4 个线程并发读写 1000 次，验证无异常、值一致；再用 `ConcurrentDictionary` 重写对比
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"lock 与 Monitor"
-> - → 后续必学：掌握"lock 与 Monitor"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：`主线程与后台线程`（多线程基础）、`taskrun-与-taskdelay`（并发来源）
+> - → 后续必学：`死锁的成因与避免`（锁用错的严重后果）、`semaphore-信号量`（异步互斥与并发上限）
+> - ⇄ 关联概念：`并发集合`（免锁容器的选择）、`mutex-跨进程互斥`（进程级同步）、`生产者-消费者模式`（锁与队列的配合）
+> - 📖 官方文档：[lock 语句](https://learn.microsoft.com/zh-cn/dotnet/csharp/language-reference/statements/lock)、[Monitor 类](https://learn.microsoft.com/zh-cn/dotnet/api/system.threading.monitor)、[Interlocked 类](https://learn.microsoft.com/zh-cn/dotnet/api/system.threading.interlocked)

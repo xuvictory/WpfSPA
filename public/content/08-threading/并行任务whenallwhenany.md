@@ -7,22 +7,28 @@ parent: 8.3 Task 与 async 和 await
 # 并行任务（WhenAll、WhenAny）
 
 > [!plain] 白话理解
-> "并行任务（WhenAll、WhenAny）"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"并行任务（WhenAll、WhenAny）"是一个重要的知识点。上位机最大的噩梦：界面卡死。线程与异步就是解决这个问题的钥匙。掌握了它，你就能更好地构建工业级上位机应用程序。
+> 上位机经常要同时跟多台设备打交道：读 PLC-1、读 PLC-2、读 PLC-3。如果一台一台读，总耗时 = 三台耗时相加，纯属浪费。`Task.WhenAll` 就是**"三根线一起放下去钓鱼，等三根都咬钩再一起收线"**——三个异步任务同时启动、并行等待，总耗时 ≈ 最慢的那台，而不是三者之和。`Task.WhenAny` 则是**"三根线一起放，谁先咬钩就先收谁"**——适用于"先到先得"：比如哪台设备先响应就先处理哪台，或"任一条件满足就继续"。一个管"全部齐了才动手"，一个管"有一个就行"，它们是并行编排的左右手。
+>
+> 一句话：**WhenAll 等"全齐"、WhenAny 等"先到"——并行启动、按需汇合**。
 
 > [!def] 官方定义
-> 并行任务（WhenAll、WhenAny）是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> - **`Task.WhenAll(IEnumerable<Task>)`**：`System.Threading.Tasks.Task.WhenAll` 返回一个"当所有传入任务都完成时完成"的新任务；传入 `Task<T>[]` 时返回 `Task<T[]>`，其结果数组顺序与传入顺序一致。若任一任务异常，聚合为 `AggregateException`（`await` 时抛出其中一个）。
+> - **`Task.WhenAny(IEnumerable<Task>)`**：返回"当任一传入任务完成时完成"的新任务；`await` 后得到一个**已经完成**的 `Task<T>`（需要再 `await` 一次取结果）。通常配合循环实现"轮询首个完成者"。
+> - 两者都是**组合器（combinator）**，自身不创建线程，只负责编排现有 Task。
+> - **区别**：`WhenAll` 等到全部；`WhenAny` 等到最先；`WhenAny` + `ContinueWith`/`await` 可逐批消费完成的任务。
+> - 📖 官方文档：[Task.WhenAll 方法](https://learn.microsoft.com/zh-cn/dotnet/api/system.threading.tasks.task.whenall)、[Task.WhenAny 方法](https://learn.microsoft.com/zh-cn/dotnet/api/system.threading.tasks.task.whenany)、[使用 TPL 的并行任务](https://learn.microsoft.com/zh-cn/dotnet/standard/parallel-programming/task-based-asynchronous-programming)
 
 > [!origin] 由来背景
-> 并行任务（WhenAll、WhenAny）的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：上位机最大的噩梦：界面卡死。线程与异步就是解决这个问题的钥匙。
+> TPL 在 .NET 4.0（2010）推出 `Task` 时便提供了 `WhenAll`/`WhenAny` 组合器，用于解决"多个独立异步操作如何汇合"的问题。在异步代码出现前，等 N 个并发操作完成需要计数器 + `ManualResetEvent`，代码冗长易错。`WhenAll`/`WhenAny` 把"汇合"抽象为语言级模式，配合 async/await（C# 5.0，2012）后，并行读取多台设备、并行下载多个文件、超时竞速（`WhenAny` + `Task.Delay` 实现超时）都变成几行代码。上位机多通道采集、多设备巡检正是它们的典型战场。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"并行任务（WhenAll、WhenAny）"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **并行启动靠"先创建所有 Task"**：`Task[] tasks = { ReadA(), ReadB(), ReadC() };` 三个方法一调用就已并行运行
+> - **`WhenAll` 返回 `Task<T[]>`**：`string[] results = await Task.WhenAll(tasks);` 结果顺序与数组顺序一致
+> - **`WhenAny` 返回 `Task<Task<T>>`**：`var first = await Task.WhenAny(tasks); string r = await first;` 需二次 await
+> - **异常聚合**：`WhenAll` 中任一失败会聚合；`await` 时抛出其中一个异常，其余被吞——要取全部异常可访问 `task.Exception`
+> - **`WhenAny` 不取消其余任务**：它只是"不等了"，其他任务仍在后台跑完（要停止需 `CancellationToken`）
+> - **组合使用**：`WhenAny(tasks)` 循环可"逐个消费完成者"；`WhenAny(task, Task.Delay(超时))` 可做超时竞速
+> - **UI 线程安全**：`await WhenAll` 后回到 UI 上下文，直接更新控件（见 `从-ui-线程安全更新控件`）
 
 > [!example] 完整示例
 > **并行任务 WhenAll / WhenAny 演示：并行读取多台设备状态：**
@@ -81,7 +87,7 @@ parent: 8.3 Task 与 async 和 await
 >                             $"（≈最慢设备，而非三者之和）\r\n";
 >         }
 >
->         // WhenAny：任一台设备返回即可继续，适合“先到先得”场景
+>         // WhenAny：任一台设备返回即可继续，适合"先到先得"场景
 >         private async void OnWhenAnyClick(object sender, RoutedEventArgs e)
 >         {
 >             LogText.Text = "";
@@ -110,34 +116,38 @@ parent: 8.3 Task 与 async 和 await
 > 
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ **多设备并行巡检**：同时读 5 台 PLC 状态，`WhenAll` 汇总后一次刷新界面，总耗时=最慢设备
+> ✅ **多通道并行采集**：温度/压力/流量三个通道同时采集，齐了再画曲线（见 `定时数据采集模式`）
+> ✅ **"任一成功即继续"**：主通信失败时并行尝试备用通道，`WhenAny` 取最先成功的
+> ✅ **超时竞速**：`await Task.WhenAny(读设备(), Task.Delay(3000))` 实现"3 秒没回就当超时"
+> ❌ **任务间有依赖**：B 需要 A 的结果，那就该顺序 `await`，并行无意义
+> ❌ **大量任务（>CPU 核数）**：几百个并行任务线程池会排队，不如分组用 `Parallel.ForEach` 或分批
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
-> 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 1：**`WhenAll` 一个失败全盘异常丢失** → 现象：日志只看到第一个异常，其他错误被吞 → 原因：`await` 只抛聚合中的一个 → 解决：用 `Task.WhenAll(...).ContinueWith` 遍历 `task.Exception.InnerExceptions`，或每个子任务内部自己 try/catch 记日志
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 2：**`WhenAny` 之后忘记二次 await** → 现象：拿到的不是字符串而是 `Task<string>` → 原因：`WhenAny` 返回 `Task<Task<T>>` → 解决：`var firstTask = await Task.WhenAny(tasks); string r = await firstTask;`
+>
+> 坑 3：**以为 `WhenAny` 会取消其余任务** → 现象：界面显示了"先到"结果，但其他任务还在后台跑、继续更新日志 → 原因：`WhenAny` 只"不等了"，不取消 → 解决：需要停止就传 `CancellationToken`（见 `取消异步操作`），否则接受"其余任务跑完"
+>
+> 坑 4：**在 UI 线程里用 `Task.WaitAll`（同步版）** → 现象：界面卡死 → 原因：同步等待阻塞 UI 线程，且与 await 续延互相等待 → 解决：UI 场景永远用 `await Task.WhenAll(...)`，不要 `WaitAll`
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - **UI 场景一律 `await Task.WhenAll/WhenAny`**：不要同步 `WaitAll`/`WaitAny`，避免死锁
+> - **先创建数组再统一 await**：`Task<T>[]` 一次性启动，别在循环里 `await` 单个任务（会退化成串行）
+> - **`WhenAny` 超时用 `Task.Delay` 竞速**：`var winner = await Task.WhenAny(task, Task.Delay(3000));` 判断谁先完成
+> - **子任务都传 `CancellationToken`**：统一取消时所有并行任务一起收场
+> - **`WhenAll` 拿到结果用索引对应设备**：`results[i]` 与 `tasks[i]` 对应，别用顺序猜
+> - **少量任务直接并行，大量任务用分区**：>100 个任务用 `Parallel.ForEachAsync` 或分批控制并发度
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"并行任务（WhenAll、WhenAny）"实现一个上位机中的小功能模块
+> **Lv.1 运行改参数**：运行示例分别点 WhenAll（总耗时≈最慢 1800ms）与 WhenAny（≈最快 800ms）；改三台设备的延时值，验证规律
+> **Lv.2 加属性**：在 WhenAny 示例后加"继续等剩余设备"：循环 `Task.WhenAny(剩余)` 逐个输出每台完成时间，体会逐批消费
+> **Lv.3 改造**：实现"超时竞速"：`await Task.WhenAny(读设备(), Task.Delay(1000))`，1 秒没返回就显示"读取超时"，并取消设备任务
+> **Lv.4 挑战**：模拟"5 台设备巡检"：用 `WhenAll` 并行读取并汇总成表格；其中一台模拟故障抛异常，实现"单台失败不影响其他"，结果标记"故障设备"并统计成功率
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"并行任务（WhenAll、WhenAny）"
-> - → 后续必学：掌握"并行任务（WhenAll、WhenAny）"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：`async-与-await-详解`（await 机制）、`taskrun-与-taskdelay`（任务基础）
+> - → 后续必学：`取消异步操作`（并行任务的统一取消）、`生产者-消费者模式`（多生产者并发消费）
+> - ⇄ 关联概念：`从-ui-线程安全更新控件`（并行结果回 UI）、`并发集合`（并行写数据的容器选择）
+> - 📖 官方文档：[Task.WhenAll 方法](https://learn.microsoft.com/zh-cn/dotnet/api/system.threading.tasks.task.whenall)、[Task.WhenAny 方法](https://learn.microsoft.com/zh-cn/dotnet/api/system.threading.tasks.task.whenany)、[基于任务的异步编程](https://learn.microsoft.com/zh-cn/dotnet/standard/parallel-programming/task-based-asynchronous-programming)
