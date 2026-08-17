@@ -7,22 +7,30 @@ parent: 16.6 常用 NuGet 包清单
 # 日志与工具类 NuGet 包
 
 > [!plain] 白话理解
-> "日志与工具类 NuGet 包"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"日志与工具类 NuGet 包"是一个重要的知识点。技术之路是漫长的，好的资源能让你少走很多弯路。本章整理了最优质的 WPF 和上位机学习资源。掌握了它，你就能更好地构建工业级上位机应用程序。
+> 现场出问题查不到原因，是上位机最头疼的事。**日志类包**（Serilog/NLog）负责把"发生了什么"记下来，**工具类包**（Polly/反射等）负责让代码更健壮、更省事。装上它们，就像给程序装了"黑匣子"和"工具箱"——出问题有据可查，写代码少造轮子。
 
 > [!def] 官方定义
-> 日志与工具类 NuGet 包是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> **日志与工具类 NuGet 包**是 .NET 生态中**日志记录**与**通用工具**方向的库集合（NuGet 检索：https://www.nuget.org/ ）。常用清单：
+> - **Serilog**（NuGet：`Serilog` + `Serilog.Sinks.File` 等）：结构化日志库，消息模板 + 命名属性 + Sink 输出（见 `serilog` 篇与 12 章 `serilog-结构化日志`）
+> - **NLog**（NuGet：`NLog`）：老牌日志库，配置文件驱动的多目标输出（文件/事件日志/数据库）
+> - **log4net**（NuGet：`log4net`）：Apache 出品的经典日志库，老项目沿用多
+> - **Polly**（NuGet：`Polly`）：弹性策略库，重试/熔断/超时，通信不稳时的"安全带"
+> - **FluentValidation**（NuGet：`FluentValidation`）：链式校验规则库，参数/配方表单校验
+> - **AutoMapper**（NuGet：`AutoMapper`）：对象映射库，DTO/实体互转少写样板
+> - **TimeProvider / 内建工具**（微软官方）：.NET 8+ 内建时间抽象等，优先用官方能力
+>
+> 日志库均为第三方开源（微软官方提供 `Microsoft.Extensions.Logging` 抽象，见 https://learn.microsoft.com/zh-cn/dotnet/core/extensions/logging ），工具类库按需选用，避免过度引入。
 
 > [!origin] 由来背景
-> 日志与工具类 NuGet 包的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：技术之路是漫长的，好的资源能让你少走很多弯路。本章整理了最优质的 WPF 和上位机学习资源。
+> .NET 日志生态经历了 log4net（2001 年，Apache 移植）→ NLog（2006 年，配置驱动）→ Serilog（2013 年，结构化事件）三代演进；**Serilog 的结构化理念**让日志可检索、可统计，成为新一代首选。工具库方面：**Polly**（2013 年前后，英国开发者 Michael Wolfenden 创建）解决"外部依赖不稳"的弹性重试；**FluentValidation**（2010 年前后）把校验从 `if` 堆砌变成声明式规则。上位机行业组合使用"Serilog 记日志 + Polly 做通信重试 + FluentValidation 校验参数"，显著提升现场稳定性。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"日志与工具类 NuGet 包"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **日志选型**：新项目首选 `Serilog`（结构化、生态全），老项目延续 `NLog`/`log4net` 不要强行迁移
+> - **Sink 组合**：文件（`Serilog.Sinks.File` 按天滚动）+ 必要时 Seq/数据库
+> - **Polly 重试**：`Policy.Handle<TimeoutException>().WaitAndRetryAsync(3, i => TimeSpan.FromMilliseconds(500))` 包装通信调用
+> - **校验规则**：`AbstractValidator<T>` + `RuleFor(x => x.Temp).GreaterThan(0).LessThan(200)`
+> - **映射**：`CreateMap<Entity, Dto>()` + `IMapper.Map`，接口层与实体层解耦
+> - **官方优先**：.NET 8 的 `TimeProvider`、`Microsoft.Extensions.*` 能解决的不引第三方
 
 > [!example] 完整示例
 > **日志工具类库：Serilog 文件日志与异常记录演示：**
@@ -115,37 +123,38 @@ parent: 16.6 常用 NuGet 包清单
 >     }
 > }
 > ```
-> 
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ 现场问题排查（报警、通信异常、操作留痕）
+> ✅ 通信不稳时用 Polly 自动重试，减少人工干预
+> ✅ 配方/参数表单校验（FluentValidation）
+> ✅ 接口 DTO 与实体互转（AutoMapper）
+> ✅ 系统对接 .NET 8+ 官方抽象（TimeProvider 等）
+> ❌ 极简小工具（日志一条 `Debug.WriteLine` 就够时不必上库）
+> ❌ 与团队既有日志方案重复的场景（先统一技术栈）
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
-> 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 1：**日志忘配 Sink，写哪都不知道** → 现象：调用 `Log.Information` 但哪都没输出 → 原因：没装 Sink 包或没配 `WriteTo.File` → 解决：确认 `Serilog.Sinks.File` 已安装且 `LoggerConfiguration` 配置完整
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 2：**Polly 重试掩盖真实故障** → 现象：设备彻底离线，还一直重试刷屏 → 原因：无限重试无退避无上限 → 解决：设重试次数上限 + 指数退避 + 超时策略组合，重试后仍失败要上报界面/日志
+>
+> 坑 3：**AutoMapper 映射配置错导致静默丢字段** → 现象：DTO 某些字段始终为默认值 → 原因：未注册 `CreateMap` 或属性名不一致 → 解决：映射关系集中 `Profile` 注册，单测验证关键字段映射结果
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - 日志体系与 12 章 `serilog-结构化日志`/`上位机日志场景` 对齐：级别规范、滚动策略、公共字段
+> - 通信调用统一包一层 Polly 策略（重试 3 次 + 500ms 退避 + 超时），一处配置全局生效
+> - 表单校验用 FluentValidation 写规则类，界面绑定 `INotifyDataErrorInfo` 显示错误
+> - 工具类包"按需引入"：能用官方/内置解决的不加依赖，保持项目精简
+> - 引入新工具包前先评估学习成本与维护风险，避免"包山包海"
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"日志与工具类 NuGet 包"实现一个上位机中的小功能模块
+> **Lv.1 照猫画虎**：运行本节示例，把日志滚动间隔改成按小时，观察文件命名变化
+> **Lv.2 小试牛刀**：用 Polly 给示例的"模拟异常"加重试 2 次的策略，观察重试日志
+> **Lv.3 融会贯通**：给 `nmodbus` 的读取调用包上 Polly 重试 + Serilog 日志，模拟断线重连
+> **Lv.4 拆层挑战**：搭建"日志 + 重试 + 校验"公共基础设施：Serilog 全局配置、Polly 策略注册、FluentValidation 规则示例，并写单测验证重试次数与校验结果
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"日志与工具类 NuGet 包"
-> - → 后续必学：掌握"日志与工具类 NuGet 包"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：[`serilog`](serilog)、第 12 章 `上位机日志场景`/`serilog-结构化日志`
+> - → 后续必学：[`visual-studio-2022-与-resharper`](visual-studio-2022-与-resharper)（开发效率工具）
+> - ⇄ 关联概念：[`数据类-nuget-包`](数据类-nuget-包)、[`mvvm-与通信类-nuget-包`](mvvm-与通信类-nuget-包)
+> - 📖 官方文档：日志抽象 https://learn.microsoft.com/zh-cn/dotnet/core/extensions/logging ；NuGet：https://www.nuget.org/

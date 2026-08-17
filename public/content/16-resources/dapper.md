@@ -7,22 +7,21 @@ parent: 16.1 GitHub 优质 WPF 开源项目
 # Dapper
 
 > [!plain] 白话理解
-> "Dapper"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"Dapper"是一个重要的知识点。技术之路是漫长的，好的资源能让你少走很多弯路。本章整理了最优质的 WPF 和上位机学习资源。掌握了它，你就能更好地构建工业级上位机应用程序。
+> 上位机软件一般要存"历史报警、产量统计、设备台账"这类数据，用 Excel 文件管理很快就乱。**Dapper** 是 .NET 里最轻量的"数据库帮手"：你写一行 SQL，它帮你把结果变成 C# 对象，几行代码就能完成增删改查。相比 EF Core 这种"全家桶"ORM，Dapper 不替你管实体关系，**SQL 写什么就执行什么**，上手快、性能好，特别适合"SQL 熟练 + 想要轻量"的上位机团队。
 
 > [!def] 官方定义
-> Dapper是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> **Dapper** 是一个**社区开源**的轻量级 ORM（对象关系映射）库（GitHub：https://github.com/DapperLib/Dapper ，NuGet：`Dapper`），由 Stack Overflow 团队成员 Sam Saffron 与 Marc Gravell 于 2011 年开源，本质是一组 `IDbConnection` 的**扩展方法**（`Query<T>`、`Execute`、`QueryFirst<T>` 等）。它**不是微软官方库**，与微软官方的 Entity Framework Core（https://learn.microsoft.com/zh-cn/ef/core/ ）相比：Dapper 不做实体追踪与自动建库，强调"贴近 SQL、无黑盒、性能高"；EF Core 提供完整的数据层抽象。两者都可配合微软官方 ADO.NET 提供程序（如 `Microsoft.Data.Sqlite`，https://learn.microsoft.com/zh-cn/dotnet/standard/data/sqlite/ ）使用。
 
 > [!origin] 由来背景
-> Dapper的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：技术之路是漫长的，好的资源能让你少走很多弯路。本章整理了最优质的 WPF 和上位机学习资源。
+> Dapper 诞生于 Stack Overflow 网站的运维实践：2008 年 Stack Overflow 上线后流量巨大，团队发现传统 ORM 的性能开销成为瓶颈，于是 **Sam Saffron** 写了这套"又快又薄"的数据访问库，让站内查询性能大幅提升。**2011 年**项目开源，很快成为 .NET 生态使用最广泛的轻量 ORM 之一（NuGet 下载量数十亿）。它的哲学是"SQL 就是最好的 DSL"——开发者的 SQL 功底越扎实，用 Dapper 越顺手。上位机项目常用它 + SQLite 存报警记录、工艺参数、产量统计等本地数据。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"Dapper"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **查询映射**：`conn.Query<T>("SELECT * FROM Devices WHERE Id = @Id", new { Id = 1 })` 返回 `IEnumerable<T>`
+> - **执行**：`conn.Execute("INSERT INTO Devices(Name) VALUES(@Name)", new { Name = "1 号泵" })`
+> - **参数化**：用 `@Param` 占位符 + 匿名对象传参，天然防 SQL 注入
+> - **动态对象**：`Query("SELECT ...")` 不指定泛型时返回 `dynamic`，适合快速取数绑定 DataGrid
+> - **批量**：`Execute` 支持传入对象集合，一条语句批量插入
+> - **事务**：`conn.Open()` 后 `using var tx = conn.BeginTransaction()`，配合 `TransactionScope` 保证一致性
 
 > [!example] 完整示例
 > **Dapper 轻量 ORM：SQLite 设备列表查询演示：**
@@ -81,37 +80,37 @@ parent: 16.1 GitHub 优质 WPF 开源项目
 >     }
 > }
 > ```
-> 
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ 上位机本地存储：报警记录、产量统计、工艺参数（SQLite）
+> ✅ 团队 SQL 熟练、想要完全掌控查询语句的项目
+> ✅ 查询性能敏感、数据量较大的历史数据检索
+> ✅ 与 EF Core 混用：简单查询用 Dapper，复杂领域模型用 EF
+> ❌ 需要自动建库、实体迁移、复杂关系跟踪的项目（EF Core 更省事）
+> ❌ 完全不想写 SQL 的低代码团队
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
-> 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 1：**`@参数` 写错导致查询异常** → 现象：`no such column` 或参数不匹配 → 原因：SQL 占位符与匿名对象属性名不一致（如 SQL 写 `@Name`，对象写 `new { name = ... }`） → 解决：占位符名称与匿名对象属性名严格一致（大小写敏感看提供程序）
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 2：**列名与属性名映射不上** → 现象：查询返回对象属性全为默认值 → 原因：SQL 列名 `Running` 与 C# 属性名不一致，或表名/列名带下划线 → 解决：SQL 中用 `AS` 起别名（如 `CASE Running WHEN 1 THEN '运行' END AS State`），或在实体上配置映射
+>
+> 坑 3：**忘记 `Open()` 就执行** → 现象：偶发 `InvalidOperationException: Connection must be valid and open` → 原因：Dapper 需要已打开的连接 → 解决：`using var conn = new SqliteConnection(...); conn.Open();` 后再调用扩展方法（每次打开开销小，不必长驻连接）
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - 查询一律参数化（`@Param` + 匿名对象），杜绝字符串拼接 SQL
+> - 数据访问封装成 `Repository` 类，SQL 集中在仓储层，便于审查与复用
+> - 实体类用简单 POCO，列名映射用 SQL 别名解决，避免过度配置
+> - 历史数据表建好索引（按时间、设备号），配合 Dapper 查询才快
+> - 上位机本地库优先 SQLite（`Microsoft.Data.Sqlite`），单文件、免部署、断电安全
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"Dapper"实现一个上位机中的小功能模块
+> **Lv.1 照猫画虎**：运行本节示例，给 Devices 表加一个 `Temperature` 列并查询显示
+> **Lv.2 小试牛刀**：用 `Execute` 实现"新增一条设备记录"并刷新列表
+> **Lv.3 融会贯通**：把设备报警记录到 SQLite（`INSERT`），再用 Dapper 按时间范围查询历史报警
+> **Lv.4 拆层挑战**：搭建 `DeviceRepository`（增删改查 + 事务），接入 `serilog` 记录 SQL 慢查询，并写单元测试验证仓储方法
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"Dapper"
-> - → 后续必学：掌握"Dapper"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：第 12 章（架构分层）、`什么是-mvvm`（07）
+> - → 后续必学：[`数据类-nuget-包`](数据类-nuget-包)（SQLite/JSON 等配套包）
+> - ⇄ 关联概念：`serilog`（数据访问日志）、[`日志与工具类-nuget-包`](日志与工具类-nuget-包)
+> - 📖 官方文档：https://github.com/DapperLib/Dapper ；SQLite 提供程序：https://learn.microsoft.com/zh-cn/dotnet/standard/data/sqlite/

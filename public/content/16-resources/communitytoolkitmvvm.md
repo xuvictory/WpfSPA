@@ -7,46 +7,42 @@ parent: 16.1 GitHub 优质 WPF 开源项目
 # CommunityToolkit.Mvvm
 
 > [!plain] 白话理解
-> "CommunityToolkit.Mvvm"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"CommunityToolkit.Mvvm"是一个重要的知识点。技术之路是漫长的，好的资源能让你少走很多弯路。本章整理了最优质的 WPF 和上位机学习资源。掌握了它，你就能更好地构建工业级上位机应用程序。
+> 写 MVVM 最烦的就是"重复劳动"：每个属性都要写 `INotifyPropertyChanged` 的 `SetProperty`，每个按钮都要手写 `ICommand` 类。**CommunityToolkit.Mvvm** 帮你把这些样板代码全部消灭——你只需写一句 `[ObservableProperty]` 或 `[RelayCommand]`，编译器自动帮你生成对应的属性和命令。它就像"语法糖"大礼包，让 ViewModel 清爽得像写普通类一样。
 
 > [!def] 官方定义
-> CommunityToolkit.Mvvm是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> **CommunityToolkit.Mvvm**（旧称 Microsoft.Toolkit.Mvvm）是**微软官方维护**的 .NET MVVM 工具包（GitHub：https://github.com/CommunityToolkit/dotnet ，NuGet：`CommunityToolkit.Mvvm`），是 .NET Community Toolkit 的一部分，基于**源生成器（Source Generator）**技术在编译期生成 `INotifyPropertyChanged` 与 `ICommand` 的实现代码。它**不是独立框架**，而是与 WPF 官方绑定机制（https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/data/ ）配合的工具类库：`ObservableObject`、`RelayCommand`、`[ObservableProperty]`、`[RelayCommand]`、`ObservableValidator` 等。官方文档：https://learn.microsoft.com/zh-cn/dotnet/communitytoolkit/mvvm/ 。由于是微软官方出品且零运行时依赖，它已成为现代 WPF/上位机项目 MVVM 绑定的首选。
 
 > [!origin] 由来背景
-> CommunityToolkit.Mvvm的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：技术之路是漫长的，好的资源能让你少走很多弯路。本章整理了最优质的 WPF 和上位机学习资源。
+> 社区工具包源于微软 2018 年前后启动的 **Windows Community Toolkit** 系列，最初覆盖 UWP/WinUI，后扩展出 .NET 平台工具包。其中 MVVM 部分吸收了社区对 `MVVMLight`（Laurent Bugnion 维护，后停止更新）的沉淀，于 2020 年更名为 CommunityToolkit.Mvvm 并加入源生成器支持。**关键转折是 MVVMLight 在 2021 年宣布不再维护**，大量 WPF 开发者迁移到 CommunityToolkit.Mvvm，使它成为 .NET 生态 MVVM 绑定的事实标准。上位机项目用它做 ViewModel，配合 `handycontrol` 等控件库已成为主流组合。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"CommunityToolkit.Mvvm"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **`ObservableObject`**：基类，内置 `SetProperty`/`OnPropertyChanged`，继承后属性通知开箱即用
+> - **`[ObservableProperty]`**：字段加特性自动生成属性；`partial` 方法 `OnXxxChanged` 可钩子式处理变更
+> - **`[RelayCommand]`**：方法加特性自动生成 `ICommand` 属性；支持 `AsyncRelayCommand` 直接处理异步命令
+> - **`RelayCommand<T>`**：带参数命令，如 `[RelayCommand] void Start(int deviceId)`
+> - **`ObservableValidator`**：内置 `INotifyDataErrorInfo` 支持，配合 `[Validation]` 特性做表单校验
+> - **`Messenger`**：`WeakReferenceMessenger.Default.Send/Register` 实现解耦通信（轻量版事件聚合器）
+> - **零依赖**：不依赖 WPF，纯 .NET 库，可在测试项目中直接使用
 
 > [!example] 完整示例
-> **CommunityToolkit.Mvvm：源生成器属性通知与命令绑定演示：**
+> **CommunityToolkit.Mvvm 源生成器：设备启停 ViewModel：**
 >
 > **MainWindow.xaml：**
 > ```xml
 > <Window x:Class="HmiDemo.MainWindow"
 >         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 >         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
->         xmlns:local="clr-namespace:HmiDemo"
->         Title="CommunityToolkit.Mvvm 演示" Height="380" Width="440"
+>         Title="CommunityToolkit.Mvvm 演示" Height="300" Width="420"
 >         WindowStartupLocation="CenterScreen" Background="#0D1117">
->     <Window.DataContext>
->         <local:MainViewModel/>
->     </Window.DataContext>
->     <StackPanel Margin="15">
->         <TextBlock Text="CommunityToolkit.Mvvm 绑定演示" Foreground="#58A6FF" FontWeight="Bold" Margin="0,0,0,10"/>
->         <TextBlock Text="产量：" Foreground="#8B949E"/>
->         <TextBlock Text="{Binding Output}" Foreground="White" FontSize="24" Margin="0,4,0,10"/>
->         <Button Content="产量 +1" Command="{Binding IncrementCommand}" Padding="8" Margin="0,0,0,8"
->                 Background="#21262D" Foreground="White"/>
->         <Button Content="清零" Command="{Binding ResetCommand}" Padding="8"
->                 Background="#DA3633" Foreground="White"/>
->         <TextBlock Text="{Binding StateText}" Foreground="#58A6FF" Margin="0,10,0,0"/>
+>     <StackPanel Margin="20">
+>         <TextBlock Text="设备启停控制（源生成器 MVVM）" Foreground="#58A6FF"
+>                    FontWeight="Bold" Margin="0,0,0,15"/>
+>         <TextBlock Text="{Binding DeviceName}" Foreground="White" FontSize="18" Margin="0,0,0,10"/>
+>         <TextBlock Text="{Binding StatusText}" Foreground="#8B949E" Margin="0,0,0,15"/>
+>         <Button Content="启动" Command="{Binding StartCommand}" Width="120"
+>                 Padding="8" Margin="0,0,0,8"/>
+>         <Button Content="停止" Command="{Binding StopCommand}" Width="120"
+>                 Padding="8"/>
 >     </StackPanel>
 > </Window>
 > ```
@@ -54,74 +50,81 @@ parent: 16.1 GitHub 优质 WPF 开源项目
 > **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
 > using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             // 需通过 NuGet 安装 CommunityToolkit.Mvvm 包
+>             DataContext = new DeviceViewModel();
+>         }
+>     }
+> }
+> ```
+>
+> **DeviceViewModel.cs —— 源生成器 ViewModel：**
+> ```csharp
 > using CommunityToolkit.Mvvm.ComponentModel;
 > using CommunityToolkit.Mvvm.Input;
 >
 > namespace HmiDemo
 > {
->     // 需通过 NuGet 安装 CommunityToolkit.Mvvm 包
->     public partial class MainWindow : Window
+>     public partial class DeviceViewModel : ObservableObject
 >     {
->         public MainWindow() => InitializeComponent();
->     }
->
->     public partial class MainViewModel : ObservableObject
->     {
->         // [ObservableProperty] 在编译期自动生成 Output 属性并实现属性通知
 >         [ObservableProperty]
->         private int _output;
+>         private string _deviceName = "1 号水泵";
 >
 >         [ObservableProperty]
->         private string _stateText = "等待操作";
+>         private string _statusText = "待机";
 >
->         // [RelayCommand] 自动生成 IncrementCommand，绑定到按钮
 >         [RelayCommand]
->         private void Increment()
+>         private void Start()
 >         {
->             Output++;
->             StateText = "产量已更新为 " + Output;
+>             StatusText = "运行中";
 >         }
 >
 >         [RelayCommand]
->         private void Reset()
+>         private void Stop()
 >         {
->             Output = 0;
->             StateText = "产量已清零";
+>             StatusText = "已停止";
 >         }
 >     }
 > }
 > ```
-> 
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ 所有需要 MVVM 绑定的 WPF 项目（中小型主力方案）
+> ✅ 与 `handycontrol`、`materialdesigninxaml` 等控件库自由搭配
+> ✅ 需要表单校验（`ObservableValidator`）的参数配置界面
+> ✅ 需要单元测试 ViewModel（零 WPF 依赖，可直接 new）
+> ❌ 需要模块化、区域导航等企业级能力的大型项目（选 `prism` 更合适）
+> ❌ 团队坚持手写 `INotifyPropertyChanged` 且不接受代码生成的场景
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
-> 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 1：**`[ObservableProperty]` 不生成属性** → 现象：XAML 绑定 `DeviceName` 编译不通过或运行不更新 → 原因：类必须 `partial` 且继承 `ObservableObject`，且项目需 C# 8+/.NET Standard 2.1 以上 → 解决：确认 `public partial class` + 继承基类，检查 `LangVersion`
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 2：**`[RelayCommand]` 生成命令名与预期不符** → 现象：方法叫 `StartAsync`，生成的命令名是 `StartAsyncCommand` 而不是期望的 `StartCommand` → 原因：命令命名规则是"方法名 + Command" → 解决：用 `[RelayCommand(CommandName = "StartCommand")]` 显式指定，或按默认规则引用
+>
+> 坑 3：**后台线程改属性界面不刷新/异常** → 现象：通信线程直接给属性赋值，UI 偶发异常 → 原因：`SetProperty` 在非 UI 线程调用 → 解决：数据采集回调里用 `Dispatcher` 或 `AsyncRelayCommand` 切线程（第 8 章异步有详细方案）
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - ViewModel 一律继承 `ObservableObject`，字段命名 `_camelCase`，交给源生成器统一处理
+> - 异步操作（启动/停止/采集）用 `AsyncRelayCommand`，它自带执行中禁用的 `CanExecute` 逻辑
+> - 表单校验用 `ObservableValidator` + `[Validation]`，配合 `BindValidation` 模板显示错误
+> - 模块间简单通信用 `WeakReferenceMessenger.Default`，避免强引用事件导致的内存泄漏
+> - 保持 ViewModel 不引用 `System.Windows`，让单测与 UI 分离（第 12 章可测试架构）
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"CommunityToolkit.Mvvm"实现一个上位机中的小功能模块
+> **Lv.1 照猫画虎**：运行本节示例，给 `DeviceName` 加一个运行时修改按钮，观察绑定自动刷新
+> **Lv.2 小试牛刀**：给 `StopCommand` 增加 `CanExecute` 条件（设备未启动时停止按钮禁用）
+> **Lv.3 融会贯通**：把 `Start()` 改成 `AsyncRelayCommand`，模拟 2 秒启动延时并显示"启动中…"
+> **Lv.4 拆层挑战**：用 `ObservableValidator` 做一个带必填、范围校验的设备参数表单，并用 `WeakReferenceMessenger` 把保存结果通知主界面
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"CommunityToolkit.Mvvm"
-> - → 后续必学：掌握"CommunityToolkit.Mvvm"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：[`什么是-mvvm`](什么是-mvvm)、[`inotifypropertychanged-实现`](inotifypropertychanged-实现)、[`icommand-实现relaycommand-系列`](icommand-实现relaycommand-系列)（07）
+> - → 后续必学：[`prism`](prism)（大型项目的框架化方案）
+> - ⇄ 关联概念：[`propertychangedfody`](propertychangedfody)（IL 编织方案对比）、[`handycontrol`](handycontrol)（界面搭配）
+> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/communitytoolkit/mvvm/ ；GitHub：https://github.com/CommunityToolkit/dotnet

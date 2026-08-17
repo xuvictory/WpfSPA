@@ -7,22 +7,21 @@ parent: 16.1 GitHub 优质 WPF 开源项目
 # FlaUI
 
 > [!plain] 白话理解
-> "FlaUI"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"FlaUI"是一个重要的知识点。技术之路是漫长的，好的资源能让你少走很多弯路。本章整理了最优质的 WPF 和上位机学习资源。掌握了它，你就能更好地构建工业级上位机应用程序。
+> 上位机软件交付前要"回归测试"：启动、填参数、点按钮、看状态，几百个用例手动点一遍能累死。**FlaUI** 就是"自动替你点界面"的库——它通过 Windows 的 UI 自动化接口，找到窗口上的输入框、按钮，模拟输入和点击，再断言界面变化。相当于给测试脚本配了一双"能看见界面的眼睛和手"，让 WPF 界面的自动化验收成为可能。
 
 > [!def] 官方定义
-> FlaUI是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> **FlaUI** 是一个**社区开源**的 .NET UI 自动化库（GitHub：https://github.com/FlaUI/FlaUI ，NuGet：`FlaUI.Core` + `FlaUI.UIA3`/`FlaUI.UIA2`），由 Florian Kutscherauer（Roemer）等维护，其底层基于**微软官方 Windows UI Automation（UIA）框架**（https://learn.microsoft.com/zh-cn/windows/win32/winauto/entry-uiauto-win32 ）。FlaUI 本身不是微软官方库，而是对 UIA 的 .NET 封装：`FlaUI.Core` 提供统一的自动化对象模型，`FlaUI.UIA3` 基于托管 UIA3 实现（推荐），`FlaUI.UIA2` 基于 COM 版 UIA2。它通过控件属性（如 `AutomationId`、`Name`）定位元素并执行点击、输入、读取状态等操作，是 WPF 上位机界面自动化测试的主流选择（详见第 12 章 `ui-自动化测试flaui`）。
 
 > [!origin] 由来背景
-> FlaUI的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：技术之路是漫长的，好的资源能让你少走很多弯路。本章整理了最优质的 WPF 和上位机学习资源。
+> FlaUI 的谱系可以追溯到 **White**（TestStack.White）——一个 2009 年前后流行的 .NET UI 自动化框架。White 后期维护停滞，社区在 2015 年前后陆续转向更贴合微软 UIA 的替代方案，**FlaUI** 正是其中代表，它重写了对象模型、修复了 White 的诸多问题，并持续跟随 UIA 演进（支持 WinForms/WPF/UWP）。2017 年起 FlaUI 被 .NET 测试生态广泛采用，与 xUnit/NUnit 配合做桌面端 UI 回归测试。上位机软件"交付即验收"的行业特性，让 FlaUI 成为保障界面功能回归的常用工具。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"FlaUI"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **启动被测应用**：`Application.Launch(path)` 或 `Application.Attach(process)`；`application.GetMainWindow(app)` 获取主窗口
+> - **元素定位**：`window.FindFirstDescendant(cf => cf.ByAutomationId("DeviceIdBox"))` 按 `AutomationId`（WPF 中即 `x:Name`）定位
+> - **交互**：`textBox.Enter("DEV-001")` 输入、`button.Click()` 点击、`comboBox.Select("运行")` 选择
+> - **断言读取**：`textBox.Text`、`element.Properties.Name` 读取控件状态用于断言
+> - **等待**：`window.WaitUntilEnabled(element)` / 显式延时等待，避免 UI 异步刷新竞态
+> - **x:Name 即 AutomationId**：WPF 控件默认 `x:Name` 会暴露为 `AutomationId`，测试脚本按此定位最稳定
 
 > [!example] 完整示例
 > **FlaUI 自动化测试目标应用（AUT）：可被测试脚本定位与操作：**
@@ -78,37 +77,37 @@ parent: 16.1 GitHub 优质 WPF 开源项目
 >     }
 > }
 > ```
-> 
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ WPF 上位机的界面回归测试（启动/参数/控制/状态全流程）
+> ✅ 交付验收前自动跑冒烟用例，替代人工点点点
+> ✅ 与 xUnit/NUnit 集成，把 UI 用例纳入 CI 流水线
+> ✅ 第三方桌面工具的数据自动采集（读取/导出）
+> ❌ 需要验证界面渲染像素/动画效果（FlaUI 只关心控件语义，不校验视觉）
+> ❌ 逻辑层测试（用 `单元测试xunitmoq` 更快更稳，UI 测试应只覆盖界面交互）
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
-> 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 1：**找不到元素/自动化属性为空** → 现象：`FindFirstDescendant` 返回 null → 原因：控件没有暴露 `AutomationId`（如非 `x:Name` 命名的动态控件），或界面未加载完 → 解决：WPF 控件确保用 `x:Name` 命名；定位前 `WaitUntilEnabled` 或显式等待窗口就绪
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 2：**测试偶发闪断** → 现象：用例时过时挂、报"element not connected" → 原因：界面刷新重建控件树，句柄失效 → 解决：重试定位（封装 `FindFirstDescendant` 重试 N 次），避免缓存元素引用
+>
+> 坑 3：**脚本窗口与测试窗口相互干扰** → 现象：自动化点击点到测试框架自己的窗口 → 原因：同时打开多个同名窗口，定位不精确 → 解决：用 `Application.Launch` 指定进程启动，通过 `GetMainWindow` 限定目标窗口
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - 界面元素统一用 `x:Name` 作为自动化定位的 `AutomationId`，测试脚本与控件命名对齐
+> - UI 测试只验证"界面交互正确"，业务断言放到逻辑层单测（第 12 章分层）
+> - 封装"等待-定位-重试"的工具方法，对抗异步刷新的时序抖动
+> - 把冒烟用例（启动→登录→主界面元素齐备）纳入 CI，回归用例定期全量跑
+> - 用无头/最小化运行或固定分辨率减少环境差异，保证现场与开发机结果一致
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"FlaUI"实现一个上位机中的小功能模块
+> **Lv.1 照猫画虎**：运行示例 AUT 程序，用 FlaUI 脚本定位"启动设备"按钮并点击
+> **Lv.2 小试牛刀**：在脚本里往 `SpeedBox` 输入 1500 再点启动，断言 `StatusText` 显示 1500 RPM
+> **Lv.3 融会贯通**：用 xUnit 把"启动→停止"写成完整用例，加入断言与等待
+> **Lv.4 拆层挑战**：为一个多窗口上位机搭 UI 回归测试套件：登录→主界面→参数页→报警页全流程自动化，并接入 CI 定时执行
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"FlaUI"
-> - → 后续必学：掌握"FlaUI"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：第 12 章 [`ui-自动化测试flaui`](ui-自动化测试flaui)、[`单元测试xunitmoq`](单元测试xunitmoq)
+> - → 后续必学：[`工控软件测试要点`](工控软件测试要点)（12，测试体系）
+> - ⇄ 关联概念：`什么是-mvvm`（07，控件命名与绑定）、[`日志与工具类-nuget-包`](日志与工具类-nuget-包)
+> - 📖 官方文档：https://github.com/FlaUI/FlaUI ；Windows UI Automation：https://learn.microsoft.com/zh-cn/windows/win32/winauto/entry-uiauto-win32

@@ -7,22 +7,21 @@ parent: 16.1 GitHub 优质 WPF 开源项目
 # MaterialDesignInXAML
 
 > [!plain] 白话理解
-> "MaterialDesignInXAML"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"MaterialDesignInXAML"是一个重要的知识点。技术之路是漫长的，好的资源能让你少走很多弯路。本章整理了最优质的 WPF 和上位机学习资源。掌握了它，你就能更好地构建工业级上位机应用程序。
+> 如果说原生 WPF 控件像"毛坯房"，那么 **MaterialDesignInXAML** 就是一支"装修队"——它把 Google 的 Material Design 设计语言（卡片、阴影、圆角、动效）整体搬进 WPF，让上位机界面从灰白单调变得现代美观，**不需要手写任何复杂样式**。对整天和仪表盘、参数面板打交道的上位机开发来说，它是提升软件"颜值"和客户观感的最快途径。
 
 > [!def] 官方定义
-> MaterialDesignInXAML是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> **MaterialDesignInXAML** 是一个**社区开源**的 WPF 控件库，不是微软官方产物。它用纯 XAML + C# 实现了 Google Material Design 设计规范，提供主题资源（`MaterialDesignTheme`）、矢量图标（`PackIcon`）、对话框（`DialogHost`）、卡片（`Card`）等一整套控件与样式。项目托管在 GitHub（https://github.com/MaterialDesignInXAML/MaterialDesignInXamlToolkit ），通过 NuGet 包 **`MaterialDesignThemes`** 安装使用，支持 .NET Framework 4.5.2+ 与 .NET Core/.NET 5+。
 
 > [!origin] 由来背景
-> MaterialDesignInXAML的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：技术之路是漫长的，好的资源能让你少走很多弯路。本章整理了最优质的 WPF 和上位机学习资源。
+> 2014 年 Google 在 I/O 大会上正式发布 **Material Design** 设计语言，以纸张质感、层叠阴影、灵动色彩与动效著称。由于 WPF 的 XAML 天生适合声明式 UI，社区开发者自发将其移植到 WPF，2015 年启动 **MaterialDesignInXAML** 项目并持续迭代至今。它精准解决了 WPF 原生控件"功能够用但不好看"的痛点，成为 WPF 生态中 Star 数最高的第三方控件库之一。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"MaterialDesignInXAML"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **引入主题资源**：在 `App.xaml` 中合并 `MaterialDesignTheme.Light.xaml` 与 `MaterialDesignTheme.Defaults.xaml`，全局生效
+> - **PackIcon 图标**：`<materialDesign:PackIcon Kind="Cog"/>` 即可用矢量图标，无需准备图片资源
+> - **HintAssist 提示**：`materialDesign:HintAssist.Hint="设备名称"` 让 TextBox 拥有浮动占位提示
+> - **DialogHost 对话框**：用 `DialogHost` 包裹内容，通过 `DialogHost.Show(obj)` 即可弹出确认框、输入框
+> - **Card 卡片控件**：`<materialDesign:Card>` 自带圆角与阴影，天然适合做设备状态卡片
+> - **深浅色主题**：切换 `MaterialDesignTheme.Light/Dark.xaml` 即可一键换肤
 
 > [!example] 完整示例
 > **MaterialDesignInXaml 主题控件：提示输入与保存操作演示：**
@@ -76,37 +75,38 @@ parent: 16.1 GitHub 优质 WPF 开源项目
 >     }
 > }
 > ```
-> 
+>
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ 上位机监控主界面美化（设备卡片、数据看板）
+> ✅ 参数设置、配方管理等表单密集型页面
+> ✅ 需要与现代感 UI 提升产品档次的交付项目
+> ✅ 与 LiveCharts2 曲线库搭配做工业数据可视化
+> ❌ 要求与老款工控机原生 Windows 风格完全一致的场景
+> ❌ 团队已有成熟自有 UI 规范、不想引入第三方主题的项目
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
-> 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 1：**主题资源没合并就报"找不到资源"异常** → 只装了 NuGet 包却忘记在 `App.xaml` 合并 `MaterialDesignTheme.*.xaml`，运行即崩溃；解决：在 `App.xaml` 中依次合并 `MaterialDesignTheme.Light.xaml` 和 `MaterialDesignTheme.Defaults.xaml`
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 2：**深浅色切换"一半是黑的一半是白的"** → 只切换了主题资源，却给控件硬编码了 `Background="#FFFFFF"`；解决：尽量使用主题提供的 `DynamicResource` 色板（如 `MaterialDesign.Brush.Background`），避免硬编码颜色
+>
+> 坑 3：**版本兼容问题** → MaterialDesignThemes 新版要求 .NET 8 或更高，老项目升级包后编译报错；解决：升级前先确认目标框架版本，必要时锁定旧版包或同步升级 .NET
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - 在 `App.xaml` 统一引入主题资源，不要在单个窗口里零散引入
+> - 图标优先用 `PackIcon` 矢量图标，避免为每个图标准备 PNG
+> - 用 `DialogHost` 统一管理确认/输入弹窗，而不是反复用 `MessageBox`
+> - 设备状态用 `Card` + 状态色（绿/红/黄）组合，一眼可读
+> - 升级包版本前先看 GitHub Releases 的 Breaking Changes 说明
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"MaterialDesignInXAML"实现一个上位机中的小功能模块
+> **Lv.1 照猫画虎**：运行本节示例，把主色从绿色改为蓝色，观察整站换色效果
+> **Lv.2 小试牛刀**：给示例页面加一个 `PackIcon` 设备图标，并用 `HintAssist.Hint` 优化输入框
+> **Lv.3 融会贯通**：用 `DialogHost.Show` 实现"删除设备二次确认"弹窗，替换原来的 `MessageBox`
+> **Lv.4 拆层挑战**：独立搭建一个 4 张设备卡片 + 1 个实时状态区域的监控看板页面，全部用 MaterialDesign 控件完成
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"MaterialDesignInXAML"
-> - → 后续必学：掌握"MaterialDesignInXAML"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：[`什么是样式`](什么是样式)、[`资源字典`](资源字典)（05-core-concepts）
+> - → 后续必学：[`handycontrol`](handycontrol)（同类的国产控件库，控件更全）
+> - ⇄ 关联概念：`什么是-wpf-资源`、[`livecharts2`](livecharts2)（曲线可视化搭配使用）
+> - 📖 官方文档：https://github.com/MaterialDesignInXAML/MaterialDesignInXamlToolkit

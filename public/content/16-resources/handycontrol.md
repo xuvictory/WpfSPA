@@ -7,22 +7,21 @@ parent: 16.1 GitHub 优质 WPF 开源项目
 # HandyControl
 
 > [!plain] 白话理解
-> "HandyControl"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"HandyControl"是一个重要的知识点。技术之路是漫长的，好的资源能让你少走很多弯路。本章整理了最优质的 WPF 和上位机学习资源。掌握了它，你就能更好地构建工业级上位机应用程序。
+> 如果说 MaterialDesignInXAML 是"装修队"，那么 **HandyControl** 就是"全屋定制的家具厂"——同样是开源 WPF 控件库，它给上位机界面提供的控件更全：卡片、分组框、时钟、气泡通知（Growl）、步骤条、环形进度条、侧边菜单样样都有，且**中文文档和中文社区支持更友好**。对做设备监控、参数面板、报警列表的上位机项目来说，用它搭界面基本不用再手写复杂样式。
 
 > [!def] 官方定义
-> HandyControl是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> **HandyControl** 是一个**社区开源**的 WPF 控件库（GitHub：https://github.com/HandyOrg/HandyControl ，NuGet：`HandyControl`），基于 .NET Framework 4.5+ 与 .NET Core/.NET 5+，内置 80+ 常用控件与样式。它**不是微软官方产物**，但提供了官方控件库没有的增强控件（如 `Growl` 气泡通知、`Card` 卡片、`SimplePagination` 分页）与一整套视觉主题（浅色/深色），官网：https://handyorg.github.io/handycontrol/ 。它与微软官方 WPF 控件（`System.Windows.Controls`，见 https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/controls/ ）互补：官方控件保底，HandyControl 提供更现代的交互体验。
 
 > [!origin] 由来背景
-> HandyControl的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：技术之路是漫长的，好的资源能让你少走很多弯路。本章整理了最优质的 WPF 和上位机学习资源。
+> HandyControl 由国内开发者 NaBian（SangDrac）于 2018 年前后发起，最初源于作者在 WPF 项目中反复编写相同样式与控件的痛点，于是把积累的样式整理成开源库。因其**中文文档、控件数量多、上手快**，很快成为国内 WPF 社区最流行的控件库之一（GitHub Star 数位居 WPF 控件库前列），并持续维护至今。上位机行业大量使用它做设备看板、参数配置界面，形成"HandyControl 搭界面 + MVVM 框架管逻辑"的主流组合。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"HandyControl"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **引入资源**：安装包后在 `App.xaml` 合并 `pack://application:,,,/HandyControl;component/Themes/SkinDefault.xaml` 与 `Theme.xaml`，全局生效
+> - **Card 卡片**：`<hc:Card>` 自带圆角与阴影，适合做设备状态卡片
+> - **Growl 通知**：`Growl.Success("已保存")` / `Growl.Error("通信超时")` 右上角气泡提醒，替代 `MessageBox` 更不打断操作
+> - **主题切换**：`hc:Skin` 资源配合 `Application.Current.Resources["Skin"] = SkinType.Dark` 一键切换深浅色
+> - **内置图标与样式**：通过 `hc:IconElement` 使用内置矢量图标；控件 `Style` 均以 `{StaticResource}` 形式可整体覆盖
+> - **MVVM 友好**：大量控件支持 `Command` 绑定，与 `communitytoolkitmvvm` 搭配无需写事件
 
 > [!example] 完整示例
 > **HandyControl 卡片控件与设备状态演示：**
@@ -91,37 +90,37 @@ parent: 16.1 GitHub 优质 WPF 开源项目
 >     }
 > }
 > ```
-> 
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ 设备状态看板（Card + 状态色组合，一眼可读）
+> ✅ 参数设置、配方管理页面（表单控件齐全）
+> ✅ 报警列表与气泡通知（Growl 不打断操作）
+> ✅ 需要一键切换深浅色主题的交付项目
+> ❌ 需要与老款工控机系统风格完全统一的老项目改造
+> ❌ 团队已有成熟自定义 UI 规范、不想被控件库样式约束的项目
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
-> 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 1：**忘记合并主题资源导致样式错乱** → 现象：控件显示异常或编译提示找不到 `SkinDefault.xaml` 资源 → 原因：只装了 NuGet 包，没在 `App.xaml` 合并 HandyControl 主题 → 解决：在 `App.xaml` 中依次合并 `pack://application:,,,/HandyControl;component/Themes/SkinDefault.xaml` 与 `Theme.xaml`
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 2：**Growl 在非主窗口弹不出来** → 现象：在子窗口调用 `Growl.Info` 无显示或弹到主窗口 → 原因：`Growl` 依赖主窗口的 `GrowlPanel` 挂载位置 → 解决：在主窗口 XAML 中显式放置 `<hc:GrowlPanel/>`，或用 `Growl.InfoGlobal` 全局弹窗
+>
+> 坑 3：**与 MaterialDesignInXAML 同时引用冲突** → 现象：两库都定义了同名 `ResourceDictionary` 键或样式优先级混乱 → 原因：两套主题同时合并互相覆盖 → 解决：一个项目只选一套控件库做主题基础，另一套只用于个别控件（或干脆统一用 HandyControl）
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - 在 `App.xaml` 统一引入主题资源，避免每个窗口单独引入造成样式漂移
+> - 状态类提示优先用 `Growl`，`MessageBox` 只留给"必须阻断操作"的确认场景
+> - 设备状态卡片统一用 `Card` + 三色状态（绿运行/红停止/黄告警），配合模板复用
+> - 深浅色主题用 `hc:Skin` 资源切换，避免硬编码颜色导致换肤后界面难看
+> - 升级 HandyControl 版本前查看 GitHub Releases 的 Breaking Changes，老项目锁版本
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"HandyControl"实现一个上位机中的小功能模块
+> **Lv.1 照猫画虎**：运行本节示例，把 1 号泵状态色从绿色改成黄色，观察刷新效果
+> **Lv.2 小试牛刀**：给示例页面加一个 `hc:Growl.Success("参数已保存")`，替换原来的 `StatusText` 提示
+> **Lv.3 融会贯通**：用 `hc:Card` 把示例改造为 4 台设备状态看板，并实现一键"全部启动/全部停止"
+> **Lv.4 拆层挑战**：独立搭建一个包含设备卡片、报警列表、Growl 通知三块区域的监控页面，全部用 HandyControl 控件 + MVVM 命令完成
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"HandyControl"
-> - → 后续必学：掌握"HandyControl"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：[`什么是样式`](什么是样式)、[`资源字典`](资源字典)（05-core-concepts）
+> - → 后续必学：[`materialdesigninxaml`](materialdesigninxaml)（另一套主流控件库，风格对比）
+> - ⇄ 关联概念：[`livecharts2`](livecharts2)（曲线可视化搭配）、`什么是-mvvm`（07，命令绑定基础）
+> - 📖 官方文档：https://github.com/HandyOrg/HandyControl ；官网：https://handyorg.github.io/handycontrol/
