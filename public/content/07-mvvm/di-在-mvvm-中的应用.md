@@ -25,9 +25,130 @@ parent: 7.6 依赖注入
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **DI 在 MVVM 中的应用演示：ViewModel 通过构造函数同时注入日志服务与数据服务，MainWindow 用一行代码从简易容器解析出组装好的 ViewModel：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="DI 在 MVVM 中的应用" Height="360" Width="420"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="20">
+>         <TextBlock Text="设备报警面板（DI 组装）" Foreground="#58A6FF"
+>                    FontSize="16" FontWeight="Bold"/>
+>         <TextBlock Text="最新报警" Foreground="#8B949E" Margin="0,15,0,4"/>
+>         <TextBlock Text="{Binding AlarmText}" Foreground="#DA3633" FontSize="16"
+>                    FontWeight="Bold" TextWrapping="Wrap"/>
+>         <TextBlock Text="日志（由注入的日志服务记录）" Foreground="#8B949E" Margin="0,12,0,4"/>
+>         <Border Background="#161B22" Padding="8" CornerRadius="4" Margin="0,0,0,15">
+>             <TextBlock Text="{Binding LogText}" Foreground="#8B949E"
+>                        FontFamily="Consolas" TextWrapping="Wrap"/>
+>         </Border>
+>         <Button Content="触发一次报警" Command="{Binding RaiseAlarmCommand}" Padding="8"
+>                 Background="#21262D" Foreground="White" HorizontalAlignment="Left"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 服务注入与简易容器：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Collections.Generic;
+> using System.ComponentModel;
+> using System.Windows;
+> using System.Windows.Input;
+>
+> namespace HmiDemo
+> {
+>     // 日志服务
+>     public interface ILogger { void Log(string message); }
+>     public class ConsoleLogger : ILogger
+>     {
+>         public void Log(string message) { /* 生产环境写入文件/数据库 */ }
+>     }
+>
+>     // 报警服务：依赖日志服务（服务之间的依赖也靠注入）
+>     public interface IAlarmService { string GetLatestAlarm(); }
+>     public class DeviceAlarmService : IAlarmService
+>     {
+>         private readonly ILogger _logger;
+>         public DeviceAlarmService(ILogger logger) => _logger = logger;
+>         public string GetLatestAlarm() => "电机过载（E-301），请检查负载";
+>     }
+>
+>     public class MainViewModel : INotifyPropertyChanged
+>     {
+>         private readonly IAlarmService _alarmService;
+>         private readonly ILogger _logger;
+>         private string _alarmText = "无报警";
+>         private string _logText = "系统初始化完成";
+>
+>         public MainViewModel(IAlarmService alarmService, ILogger logger)
+>         {
+>             _alarmService = alarmService;
+>             _logger = logger;
+>             RaiseAlarmCommand = new RelayCommand(RaiseAlarm);
+>         }
+>
+>         public string AlarmText { get; private set; }
+>         public string LogText { get; private set; }
+>         public ICommand RaiseAlarmCommand { get; }
+>
+>         private void RaiseAlarm()
+>         {
+>             AlarmText = _alarmService.GetLatestAlarm();
+>             LogText = _logger.GetType().Name + "：已记录报警 " + DateTime.Now.ToString("HH:mm:ss");
+>             OnPropertyChanged(nameof(AlarmText));
+>             OnPropertyChanged(nameof(LogText));
+>         }
+>
+>         public event PropertyChangedEventHandler PropertyChanged;
+>         private void OnPropertyChanged(string name) =>
+>             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+>     }
+>
+>     // 简易 IoC 容器：注册类型后按需解析并自动注入构造函数依赖
+>     public class SimpleContainer
+>     {
+>         private readonly Dictionary<Type, Func<object>> _registrations =
+>             new Dictionary<Type, Func<object>>();
+>
+>         public void Register<T>(Func<object> factory) =>
+>             _registrations[typeof(T)] = factory;
+>
+>         public T Resolve<T>()
+>         {
+>             if (_registrations.TryGetValue(typeof(T), out var factory))
+>                 return (T)factory();
+>             throw new InvalidOperationException("未注册类型：" + typeof(T).Name);
+>         }
+>     }
+>
+>     public class RelayCommand : ICommand
+>     {
+>         private readonly Action _execute;
+>         public RelayCommand(Action execute) => _execute = execute;
+>         public bool CanExecute(object parameter) => true;
+>         public void Execute(object parameter) => _execute();
+>         public event EventHandler CanExecuteChanged;
+>     }
+>
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             // 容器组装：注册服务 → 解析 ViewModel（依赖自动注入）
+>             var container = new SimpleContainer();
+>             container.Register<ILogger>(() => new ConsoleLogger());
+>             container.Register<IAlarmService>(() => new DeviceAlarmService(container.Resolve<ILogger>()));
+>             container.Register<MainViewModel>(() => new MainViewModel(
+>                 container.Resolve<IAlarmService>(), container.Resolve<ILogger>()));
+>             DataContext = container.Resolve<MainViewModel>();
+>         }
+>     }
+> }
 > ```
 > 
 

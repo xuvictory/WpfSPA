@@ -25,9 +25,66 @@ parent: 7.3 View 层
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **纯 XAML 展示：后台代码只有一行构造函数。设备状态灯用 Style + DataTrigger 实现"开关联动变色"，全部逻辑都在 XAML 中完成：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="纯 XAML 展示" Height="320" Width="380"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="20">
+>         <TextBlock Text="设备指示灯（纯 XAML 实现）" Foreground="#58A6FF"
+>                    FontSize="16" FontWeight="Bold"/>
+>         <TextBlock Text="运行状态" Foreground="#8B949E" Margin="0,15,0,5"/>
+>         <!-- 状态灯：用 Style 触发器根据 IsChecked 切换颜色，无需任何事件代码 -->
+>         <Ellipse x:Name="Lamp" Width="60" Height="60" HorizontalAlignment="Left" Margin="0,5">
+>             <Ellipse.Style>
+>                 <Style TargetType="Ellipse">
+>                     <Setter Property="Fill" Value="#DA3633"/>
+>                     <Style.Triggers>
+>                         <DataTrigger Binding="{Binding IsChecked, ElementName=Switch}" Value="True">
+>                             <Setter Property="Fill" Value="#238636"/>
+>                         </DataTrigger>
+>                     </Style.Triggers>
+>                 </Style>
+>             </Ellipse.Style>
+>         </Ellipse>
+>         <TextBlock Text="状态文本" Foreground="#8B949E" Margin="0,15,0,5"/>
+>         <TextBlock FontSize="18" FontWeight="Bold">
+>             <TextBlock.Style>
+>                 <Style TargetType="TextBlock">
+>                     <Setter Property="Text" Value="已停止"/>
+>                     <Setter Property="Foreground" Value="#DA3633"/>
+>                     <Style.Triggers>
+>                         <DataTrigger Binding="{Binding IsChecked, ElementName=Switch}" Value="True">
+>                             <Setter Property="Text" Value="运行中"/>
+>                             <Setter Property="Foreground" Value="#238636"/>
+>                         </DataTrigger>
+>                     </Style.Triggers>
+>                 </Style>
+>             </TextBlock.Style>
+>         </TextBlock>
+>         <!-- ToggleButton：本身不写任何事件，靠绑定与触发器驱动 -->
+>         <ToggleButton x:Name="Switch" Content="切换运行/停止" Padding="8" Margin="0,15,0,0"
+>                       Background="#21262D" Foreground="White" HorizontalAlignment="Left"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台仅保留构造函数：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         // 本例没有任何事件处理逻辑，状态切换全部由 XAML 的触发器完成
+>         public MainWindow() => InitializeComponent();
+>     }
+> }
 > ```
 > 
 

@@ -25,9 +25,94 @@ parent: 7.1 MVVM 基础概念
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **最小 MVVM 演示：锅炉温度监控。View 通过 DataContext 绑定到 ViewModel，ViewModel 持有数据与命令，点击"重新采集"更新温度：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="什么是MVVM - 温度监控" Height="320" Width="380"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="20">
+>         <TextBlock Text="锅炉温度实时监控" Foreground="#58A6FF" FontSize="16" FontWeight="Bold"/>
+>         <!-- View 通过 {Binding} 读取 ViewModel 中的属性，无需写一行控件赋值代码 -->
+>         <TextBlock Margin="0,15,0,5" Text="当前温度（℃）" Foreground="#8B949E"/>
+>         <TextBlock Text="{Binding Temperature}" FontSize="30" Foreground="White" FontWeight="Bold"/>
+>         <TextBlock Text="{Binding Status}" Foreground="#238636" Margin="0,5,0,15"/>
+>         <!-- 动作通过 Command 绑定到 ViewModel 中的命令对象 -->
+>         <Button Content="重新采集" Command="{Binding RefreshCommand}" Padding="8"
+>                 Background="#21262D" Foreground="White" HorizontalAlignment="Left"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— ViewModel 与 View：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.ComponentModel;
+> using System.Windows;
+> using System.Windows.Input;
+>
+> namespace HmiDemo
+> {
+>     // ViewModel：承载业务状态与命令，完全不依赖界面控件，可独立单元测试
+>     public class MainViewModel : INotifyPropertyChanged
+>     {
+>         private double _temperature;
+>         private string _status = "等待采集";
+>
+>         public double Temperature
+>         {
+>             get => _temperature;
+>             set { _temperature = value; OnPropertyChanged(nameof(Temperature)); }
+>         }
+>
+>         public string Status
+>         {
+>             get => _status;
+>             set { _status = value; OnPropertyChanged(nameof(Status)); }
+>         }
+>
+>         public ICommand RefreshCommand { get; }
+>
+>         public MainViewModel()
+>         {
+>             RefreshCommand = new RelayCommand(Refresh);
+>         }
+>
+>         private void Refresh()
+>         {
+>             var rand = new Random();
+>             Temperature = Math.Round(80 + rand.NextDouble() * 40, 1); // 模拟 PLC 上报温度
+>             Status = Temperature > 110 ? "温度过高，请检查冷却系统" : "采集正常";
+>         }
+>
+>         public event PropertyChangedEventHandler PropertyChanged;
+>         private void OnPropertyChanged(string name) =>
+>             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+>     }
+>
+>     // 简化版 ICommand 实现（RelayCommand），生产环境可引入 CommunityToolkit.Mvvm
+>     public class RelayCommand : ICommand
+>     {
+>         private readonly Action _execute;
+>         public RelayCommand(Action execute) => _execute = execute;
+>         public bool CanExecute(object parameter) => true;
+>         public void Execute(object parameter) => _execute();
+>         public event EventHandler CanExecuteChanged;
+>     }
+>
+>     // View：只负责界面展示，后台代码仅设置一次 DataContext
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             DataContext = new MainViewModel();
+>         }
+>     }
+> }
 > ```
 > 
 

@@ -25,9 +25,128 @@ parent: 7.2 Model 层
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **Repository 模式演示：定义 IDeviceRepository 接口，用内存实现类模拟数据库，ViewModel 只面向接口编程，切换数据源（数据库/API）不用改界面代码：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="Repository 模式" Height="400" Width="460"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <DockPanel Margin="15">
+>         <TextBlock DockPanel.Dock="Top" Text="设备列表（通过 Repository 读取）" Foreground="#58A6FF"
+>                    FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+>         <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,10,0,0">
+>             <Button Content="刷新列表" Command="{Binding LoadCommand}" Padding="8"
+>                     Background="#21262D" Foreground="White"/>
+>             <TextBlock Text="{Binding LoadInfo}" Foreground="#238636" VerticalAlignment="Center"
+>                        Margin="12,0,0,0"/>
+>         </StackPanel>
+>         <DataGrid ItemsSource="{Binding Devices}" AutoGenerateColumns="False"
+>                   Background="#161B22" Foreground="White" BorderBrush="#21262D"
+>                   HeadersVisibility="Column" GridLinesVisibility="None">
+>             <DataGrid.Columns>
+>                 <DataGridTextColumn Header="编号" Binding="{Binding Id}" Width="80"/>
+>                 <DataGridTextColumn Header="名称" Binding="{Binding Name}" Width="*"/>
+>                 <DataGridTextColumn Header="区域" Binding="{Binding Area}" Width="120"/>
+>                 <DataGridTextColumn Header="状态" Binding="{Binding Status}" Width="80"/>
+>             </DataGrid.Columns>
+>         </DataGrid>
+>     </DockPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— Repository 接口与实现：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Collections.Generic;
+> using System.Collections.ObjectModel;
+> using System.ComponentModel;
+> using System.Linq;
+> using System.Windows;
+> using System.Windows.Input;
+>
+> namespace HmiDemo
+> {
+>     public class DeviceEntity
+>     {
+>         public int Id { get; set; }
+>         public string Name { get; set; }
+>         public string Area { get; set; }
+>         public string Status { get; set; }
+>     }
+>
+>     // ── 仓储接口：定义数据访问契约，与具体存储无关 ──
+>     public interface IDeviceRepository
+>     {
+>         List<DeviceEntity> GetAll();
+>         DeviceEntity GetById(int id);
+>     }
+>
+>     // ── 内存实现：模拟数据库（生产环境换成 EF Core / SqlSugar / Dapper 实现）──
+>     public class MemoryDeviceRepository : IDeviceRepository
+>     {
+>         private readonly List<DeviceEntity> _data = new List<DeviceEntity>
+>         {
+>             new DeviceEntity { Id = 1, Name = "空压机", Area = "动力车间", Status = "运行" },
+>             new DeviceEntity { Id = 2, Name = "冷水机", Area = "动力车间", Status = "运行" },
+>             new DeviceEntity { Id = 3, Name = "贴片机", Area = "SMT车间", Status = "停机" }
+>         };
+>
+>         public List<DeviceEntity> GetAll() => _data;
+>         public DeviceEntity GetById(int id) => _data.FirstOrDefault(d => d.Id == id);
+>     }
+>
+>     public class MainViewModel : INotifyPropertyChanged
+>     {
+>         private readonly IDeviceRepository _repository; // 只依赖接口
+>         private string _loadInfo;
+>
+>         public ObservableCollection<DeviceEntity> Devices { get; } =
+>             new ObservableCollection<DeviceEntity>();
+>         public string LoadInfo { get; private set; }
+>         public ICommand LoadCommand { get; }
+>
+>         // 构造注入仓储，便于单元测试时替换为 Mock
+>         public MainViewModel(IDeviceRepository repository)
+>         {
+>             _repository = repository;
+>             LoadCommand = new RelayCommand(Load);
+>             Load();
+>         }
+>
+>         private void Load()
+>         {
+>             Devices.Clear();
+>             foreach (var d in _repository.GetAll()) Devices.Add(d);
+>             LoadInfo = "共加载 " + Devices.Count + " 台设备";
+>             OnPropertyChanged(nameof(LoadInfo));
+>         }
+>
+>         public event PropertyChangedEventHandler PropertyChanged;
+>         private void OnPropertyChanged(string name) =>
+>             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+>     }
+>
+>     public class RelayCommand : ICommand
+>     {
+>         private readonly Action _execute;
+>         public RelayCommand(Action execute) => _execute = execute;
+>         public bool CanExecute(object parameter) => true;
+>         public void Execute(object parameter) => _execute();
+>         public event EventHandler CanExecuteChanged;
+>     }
+>
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             DataContext = new MainViewModel(new MemoryDeviceRepository());
+>         }
+>     }
+> }
 > ```
 > 
 

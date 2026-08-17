@@ -25,9 +25,117 @@ parent: 7.1 MVVM 基础概念
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **设备启停控制：业务逻辑全部收进 ViewModel，状态由属性通知驱动界面刷新，按钮可用性由 CanExecute 自动控制——这就是 MVVM 的回报：界面代码几乎为零：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="为什么要用MVVM - 设备控制" Height="340" Width="380"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="20">
+>         <TextBlock Text="传送带设备控制" Foreground="#58A6FF" FontSize="16" FontWeight="Bold"/>
+>         <!-- 状态文本全部靠绑定刷新，后台代码不再出现 StatusText.Text = ... -->
+>         <TextBlock Margin="0,15,0,5" Text="运行状态" Foreground="#8B949E"/>
+>         <TextBlock Text="{Binding StatusText}" FontSize="22" Foreground="White" FontWeight="Bold"/>
+>         <TextBlock Text="{Binding SpeedText}" Foreground="#8B949E" Margin="0,5,0,15"/>
+>         <!-- 按钮 IsEnabled 由命令的 CanExecute 自动联动，无需手动管理 -->
+>         <Button Content="启动" Command="{Binding StartCommand}" Margin="0,0,0,8" Padding="8"
+>                 Background="#238636" Foreground="White" HorizontalAlignment="Left"/>
+>         <Button Content="停止" Command="{Binding StopCommand}" Padding="8"
+>                 Background="#DA3633" Foreground="White" HorizontalAlignment="Left"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 可独立测试的 ViewModel：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.ComponentModel;
+> using System.Windows;
+> using System.Windows.Input;
+>
+> namespace HmiDemo
+> {
+>     // ViewModel：不含任何 UI 引用，可以在测试项目中直接 new 出来验证逻辑
+>     public class MainViewModel : INotifyPropertyChanged
+>     {
+>         private bool _isRunning;
+>         private string _statusText = "已停止";
+>         private string _speedText = "当前速度：0 RPM";
+>
+>         public string StatusText
+>         {
+>             get => _statusText;
+>             private set { _statusText = value; OnPropertyChanged(nameof(StatusText)); }
+>         }
+>
+>         public string SpeedText
+>         {
+>             get => _speedText;
+>             private set { _speedText = value; OnPropertyChanged(nameof(SpeedText)); }
+>         }
+>
+>         public ICommand StartCommand { get; }
+>         public ICommand StopCommand { get; }
+>
+>         public MainViewModel()
+>         {
+>             // CanExecute 与属性联动：运行中不能重复启动
+>             StartCommand = new RelayCommand(Start, () => !_isRunning);
+>             StopCommand = new RelayCommand(Stop, () => _isRunning);
+>         }
+>
+>         private void Start()
+>         {
+>             _isRunning = true;
+>             StatusText = "运行中";
+>             SpeedText = "当前速度：1500 RPM";
+>             StartCommand.RaiseCanExecuteChanged(); // 通知按钮刷新可用状态
+>             StopCommand.RaiseCanExecuteChanged();
+>         }
+>
+>         private void Stop()
+>         {
+>             _isRunning = false;
+>             StatusText = "已停止";
+>             SpeedText = "当前速度：0 RPM";
+>             StartCommand.RaiseCanExecuteChanged();
+>             StopCommand.RaiseCanExecuteChanged();
+>         }
+>
+>         public event PropertyChangedEventHandler PropertyChanged;
+>         private void OnPropertyChanged(string name) =>
+>             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+>     }
+>
+>     // 支持 CanExecute 的 RelayCommand
+>     public class RelayCommand : ICommand
+>     {
+>         private readonly Action _execute;
+>         private readonly Func<bool> _canExecute;
+>         public RelayCommand(Action execute, Func<bool> canExecute = null)
+>         {
+>             _execute = execute;
+>             _canExecute = canExecute;
+>         }
+>         public bool CanExecute(object parameter) => _canExecute == null || _canExecute();
+>         public void Execute(object parameter) => _execute();
+>         public void RaiseCanExecuteChanged() =>
+>             CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+>         public event EventHandler CanExecuteChanged;
+>     }
+>
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             DataContext = new MainViewModel();
+>         }
+>     }
+> }
 > ```
 > 
 

@@ -25,9 +25,122 @@ parent: 7.5 主流 MVVM 框架
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **CommunityToolkit.Mvvm 风格演示：用 [ObservableProperty] 源生成器风格编写（此例为教学模拟，生产环境请引入 CommunityToolkit.Mvvm 包，属性自动生成通知），设备参数修改即时反映到界面：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="CommunityToolkit.Mvvm 推荐" Height="360" Width="420"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="20">
+>         <TextBlock Text="设备参数设置" Foreground="#58A6FF" FontSize="16" FontWeight="Bold"/>
+>         <TextBlock Text="加热温度（℃）" Foreground="#8B949E" Margin="0,15,0,4"/>
+>         <!-- 使用源生成器风格时，只需绑定 "Temperature"（由 Temperature 字段生成） -->
+>         <Slider Minimum="0" Maximum="300" Value="{Binding Temperature}" Margin="0,4"/>
+>         <TextBlock Text="{Binding TemperatureText}" Foreground="White" FontSize="22"
+>                    FontWeight="Bold" HorizontalAlignment="Center"/>
+>         <TextBlock Text="保温时间（分钟）" Foreground="#8B949E" Margin="0,15,0,4"/>
+>         <Slider Minimum="1" Maximum="120" Value="{Binding KeepMinutes}" Margin="0,4"/>
+>         <TextBlock Text="{Binding KeepMinutesText}" Foreground="White" FontSize="22"
+>                    FontWeight="Bold" HorizontalAlignment="Center"/>
+>         <Button Content="保存参数" Command="{Binding SaveCommand}" Padding="8"
+>                 Margin="0,18,0,0" Background="#21262D" Foreground="White"
+>                 HorizontalAlignment="Center"/>
+>         <TextBlock Text="{Binding SaveText}" Foreground="#238636" Margin="0,10,0,0"
+>                    HorizontalAlignment="Center"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— ObservableObject 风格 ViewModel：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.ComponentModel;
+> using System.Windows;
+> using System.Windows.Input;
+>
+> namespace HmiDemo
+> {
+>     // 模拟 CommunityToolkit.Mvvm 的 ObservableObject 基类
+>     public abstract class ObservableObject : INotifyPropertyChanged
+>     {
+>         public event PropertyChangedEventHandler PropertyChanged;
+>         protected void SetProperty<T>(ref T field, T value, string name)
+>         {
+>             field = value;
+>             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+>         }
+>     }
+>
+>     public class MainViewModel : ObservableObject
+>     {
+>         // 生产环境写法：
+>         // [ObservableProperty]
+>         // private double temperature;      ← 源生成器自动生成 Temperature 属性
+>         // [ObservableProperty]
+>         // private int keepMinutes;         ← 自动生成 KeepMinutes 属性
+>         // [RelayCommand] private void Save() {...}  ← 自动生成 SaveCommand
+>         private double _temperature;
+>         private int _keepMinutes;
+>         private string _saveText = "参数未保存";
+>
+>         public double Temperature
+>         {
+>             get => _temperature;
+>             set
+>             {
+>                 SetProperty(ref _temperature, value, nameof(Temperature));
+>                 OnPropertyChanged(nameof(TemperatureText));
+>             }
+>         }
+>
+>         public int KeepMinutes
+>         {
+>             get => _keepMinutes;
+>             set
+>             {
+>                 SetProperty(ref _keepMinutes, value, nameof(KeepMinutes));
+>                 OnPropertyChanged(nameof(KeepMinutesText));
+>             }
+>         }
+>
+>         public string TemperatureText => "加热温度：" + (int)Temperature + " ℃";
+>         public string KeepMinutesText => "保温时间：" + KeepMinutes + " 分钟";
+>         public string SaveText { get; private set; }
+>         public ICommand SaveCommand { get; }
+>
+>         public MainViewModel() => SaveCommand = new RelayCommand(Save);
+>
+>         private void Save()
+>         {
+>             SaveText = "已保存：" + (int)Temperature + " ℃ / " + KeepMinutes + " 分钟";
+>             OnPropertyChanged(nameof(SaveText));
+>         }
+>
+>         private void OnPropertyChanged(string name) =>
+>             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+>     }
+>
+>     public class RelayCommand : ICommand
+>     {
+>         private readonly Action _execute;
+>         public RelayCommand(Action execute) => _execute = execute;
+>         public bool CanExecute(object parameter) => true;
+>         public void Execute(object parameter) => _execute();
+>         public event EventHandler CanExecuteChanged;
+>     }
+>
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             DataContext = new MainViewModel();
+>         }
+>     }
+> }
 > ```
 > 
 

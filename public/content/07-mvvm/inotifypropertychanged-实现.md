@@ -25,9 +25,97 @@ parent: 7.4 ViewModel 层
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **INotifyPropertyChanged 实现演示：用 DispatcherTimer 每秒模拟 PLC 上报压力，ViewModel 属性变化后主动通知界面，界面文本自动刷新——这正是 MVVM 实时监控的核心机制：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="INotifyPropertyChanged 实现" Height="320" Width="380"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="20">
+>         <TextBlock Text="液压压力实时监控" Foreground="#58A6FF" FontSize="16" FontWeight="Bold"/>
+>         <TextBlock Text="当前压力（MPa）" Foreground="#8B949E" Margin="0,15,0,4"/>
+>         <!-- 每秒属性变化后，绑定会自动刷新这里显示的值 -->
+>         <TextBlock Text="{Binding PressureText}" FontSize="28" Foreground="White" FontWeight="Bold"/>
+>         <TextBlock Text="{Binding AlarmText}" Foreground="#DA3633" Margin="0,5,0,15"
+>                    FontWeight="Bold"/>
+>         <Button Content="启动/停止采集" Command="{Binding ToggleCommand}" Padding="8"
+>                 Background="#21262D" Foreground="White" HorizontalAlignment="Left"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— ViewModel 实现 INotifyPropertyChanged：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.ComponentModel;
+> using System.Windows;
+> using System.Windows.Input;
+> using System.Windows.Threading;
+>
+> namespace HmiDemo
+> {
+>     public class MainViewModel : INotifyPropertyChanged
+>     {
+>         private readonly Random _rand = new Random();
+>         private readonly DispatcherTimer _timer;
+>         private bool _collecting;
+>         private double _pressure;
+>
+>         public MainViewModel()
+>         {
+>             // 定时器模拟 PLC 周期上报（生产环境换成真实采集线程）
+>             _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+>             _timer.Tick += (s, e) => OnDataArrived();
+>             ToggleCommand = new RelayCommand(Toggle);
+>         }
+>
+>         // 只读计算属性：由其他属性组合而来，无需独立存储
+>         public string PressureText => _pressure.ToString("F1") + " MPa";
+>         public string AlarmText => _pressure > 8.5 ? "⚠ 压力过高，请检查溢流阀" : "压力正常";
+>
+>         public ICommand ToggleCommand { get; }
+>
+>         private void Toggle()
+>         {
+>             _collecting = !_collecting;
+>             if (_collecting) _timer.Start();
+>             else _timer.Stop();
+>         }
+>
+>         // 数据到达后更新字段，并通过 PropertyChanged 通知界面刷新
+>         private void OnDataArrived()
+>         {
+>             _pressure = Math.Round(6 + _rand.NextDouble() * 4, 1);
+>             OnPropertyChanged(nameof(PressureText));
+>             OnPropertyChanged(nameof(AlarmText));
+>         }
+>
+>         public event PropertyChangedEventHandler PropertyChanged;
+>         private void OnPropertyChanged(string name) =>
+>             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+>     }
+>
+>     public class RelayCommand : ICommand
+>     {
+>         private readonly Action _execute;
+>         public RelayCommand(Action execute) => _execute = execute;
+>         public bool CanExecute(object parameter) => true;
+>         public void Execute(object parameter) => _execute();
+>         public event EventHandler CanExecuteChanged;
+>     }
+>
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             DataContext = new MainViewModel();
+>         }
+>     }
+> }
 > ```
 > 
 

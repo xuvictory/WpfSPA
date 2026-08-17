@@ -25,9 +25,116 @@ parent: 7.5 主流 MVVM 框架
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **Prism 风格演示：用 Region（内容区域）+ 模块化页面模拟 Prism 的导航思路——主窗口只声明区域，页面以 UserControl 为模块挂载，通过导航服务在"参数页 / 趋势页"间切换（生产环境请使用 Prism 框架的 RegionManager 与 INavigationAware）：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="Prism 企业级框架" Height="400" Width="480"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <DockPanel Margin="15">
+>         <TextBlock DockPanel.Dock="Top" Text="主窗口（Shell + Region）" Foreground="#58A6FF"
+>                    FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+>         <!-- Prism 中导航按钮通常绑定 RegionManager 的请求导航命令 -->
+>         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,12">
+>             <Button Content="参数页" Command="{Binding NavCommand}" CommandParameter="Param"
+>                     Padding="8" Background="#21262D" Foreground="White" Margin="0,0,8,0"/>
+>             <Button Content="趋势页" Command="{Binding NavCommand}" CommandParameter="Trend"
+>                     Padding="8" Background="#21262D" Foreground="White"/>
+>         </StackPanel>
+>         <!-- Region：内容区，由导航服务决定显示哪个页面 -->
+>         <ContentControl Content="{Binding CurrentPage}"/>
+>     </DockPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— Region 导航与模块页面：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Collections.Generic;
+> using System.ComponentModel;
+> using System.Windows;
+> using System.Windows.Controls;
+> using System.Windows.Input;
+>
+> namespace HmiDemo
+> {
+>     // 模块页面1：参数页（UserControl，对应 Prism 的视图模块）
+>     public class ParamPage : UserControl
+>     {
+>         public ParamPage()
+>         {
+>             var text = new TextBlock { Text = "参数页（模块：SettingsModule）", Foreground = System.Windows.Media.Brushes.White };
+>             Content = text;
+>         }
+>     }
+>
+>     // 模块页面2：趋势页
+>     public class TrendPage : UserControl
+>     {
+>         public TrendPage()
+>         {
+>             var text = new TextBlock { Text = "趋势页（模块：ChartModule）", Foreground = System.Windows.Media.Brushes.White };
+>             Content = text;
+>         }
+>     }
+>
+>     // Region 导航服务：按 key 返回已注册的页面对象（Prism 用 RegionManager）
+>     public class RegionNavigationService
+>     {
+>         private readonly Dictionary<string, UserControl> _views =
+>             new Dictionary<string, UserControl>();
+>         public void Register(string key, UserControl view) => _views[key] = view;
+>         public UserControl Navigate(string key) => _views[key];
+>     }
+>
+>     public class MainViewModel : INotifyPropertyChanged
+>     {
+>         private readonly RegionNavigationService _region = new RegionNavigationService();
+>         private UserControl _currentPage;
+>
+>         public UserControl CurrentPage
+>         {
+>             get => _currentPage;
+>             private set { _currentPage = value; OnPropertyChanged(nameof(CurrentPage)); }
+>         }
+>
+>         public ICommand NavCommand { get; }
+>
+>         public MainViewModel()
+>         {
+>             // 模块注册（Prism 中由模块初始化时完成）
+>             _region.Register("Param", new ParamPage());
+>             _region.Register("Trend", new TrendPage());
+>             NavCommand = new RelayCommand<string>(key => CurrentPage = _region.Navigate(key));
+>             CurrentPage = _region.Navigate("Param"); // 默认页
+>         }
+>
+>         public event PropertyChangedEventHandler PropertyChanged;
+>         private void OnPropertyChanged(string name) =>
+>             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+>     }
+>
+>     public class RelayCommand<T> : ICommand
+>     {
+>         private readonly Action<T> _execute;
+>         public RelayCommand(Action<T> execute) => _execute = execute;
+>         public bool CanExecute(object parameter) => true;
+>         public void Execute(object parameter) => _execute((T)parameter);
+>         public event EventHandler CanExecuteChanged;
+>     }
+>
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             DataContext = new MainViewModel();
+>         }
+>     }
+> }
 > ```
 > 
 

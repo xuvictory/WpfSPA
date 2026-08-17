@@ -25,9 +25,147 @@ parent: 7.5 主流 MVVM 框架
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **MVVM Light 风格演示：ViewModelBase（简化版）提供 Set 通知方法，RelayCommand 支持 CanExecute，操作日志用简化 Messenger 广播到状态栏（生产环境请引入 MvvmLight 包）：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="MVVM Light Toolkit" Height="360" Width="420"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <DockPanel Margin="15">
+>         <TextBlock DockPanel.Dock="Top" Text="产品计数（MVVM Light 风格）" Foreground="#58A6FF"
+>                    FontSize="16" FontWeight="Bold" Margin="0,0,0,15"/>
+>         <Border DockPanel.Dock="Bottom" Background="#161B22" Padding="8" CornerRadius="4">
+>             <TextBlock Text="{Binding StatusText}" Foreground="#8B949E" FontFamily="Consolas"/>
+>         </Border>
+>         <StackPanel>
+>             <TextBlock Text="当前计数（件）" Foreground="#8B949E"/>
+>             <TextBlock Text="{Binding Count}" Foreground="#58A6FF" FontSize="40"
+>                        FontWeight="Bold" Margin="0,5,0,15"/>
+>             <!-- 三个命令分别演示无参 / 带参 / CanExecute 三种用法 -->
+>             <Button Content="+1（无参命令）" Command="{Binding AddCommand}" Padding="8"
+>                     Margin="0,0,0,8" Background="#238636" Foreground="White"
+>                     HorizontalAlignment="Left"/>
+>             <Button Content="+10（带参命令）" Command="{Binding AddCommand}"
+>                     CommandParameter="10" Padding="8" Margin="0,0,0,8"
+>                     Background="#21262D" Foreground="White" HorizontalAlignment="Left"/>
+>             <Button Content="清零（CanExecute 控制）" Command="{Binding ResetCommand}"
+>                     Padding="8" Background="#DA3633" Foreground="White"
+>                     HorizontalAlignment="Left"/>
+>         </StackPanel>
+>     </DockPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— ViewModelBase / Messenger 简化实现：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.ComponentModel;
+> using System.Windows;
+> using System.Windows.Input;
+>
+> namespace HmiDemo
+> {
+>     // 简化版 ViewModelBase：类似 MVVM Light 的基类，提供 Set<T> 通知方法
+>     public abstract class ViewModelBase : INotifyPropertyChanged
+>     {
+>         public event PropertyChangedEventHandler PropertyChanged;
+>         protected bool Set<T>(ref T field, T value, string name)
+>         {
+>             if (Equals(field, value)) return false;
+>             field = value;
+>             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+>             return true;
+>         }
+>     }
+>
+>     // 简化版 Messenger：广播字符串消息到状态栏（类似 MVVM Light 的 Messenger.Default）
+>     public static class Messenger
+>     {
+>         public static event Action<string> StatusChanged;
+>         public static void Send(string message) => StatusChanged?.Invoke(message);
+>     }
+>
+>     public class MainViewModel : ViewModelBase
+>     {
+>         private int _count;
+>         private string _statusText = "就绪";
+>
+>         public int Count
+>         {
+>             get => _count;
+>             private set => Set(ref _count, value, nameof(Count));
+>         }
+>
+>         public string StatusText
+>         {
+>             get => _statusText;
+>             private set => Set(ref _statusText, value, nameof(StatusText));
+>         }
+>
+>         public ICommand AddCommand { get; }
+>         public ICommand ResetCommand { get; }
+>
+>         public MainViewModel()
+>         {
+>             // 带参命令：RelayCommand<object> 接收 CommandParameter
+>             AddCommand = new RelayCommand<object>(p =>
+>             {
+>                 var step = p == null ? 1 : Convert.ToInt32(p);
+>                 Count += step;
+>                 Messenger.Send("计数 +" + step + "，当前 " + Count);
+>                 ResetCommand.RaiseCanExecuteChanged();
+>             });
+>             // CanExecute 命令：计数为 0 时"清零"按钮禁用
+>             ResetCommand = new RelayCommand(() =>
+>             {
+>                 Count = 0;
+>                 Messenger.Send("计数已清零");
+>             }, () => Count > 0);
+>
+>             // 订阅 Messenger，自动更新状态栏
+>             Messenger.StatusChanged += msg => StatusText = msg;
+>         }
+>     }
+>
+>     public class RelayCommand : ICommand
+>     {
+>         private readonly Action _execute;
+>         private readonly Func<bool> _canExecute;
+>         public RelayCommand(Action execute, Func<bool> canExecute = null)
+>         {
+>             _execute = execute;
+>             _canExecute = canExecute;
+>         }
+>         public bool CanExecute(object parameter) => _canExecute == null || _canExecute();
+>         public void Execute(object parameter) => _execute();
+>         public void RaiseCanExecuteChanged() =>
+>             CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+>         public event EventHandler CanExecuteChanged;
+>     }
+>
+>     // 带参数版本
+>     public class RelayCommand<T> : ICommand
+>     {
+>         private readonly Action<T> _execute;
+>         public RelayCommand(Action<T> execute) => _execute = execute;
+>         public bool CanExecute(object parameter) => true;
+>         public void Execute(object parameter) => _execute((T)parameter);
+>         public event EventHandler CanExecuteChanged;
+>     }
+>
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             // 生产环境建议在 Loaded/Unloaded 中显式订阅与退订 Messenger
+>             DataContext = new MainViewModel();
+>         }
+>     }
+> }
 > ```
 > 
 

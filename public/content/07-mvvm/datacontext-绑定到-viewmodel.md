@@ -25,9 +25,127 @@ parent: 7.3 View 层
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **DataContext 绑定演示：在 XAML 中声明 Window.DataContext，设备参数页所有控件的 {Binding} 都自动向上查找 DataContext 定位到 ViewModel 的属性：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         xmlns:local="clr-namespace:HmiDemo"
+>         Title="DataContext 绑定到 ViewModel" Height="360" Width="420"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <!-- 在 Window 级别声明 DataContext，整个窗口的绑定都会顺着树向下继承 -->
+>     <Window.DataContext>
+>         <local:MainViewModel/>
+>     </Window.DataContext>
+>     <Grid Margin="20">
+>         <Grid.ColumnDefinitions>
+>             <ColumnDefinition Width="110"/>
+>             <ColumnDefinition Width="*"/>
+>         </Grid.ColumnDefinitions>
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>         <!-- 左侧是属性名，右侧用 {Binding 属性名} 从 DataContext 取值 -->
+>         <TextBlock Text="工位名称" Foreground="#8B949E" VerticalAlignment="Center"/>
+>         <TextBox Grid.Column="1" Text="{Binding StationName, UpdateSourceTrigger=PropertyChanged}"
+>                  Background="#161B22" Foreground="White" BorderBrush="#21262D" Padding="4"/>
+>         <TextBlock Grid.Row="1" Text="当前产量" Foreground="#8B949E" Margin="0,10,0,0"/>
+>         <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Output}"
+>                    Foreground="#58A6FF" FontSize="20" FontWeight="Bold" Margin="0,10,0,0"/>
+>         <TextBlock Grid.Row="2" Text="班次" Foreground="#8B949E" Margin="0,10,0,0"/>
+>         <ComboBox Grid.Row="2" Grid.Column="1" Margin="0,10,0,0"
+>                   ItemsSource="{Binding Shifts}"
+>                   SelectedItem="{Binding CurrentShift}"
+>                   Background="#161B22" Foreground="White"/>
+>         <TextBlock Grid.Row="3" Text="提示" Foreground="#8B949E" Margin="0,10,0,0"/>
+>         <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Tip}" Foreground="#238636"
+>                    Margin="0,10,0,0" TextWrapping="Wrap"/>
+>         <Button Grid.Row="4" Grid.Column="1" Content="模拟产量+1" Command="{Binding AddCommand}"
+>                 Margin="0,15,0,0" Padding="8" Background="#21262D" Foreground="White"
+>                 HorizontalAlignment="Left"/>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— ViewModel 与 View：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Collections.Generic;
+> using System.ComponentModel;
+> using System.Windows;
+> using System.Windows.Input;
+>
+> namespace HmiDemo
+> {
+>     // 注意 xmlns:local 需要引用 MainViewModel 所在的命名空间，见 XAML 声明
+>     public class MainViewModel : INotifyPropertyChanged
+>     {
+>         private string _stationName = "装配工位-A";
+>         private int _output;
+>         private string _currentShift = "白班";
+>         private string _tip = "运行正常";
+>
+>         public string StationName
+>         {
+>             get => _stationName;
+>             set { _stationName = value; OnPropertyChanged(nameof(StationName)); }
+>         }
+>
+>         public int Output
+>         {
+>             get => _output;
+>             private set { _output = value; OnPropertyChanged(nameof(Output)); }
+>         }
+>
+>         public List<string> Shifts { get; } = new List<string> { "白班", "中班", "夜班" };
+>
+>         public string CurrentShift
+>         {
+>             get => _currentShift;
+>             set { _currentShift = value; OnPropertyChanged(nameof(CurrentShift)); }
+>         }
+>
+>         public string Tip
+>         {
+>             get => _tip;
+>             private set { _tip = value; OnPropertyChanged(nameof(Tip)); }
+>         }
+>
+>         public ICommand AddCommand { get; }
+>         public MainViewModel() => AddCommand = new RelayCommand(AddOutput);
+>
+>         private void AddOutput()
+>         {
+>             Output += 1;
+>             Tip = "工位 " + StationName + " 产量已更新为 " + Output + " 件";
+>         }
+>
+>         public event PropertyChangedEventHandler PropertyChanged;
+>         private void OnPropertyChanged(string name) =>
+>             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+>     }
+>
+>     public class RelayCommand : ICommand
+>     {
+>         private readonly Action _execute;
+>         public RelayCommand(Action execute) => _execute = execute;
+>         public bool CanExecute(object parameter) => true;
+>         public void Execute(object parameter) => _execute();
+>         public event EventHandler CanExecuteChanged;
+>     }
+>
+>     public partial class MainWindow : Window
+>     {
+>         // 若不在 XAML 声明 DataContext，也可在此处赋值：DataContext = new MainViewModel();
+>         public MainWindow() => InitializeComponent();
+>     }
+> }
 > ```
 > 
 

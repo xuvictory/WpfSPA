@@ -25,9 +25,125 @@ parent: 7.5 主流 MVVM 框架
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **ReactiveUI 风格演示：用事件流（IObservable + 订阅）实现"当目标温度变化时自动计算偏差并刷新"，体现响应式编程思路（生产环境请使用 ReactiveUI 的 WhenAnyValue / ReactiveCommand）：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="ReactiveUI 响应式框架" Height="380" Width="440"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="20">
+>         <TextBlock Text="恒温箱温度控制（响应式）" Foreground="#58A6FF"
+>                    FontSize="16" FontWeight="Bold"/>
+>         <TextBlock Text="目标温度（℃）" Foreground="#8B949E" Margin="0,15,0,4"/>
+>         <Slider Minimum="20" Maximum="120" Value="{Binding TargetTemp}" Margin="0,4"/>
+>         <TextBlock Text="{Binding TargetTempText}" Foreground="White" FontSize="20"
+>                    FontWeight="Bold" HorizontalAlignment="Center"/>
+>         <TextBlock Text="实际温度（℃）" Foreground="#8B949E" Margin="0,15,0,4"/>
+>         <Slider Minimum="20" Maximum="120" Value="{Binding ActualTemp}" Margin="0,4"/>
+>         <TextBlock Text="{Binding ActualTempText}" Foreground="White" FontSize="20"
+>                    FontWeight="Bold" HorizontalAlignment="Center"/>
+>         <Border Background="#161B22" CornerRadius="4" Padding="10" Margin="0,15,0,0">
+>             <TextBlock Text="{Binding DeviationText}" Foreground="#58A6FF"
+>                        FontSize="14" TextWrapping="Wrap"/>
+>         </Border>
+>         <TextBlock Text="{Binding Hint}" Foreground="#8B949E" FontSize="12" Margin="0,8,0,0"
+>                    TextWrapping="Wrap"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 事件流驱动界面更新：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.ComponentModel;
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     // 简易事件流：类似 IObservable<T>，订阅者收到每次属性变化通知
+>     public class PropertyStream<T>
+>     {
+>         public event Action<T> Changed;
+>         public void Publish(T value) => Changed?.Invoke(value);
+>         public IDisposable Subscribe(Action<T> handler)
+>         {
+>             Changed += handler;
+>             return new Subscription(() => Changed -= handler);
+>         }
+>         private class Subscription : IDisposable
+>         {
+>             private readonly Action _unsubscribe;
+>             public Subscription(Action un) => _unsubscribe = un;
+>             public void Dispose() => _unsubscribe();
+>         }
+>     }
+>
+>     public class MainViewModel : INotifyPropertyChanged
+>     {
+>         private double _targetTemp = 60;
+>         private double _actualTemp = 48;
+>         private string _deviationText = "等待计算…";
+>
+>         // 事件流：目标温度每变化一次，发布一个值
+>         private readonly PropertyStream<double> _targetStream = new PropertyStream<double>();
+>
+>         public MainViewModel()
+>         {
+>             // 响应式核心：订阅"目标温度变化"流，自动重算偏差（ReactiveUI 用 WhenAnyValue）
+>             _targetStream.Subscribe(_ =>
+>             {
+>                 var deviation = (int)(_targetTemp - _actualTemp);
+>                 DeviationText = "温度偏差：" + deviation + " ℃" +
+>                     (Math.Abs(deviation) > 10 ? "（偏差过大，请检查加热）" : "（控制正常）");
+>                 OnPropertyChanged(nameof(DeviationText));
+>             });
+>         }
+>
+>         public double TargetTemp
+>         {
+>             get => _targetTemp;
+>             set
+>             {
+>                 _targetTemp = value;
+>                 OnPropertyChanged(nameof(TargetTemp));
+>                 OnPropertyChanged(nameof(TargetTempText));
+>                 _targetStream.Publish(value); // 发布事件
+>             }
+>         }
+>
+>         public double ActualTemp
+>         {
+>             get => _actualTemp;
+>             set
+>             {
+>                 _actualTemp = value;
+>                 OnPropertyChanged(nameof(ActualTemp));
+>                 OnPropertyChanged(nameof(ActualTempText));
+>             }
+>         }
+>
+>         public string TargetTempText => (int)TargetTemp + " ℃";
+>         public string ActualTempText => (int)ActualTemp + " ℃";
+>         public string DeviationText { get; private set; }
+>         public string Hint => "目标温度变化触发事件流，偏差自动重算——这就是响应式编程的核心思想";
+>
+>         public event PropertyChangedEventHandler PropertyChanged;
+>         private void OnPropertyChanged(string name) =>
+>             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+>     }
+>
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             DataContext = new MainViewModel();
+>         }
+>     }
+> }
 > ```
 > 
 

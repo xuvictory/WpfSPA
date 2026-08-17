@@ -25,9 +25,96 @@ parent: 7.6 依赖注入
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **简易 DI 容器演示：模仿主流容器的核心 API（Register / Resolve / 单例与瞬时生命周期），注册通信服务后解析界面所需的 ViewModel。生产环境请使用 Microsoft.Extensions.DependencyInjection 或 Prism 自带容器：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="常用 DI 容器" Height="340" Width="420"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="20">
+>         <TextBlock Text="容器解析结果" Foreground="#58A6FF" FontSize="16" FontWeight="Bold"/>
+>         <TextBlock Text="通信服务实例（单例）" Foreground="#8B949E" Margin="0,15,0,4"/>
+>         <TextBlock Text="{Binding CommInfo}" Foreground="White" FontSize="16"/>
+>         <TextBlock Text="ViewModel 实例（瞬时）" Foreground="#8B949E" Margin="0,12,0,4"/>
+>         <TextBlock Text="{Binding VmInfo}" Foreground="White" FontSize="16"/>
+>         <TextBlock Text="{Binding Tip}" Foreground="#238636" Margin="0,12,0,0"
+>                    TextWrapping="Wrap"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 支持生命周期的简易容器：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Collections.Generic;
+> using System.ComponentModel;
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     // 通信服务：模拟串口/以太网与 PLC 通信
+>     public class CommunicationService
+>     {
+>         public string PortName { get; set; } = "COM3";
+>         public string GetInfo() => "串口 " + PortName + " 已连接（实例创建于 "
+>                                     + CreatedTime.ToString("HH:mm:ss") + "）";
+>         public DateTime CreatedTime { get; } = DateTime.Now;
+>     }
+>
+>     // 简易容器：支持"单例"（Singleton）与"瞬时"（Transient）两种生命周期
+>     public class MiniContainer
+>     {
+>         private readonly Dictionary<Type, Func<object>> _factories =
+>             new Dictionary<Type, Func<object>>();
+>         private readonly Dictionary<Type, object> _singletons =
+>             new Dictionary<Type, object>();
+>
+>         // 单例：整个应用共享同一个实例（适合通信、配置等服务）
+>         public void RegisterSingleton<T>(Func<object> factory) =>
+>             _factories[typeof(T)] = () =>
+>             {
+>                 if (!_singletons.ContainsKey(typeof(T)))
+>                     _singletons[typeof(T)] = factory();
+>                 return _singletons[typeof(T)];
+>             };
+>
+>         // 瞬时：每次解析都创建新实例（适合 ViewModel）
+>         public void RegisterTransient<T>(Func<object> factory) =>
+>             _factories[typeof(T)] = factory;
+>
+>         public T Resolve<T>() => (T)_factories[typeof(T)]();
+>     }
+>
+>     public class MainViewModel : INotifyPropertyChanged
+>     {
+>         private readonly CommunicationService _comm;
+>         public MainViewModel(CommunicationService comm) => _comm = comm;
+>
+>         public string CommInfo => _comm.GetInfo();
+>         public string VmInfo => "当前 ViewModel 编号：" + GetHashCode();
+>         public string Tip => "单例服务共享同一实例；瞬时 ViewModel 每次解析都是新的";
+>
+>         public event PropertyChangedEventHandler PropertyChanged;
+>     }
+>
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             // 组装容器并解析
+>             var container = new MiniContainer();
+>             container.RegisterSingleton<CommunicationService>(() => new CommunicationService());
+>             container.RegisterTransient<MainViewModel>(() => new MainViewModel(container.Resolve<CommunicationService>()));
+>
+>             var vm = container.Resolve<MainViewModel>();
+>             DataContext = vm;
+>         }
+>     }
+> }
 > ```
 > 
 

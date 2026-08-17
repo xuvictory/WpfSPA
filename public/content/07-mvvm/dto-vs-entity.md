@@ -25,9 +25,125 @@ parent: 7.2 Model 层
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **DTO vs Entity 演示：Entity 承载数据库/PLC 的完整字段（含内部标志），DTO 只暴露界面与传输所需的字段。从 Entity 到 DTO 用映射方法转换，避免把内部字段泄露给 UI：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="DTO vs Entity" Height="360" Width="440"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="20">
+>         <TextBlock Text="温度采集（Entity → DTO）" Foreground="#58A6FF"
+>                    FontSize="16" FontWeight="Bold"/>
+>         <TextBlock Text="原始值（Entity）" Foreground="#8B949E" Margin="0,15,0,4"/>
+>         <TextBlock Text="{Binding RawText}" Foreground="#8B949E" FontFamily="Consolas"/>
+>         <TextBlock Text="界面展示（DTO）" Foreground="#8B949E" Margin="0,12,0,4"/>
+>         <TextBlock Text="{Binding DisplayText}" Foreground="White" FontSize="20" FontWeight="Bold"/>
+>         <TextBlock Text="{Binding SafeText}" Foreground="#238636" Margin="0,4,0,15"/>
+>         <Button Content="模拟采集一次" Command="{Binding CollectCommand}" Padding="8"
+>                 Background="#21262D" Foreground="White" HorizontalAlignment="Left"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— Entity、DTO 与映射：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.ComponentModel;
+> using System.Windows;
+> using System.Windows.Input;
+>
+> namespace HmiDemo
+> {
+>     // Entity：领域实体，字段与数据库/PLC 对应，可含仅内部使用的字段
+>     public class TemperatureEntity
+>     {
+>         public int Channel { get; set; }          // 通道号
+>         public double RawValue { get; set; }      // 原始数值（例如热电偶原始值）
+>         public bool IsCalibrated { get; set; }    // 内部标志：是否已校准
+>         public DateTime ReadTime { get; set; }    // 采集时间
+>     }
+>
+>     // DTO：传输对象，只含界面需要展示的字段，隐藏内部实现细节
+>     public class TemperatureDto
+>     {
+>         public string ChannelText { get; set; }   // "通道 03"
+>         public string ValueText { get; set; }     // "125.3 ℃"
+>         public string SafeText { get; set; }      // "温度正常" / "超限"
+>     }
+>
+>     public class MainViewModel : INotifyPropertyChanged
+>     {
+>         private string _rawText = "（尚未采集）";
+>         private string _displayText = "—";
+>         private string _safeText = "等待采集";
+>
+>         public string RawText { get; private set; }
+>         public string DisplayText { get; private set; }
+>         public string SafeText { get; private set; }
+>         public ICommand CollectCommand { get; }
+>
+>         public MainViewModel() => CollectCommand = new RelayCommand(Collect);
+>
+>         private void Collect()
+>         {
+>             // 1. 从采集层拿到 Entity
+>             var entity = new TemperatureEntity
+>             {
+>                 Channel = 3,
+>                 RawValue = 90 + new Random().NextDouble() * 60,
+>                 IsCalibrated = true,
+>                 ReadTime = DateTime.Now
+>             };
+>
+>             // 2. 映射为 DTO，只把需要的字段交给界面
+>             var dto = MapToDto(entity);
+>             RawText = "通道=" + entity.Channel + " 原始值=" + entity.RawValue.ToString("F2")
+>                       + " 已校准=" + entity.IsCalibrated;
+>             DisplayText = dto.ValueText;
+>             SafeText = dto.SafeText;
+>             OnPropertyChanged(nameof(RawText));
+>             OnPropertyChanged(nameof(DisplayText));
+>             OnPropertyChanged(nameof(SafeText));
+>         }
+>
+>         // 实体 → 传输对象 的映射逻辑（生产环境可用 AutoMapper）
+>         private TemperatureDto MapToDto(TemperatureEntity e)
+>         {
+>             var value = Math.Round(e.RawValue, 1);
+>             return new TemperatureDto
+>             {
+>                 ChannelText = "通道 " + e.Channel.ToString("00"),
+>                 ValueText = value + " ℃",
+>                 SafeText = value > 130 ? "超限，请检查" : "温度正常"
+>             };
+>         }
+>
+>         public event PropertyChangedEventHandler PropertyChanged;
+>         private void OnPropertyChanged(string name) =>
+>             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+>     }
+>
+>     public class RelayCommand : ICommand
+>     {
+>         private readonly Action _execute;
+>         public RelayCommand(Action execute) => _execute = execute;
+>         public bool CanExecute(object parameter) => true;
+>         public void Execute(object parameter) => _execute();
+>         public event EventHandler CanExecuteChanged;
+>     }
+>
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             DataContext = new MainViewModel();
+>         }
+>     }
+> }
 > ```
 > 
 

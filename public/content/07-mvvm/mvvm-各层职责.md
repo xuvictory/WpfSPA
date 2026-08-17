@@ -25,9 +25,104 @@ parent: 7.1 MVVM 基础概念
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **三层职责演示：Model（设备实体）只管数据，ViewModel（主视图模型）负责状态与命令，View（窗口）纯展示。一台设备的实时数据从 Model 经 ViewModel 流向界面：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="MVVM各层职责 - 设备详情" Height="360" Width="400"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="20">
+>         <TextBlock Text="设备详情（View 层）" Foreground="#58A6FF" FontSize="16" FontWeight="Bold"/>
+>         <TextBlock Margin="0,15,0,5" Text="设备名称" Foreground="#8B949E"/>
+>         <TextBlock Text="{Binding DeviceName}" FontSize="20" Foreground="White" FontWeight="Bold"/>
+>         <TextBlock Margin="0,10,0,5" Text="电流（A）" Foreground="#8B949E"/>
+>         <TextBlock Text="{Binding CurrentText}" FontSize="20" Foreground="White" FontWeight="Bold"/>
+>         <TextBlock Margin="0,10,0,5" Text="运行状态" Foreground="#8B949E"/>
+>         <TextBlock Text="{Binding StatusText}" FontSize="16" Foreground="#238636"/>
+>         <Button Content="刷新实时数据" Command="{Binding RefreshCommand}" Padding="8"
+>                 Margin="0,15,0,0" Background="#21262D" Foreground="White"
+>                 HorizontalAlignment="Left"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— Model / ViewModel / View 三层：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.ComponentModel;
+> using System.Windows;
+> using System.Windows.Input;
+>
+> namespace HmiDemo
+> {
+>     // Model 层：只保存数据，不含任何界面逻辑（可对应数据库或 PLC 采集表）
+>     public class DeviceModel
+>     {
+>         public string Name { get; set; } = "3号注塑机";
+>         public double Current { get; set; }       // 电流（安培）
+>         public bool IsRunning { get; set; }       // 是否运行
+>     }
+>
+>     // ViewModel 层：从 Model 取数据，加工成界面需要的形态（字符串、颜色等）
+>     public class MainViewModel : INotifyPropertyChanged
+>     {
+>         private readonly DeviceModel _device = new DeviceModel();
+>         private string _currentText;
+>         private string _statusText;
+>
+>         public string DeviceName => _device.Name;
+>         public string CurrentText { get; private set; }
+>         public string StatusText { get; private set; }
+>
+>         public ICommand RefreshCommand { get; }
+>
+>         public MainViewModel()
+>         {
+>             RefreshCommand = new RelayCommand(Refresh);
+>             Refresh(); // 启动时先取一次数据
+>         }
+>
+>         private void Refresh()
+>         {
+>             // 模拟 PLC 采集：更新 Model，再由 Model 驱动界面
+>             var rand = new Random();
+>             _device.Current = Math.Round(10 + rand.NextDouble() * 20, 1);
+>             _device.IsRunning = rand.Next(2) == 1;
+>
+>             // ViewModel 负责把 Model 数据格式化为界面友好文本
+>             CurrentText = _device.Current + " A";
+>             StatusText = _device.IsRunning ? "运行中" : "已停机";
+>             OnPropertyChanged(nameof(CurrentText));
+>             OnPropertyChanged(nameof(StatusText));
+>         }
+>
+>         public event PropertyChangedEventHandler PropertyChanged;
+>         private void OnPropertyChanged(string name) =>
+>             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+>     }
+>
+>     public class RelayCommand : ICommand
+>     {
+>         private readonly Action _execute;
+>         public RelayCommand(Action execute) => _execute = execute;
+>         public bool CanExecute(object parameter) => true;
+>         public void Execute(object parameter) => _execute();
+>         public event EventHandler CanExecuteChanged;
+>     }
+>
+>     // View 层：后台代码只负责把 ViewModel 挂到 DataContext，不做业务
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             DataContext = new MainViewModel();
+>         }
+>     }
+> }
 > ```
 > 
 

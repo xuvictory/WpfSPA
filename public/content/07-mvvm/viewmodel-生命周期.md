@@ -25,9 +25,137 @@ parent: 7.4 ViewModel 层
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **ViewModel 生命周期演示：窗口加载时 View 通知 ViewModel"激活"（启动采集定时器），窗口关闭时通知"释放"（停止定时器、解除事件订阅），防止资源泄漏：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="ViewModel 生命周期" Height="360" Width="420"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117"
+>         Loaded="OnWindowLoaded" Closed="OnWindowClosed">
+>     <StackPanel Margin="20">
+>         <TextBlock Text="设备采集（生命周期管理）" Foreground="#58A6FF"
+>                    FontSize="16" FontWeight="Bold"/>
+>         <TextBlock Text="当前液位（%）" Foreground="#8B949E" Margin="0,15,0,4"/>
+>         <TextBlock Text="{Binding LevelText}" Foreground="White" FontSize="28" FontWeight="Bold"/>
+>         <TextBlock Text="{Binding StateText}" Foreground="#238636" Margin="0,5,0,15"/>
+>         <Button Content="暂停/继续采集" Command="{Binding PauseCommand}" Padding="8"
+>                 Background="#21262D" Foreground="White" HorizontalAlignment="Left"/>
+>         <Border Background="#161B22" CornerRadius="4" Padding="8" Margin="0,15,0,0">
+>             <TextBlock Text="{Binding LifecycleText}" Foreground="#8B949E"
+>                        FontFamily="Consolas" FontSize="12" TextWrapping="Wrap"/>
+>         </Border>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 生命周期钩子实现：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.ComponentModel;
+> using System.Windows;
+> using System.Windows.Input;
+> using System.Windows.Threading;
+>
+> namespace HmiDemo
+> {
+>     public class MainViewModel : INotifyPropertyChanged
+>     {
+>         private readonly DispatcherTimer _timer;
+>         private readonly Random _rand = new Random();
+>         private bool _paused;
+>         private int _level;
+>         private string _stateText = "未激活";
+>         private string _lifecycleText = "";
+>
+>         public MainViewModel()
+>         {
+>             // 定时器仅在"激活"期间运行
+>             _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+>             _timer.Tick += OnTick;
+>             PauseCommand = new RelayCommand(TogglePause);
+>         }
+>
+>         // ── 生命周期：激活（View 加载完成时由后台代码调用）──
+>         public void Activate()
+>         {
+>             _paused = false;
+>             _timer.Start();
+>             _stateText = "采集运行中";
+>             AppendLifecycle("Activate() 已调用：定时器启动");
+>             OnPropertyChanged(nameof(StateText));
+>         }
+>
+>         // ── 生命周期：释放（窗口关闭时调用，清理定时器与事件）──
+>         public void Deactivate()
+>         {
+>             _timer.Stop();
+>             _timer.Tick -= OnTick;      // 解除订阅，避免内存泄漏
+>             _stateText = "已释放";
+>             AppendLifecycle("Deactivate() 已调用：定时器停止、事件解除");
+>             OnPropertyChanged(nameof(StateText));
+>         }
+>
+>         private void OnTick(object sender, EventArgs e)
+>         {
+>             if (_paused) return;
+>             _level = _rand.Next(30, 90);
+>             OnPropertyChanged(nameof(LevelText));
+>         }
+>
+>         private void TogglePause()
+>         {
+>             _paused = !_paused;
+>             _stateText = _paused ? "采集已暂停" : "采集运行中";
+>             AppendLifecycle(_paused ? "用户暂停采集" : "用户恢复采集");
+>             OnPropertyChanged(nameof(StateText));
+>         }
+>
+>         public string LevelText => _level + " %";
+>         public string StateText { get; private set; }
+>         public string LifecycleText { get; private set; }
+>         public ICommand PauseCommand { get; }
+>
+>         private void AppendLifecycle(string line)
+>         {
+>             LifecycleText += "· " + line + "\n";
+>             OnPropertyChanged(nameof(LifecycleText));
+>         }
+>
+>         public event PropertyChangedEventHandler PropertyChanged;
+>         private void OnPropertyChanged(string name) =>
+>             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+>     }
+>
+>     public class RelayCommand : ICommand
+>     {
+>         private readonly Action _execute;
+>         public RelayCommand(Action execute) => _execute = execute;
+>         public bool CanExecute(object parameter) => true;
+>         public void Execute(object parameter) => _execute();
+>         public event EventHandler CanExecuteChanged;
+>     }
+>
+>     public partial class MainWindow : Window
+>     {
+>         private readonly MainViewModel _vm;
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             _vm = new MainViewModel();
+>             DataContext = _vm;
+>         }
+>
+>         // View 通知 ViewModel：界面已就绪，可开始工作
+>         private void OnWindowLoaded(object sender, RoutedEventArgs e) => _vm.Activate();
+>
+>         // View 通知 ViewModel：界面即将销毁，释放资源
+>         private void OnWindowClosed(object sender, EventArgs e) => _vm.Deactivate();
+>     }
+> }
 > ```
 > 
 

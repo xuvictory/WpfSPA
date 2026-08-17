@@ -25,9 +25,111 @@ parent: 7.4 ViewModel 层
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **RelayCommand 完整实现演示：手写 ICommand 的三个核心成员（CanExecute / Execute / CanExecuteChanged），配方下发前必须已选择配方，否则"下发"按钮自动禁用：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="ICommand 实现 - RelayCommand" Height="340" Width="400"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="20">
+>         <TextBlock Text="配方管理" Foreground="#58A6FF" FontSize="16" FontWeight="Bold"/>
+>         <TextBlock Text="选择配方" Foreground="#8B949E" Margin="0,15,0,4"/>
+>         <ComboBox ItemsSource="{Binding Recipes}" SelectedItem="{Binding SelectedRecipe}"
+>                   Background="#161B22" Foreground="White" BorderBrush="#21262D"/>
+>         <Button Content="下发配方" Command="{Binding DownloadCommand}" Padding="8"
+>                 Margin="0,15,0,0" Background="#21262D" Foreground="White"
+>                 HorizontalAlignment="Left"/>
+>         <TextBlock Text="{Binding Feedback}" Foreground="#238636" Margin="0,10,0,0"
+>                    TextWrapping="Wrap"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— RelayCommand 系列完整实现：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Collections.Generic;
+> using System.ComponentModel;
+> using System.Windows;
+> using System.Windows.Input;
+>
+> namespace HmiDemo
+> {
+>     public class MainViewModel : INotifyPropertyChanged
+>     {
+>         private string _selectedRecipe;
+>         private string _feedback = "请先选择配方";
+>
+>         public List<string> Recipes { get; } = new List<string> { "配方A-高速", "配方B-标准", "配方C-节能" };
+>
+>         public string SelectedRecipe
+>         {
+>             get => _selectedRecipe;
+>             set
+>             {
+>                 _selectedRecipe = value;
+>                 OnPropertyChanged(nameof(SelectedRecipe));
+>                 DownloadCommand.RaiseCanExecuteChanged(); // 选择变化后刷新按钮可用性
+>             }
+>         }
+>
+>         public string Feedback
+>         {
+>             get => _feedback;
+>             private set { _feedback = value; OnPropertyChanged(nameof(Feedback)); }
+>         }
+>
+>         public RelayCommand DownloadCommand { get; }
+>
+>         public MainViewModel()
+>         {
+>             // CanExecute：未选择配方时返回 false，按钮自动禁用
+>             DownloadCommand = new RelayCommand(Download, () => SelectedRecipe != null);
+>         }
+>
+>         private void Download()
+>         {
+>             Feedback = "配方 [" + SelectedRecipe + "] 已下发到 PLC";
+>         }
+>
+>         public event PropertyChangedEventHandler PropertyChanged;
+>         private void OnPropertyChanged(string name) =>
+>             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+>     }
+>
+>     // ICommand 标准实现：RelayCommand，支持无参 / 有参 / CanExecute 三种用法
+>     public class RelayCommand : ICommand
+>     {
+>         private readonly Action _execute;
+>         private readonly Func<bool> _canExecute;
+>
+>         public RelayCommand(Action execute, Func<bool> canExecute = null)
+>         {
+>             _execute = execute;
+>             _canExecute = canExecute;
+>         }
+>
+>         // ICommand 成员 1：判断命令当前是否可执行（WPF 据此禁用按钮）
+>         public bool CanExecute(object parameter) => _canExecute == null || _canExecute();
+>
+>         // ICommand 成员 2：执行命令动作
+>         public void Execute(object parameter) => _execute();
+>
+>         // ICommand 成员 3：可用性变化通知，手动调用即可刷新绑定它的控件
+>         public void RaiseCanExecuteChanged() =>
+>             CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+>
+>         public event EventHandler CanExecuteChanged;
+>     }
+>
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>     }
+> }
 > ```
 > 
 

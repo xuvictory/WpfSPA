@@ -25,9 +25,127 @@ parent: 7.1 MVVM 基础概念
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **对比演示：同一个"电机调速"功能。左侧用 MVVM（Slider 绑定属性 + 命令），右侧模拟 MVC（事件处理器直接操作控件），直观体会两种模式的代码组织差异：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="MVVM vs MVC vs MVP 对比" Height="380" Width="520"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.ColumnDefinitions>
+>             <ColumnDefinition Width="*"/>
+>             <ColumnDefinition Width="10"/>
+>             <ColumnDefinition Width="*"/>
+>         </Grid.ColumnDefinitions>
+>
+>         <!-- 左侧：MVVM 风格，无任何事件处理器，全靠绑定 -->
+>         <Border Grid.Column="0" Background="#161B22" Padding="12" CornerRadius="6">
+>             <StackPanel>
+>                 <TextBlock Text="MVVM（绑定驱动）" Foreground="#58A6FF" FontWeight="Bold"/>
+>                 <TextBlock Text="目标转速（RPM）" Foreground="#8B949E" Margin="0,12,0,4"/>
+>                 <TextBlock Text="{Binding TargetRpm}" Foreground="White" FontSize="20" FontWeight="Bold"/>
+>                 <Slider Minimum="0" Maximum="3000" Value="{Binding TargetRpm}" Margin="0,8"/>
+>                 <Button Content="下发参数" Command="{Binding SendCommand}" Padding="8"
+>                         Background="#21262D" Foreground="White" Margin="0,10,0,0"
+>                         HorizontalAlignment="Left"/>
+>                 <TextBlock Text="{Binding Feedback}" Foreground="#238636" Margin="0,8,0,0"
+>                            TextWrapping="Wrap"/>
+>             </StackPanel>
+>         </Border>
+>
+>         <!-- 右侧：MVC 风格，控件事件直接由 Controller（此处为后台代码）处理 -->
+>         <Border Grid.Column="2" Background="#161B22" Padding="12" CornerRadius="6">
+>             <StackPanel>
+>                 <TextBlock Text="MVC（事件驱动）" Foreground="#8B949E" FontWeight="Bold"/>
+>                 <TextBlock Text="目标转速（RPM）" Foreground="#8B949E" Margin="0,12,0,4"/>
+>                 <TextBlock x:Name="MvcRpmText" Foreground="White" FontSize="20" FontWeight="Bold"/>
+>                 <Slider x:Name="MvcSlider" Minimum="0" Maximum="3000" Margin="0,8"
+>                         ValueChanged="OnMvcSliderChanged"/>
+>                 <Button Content="下发参数" Click="OnMvcSendClick" Padding="8"
+>                         Background="#21262D" Foreground="White" Margin="0,10,0,0"
+>                         HorizontalAlignment="Left"/>
+>                 <TextBlock x:Name="MvcFeedback" Foreground="#DA3633" Margin="0,8,0,0"
+>                            TextWrapping="Wrap"/>
+>             </StackPanel>
+>         </Border>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 两种模式的后台实现：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.ComponentModel;
+> using System.Windows;
+> using System.Windows.Controls;
+> using System.Windows.Input;
+>
+> namespace HmiDemo
+> {
+>     // MVVM 侧：ViewModel 承载状态，界面通过绑定自动同步
+>     public class MainViewModel : INotifyPropertyChanged
+>     {
+>         private int _targetRpm;
+>         private string _feedback = "等待下发";
+>
+>         public int TargetRpm
+>         {
+>             get => _targetRpm;
+>             set { _targetRpm = value; OnPropertyChanged(nameof(TargetRpm)); }
+>         }
+>
+>         public string Feedback
+>         {
+>             get => _feedback;
+>             private set { _feedback = value; OnPropertyChanged(nameof(Feedback)); }
+>         }
+>
+>         public ICommand SendCommand { get; }
+>         public MainViewModel() => SendCommand = new RelayCommand(Send);
+>
+>         private void Send()
+>         {
+>             Feedback = "已下发：" + TargetRpm + " RPM（MVVM 命令执行）";
+>         }
+>
+>         public event PropertyChangedEventHandler PropertyChanged;
+>         private void OnPropertyChanged(string name) =>
+>             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+>     }
+>
+>     public class RelayCommand : ICommand
+>     {
+>         private readonly Action _execute;
+>         public RelayCommand(Action execute) => _execute = execute;
+>         public bool CanExecute(object parameter) => true;
+>         public void Execute(object parameter) => _execute();
+>         public event EventHandler CanExecuteChanged;
+>     }
+>
+>     public partial class MainWindow : Window
+>     {
+>         // MVC 侧：Controller 直接操作控件，界面与逻辑耦合在后台代码中
+>         private void OnMvcSliderChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+>         {
+>             MvcRpmText.Text = ((int)e.NewValue).ToString(); // 直接操作控件
+>         }
+>
+>         private void OnMvcSendClick(object sender, RoutedEventArgs e)
+>         {
+>             MvcFeedback.Text = "已下发：" + MvcRpmText.Text + " RPM（MVC 事件处理）";
+>         }
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             DataContext = new MainViewModel(); // 左侧挂载 ViewModel
+>             MvcRpmText.Text = ((int)MvcSlider.Value).ToString();
+>         }
+>     }
+> }
 > ```
 > 
 
