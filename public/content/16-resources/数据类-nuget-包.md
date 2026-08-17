@@ -25,9 +25,62 @@ parent: 16.6 常用 NuGet 包清单
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **数据访问类库：Dapper + SQLite 查询历史报警记录演示：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="数据访问演示" Height="440" Width="480"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="Dapper + SQLite 历史数据查询" Foreground="#58A6FF" FontWeight="Bold" Margin="0,0,0,10"/>
+>         <Button Content="初始化数据库并查询" Click="OnQueryClick" Margin="0,0,0,8" Padding="8"
+>                 Background="#238636" Foreground="White"/>
+>         <TextBlock x:Name="StatusText" Foreground="#8B949E" Margin="0,4,0,8" TextWrapping="Wrap"/>
+>         <DataGrid x:Name="Grid" Height="240" AutoGenerateColumns="True"
+>                   Background="#161B22" Foreground="#8B949E" BorderBrush="#21262D"
+>                   RowBackground="#161B22" AlternatingRowBackground="#0D1117"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Linq;
+> using System.Windows;
+> using Dapper;
+> using Microsoft.Data.Sqlite;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         // 需通过 NuGet 安装 Dapper 与 Microsoft.Data.Sqlite 包
+>         private const string DbPath = "hmi_data.db";
+>
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnQueryClick(object sender, RoutedEventArgs e)
+>         {
+>             using var conn = new SqliteConnection($"Data Source={DbPath}");
+>             conn.Open();
+>
+>             // 建表并插入两条模拟报警记录
+>             conn.Execute(
+>                 "CREATE TABLE IF NOT EXISTS Alarms(Id INTEGER PRIMARY KEY, Time TEXT, Message TEXT)");
+>             conn.Execute(
+>                 "INSERT INTO Alarms(Time, Message) VALUES('2026-08-17 09:10:12', '1 号泵过流报警'), " +
+>                 "('2026-08-17 09:11:05', '空压机压力低')");
+>
+>             // Dapper 把查询结果直接映射为对象集合，绑定到表格
+>             Grid.ItemsSource = conn.Query(
+>                 "SELECT Id, Time, Message FROM Alarms ORDER BY Id DESC").ToList();
+>             StatusText.Text = "查询完成，共 " + Grid.Items.Count + " 条记录";
+>         }
+>     }
+> }
 > ```
 > 
 

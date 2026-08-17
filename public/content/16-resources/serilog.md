@@ -25,9 +25,73 @@ parent: 16.1 GitHub 优质 WPF 开源项目
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **Serilog 结构化日志：报警与运行日志写入演示：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="Serilog 演示" Height="400" Width="460"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="Serilog 结构化日志" Foreground="#58A6FF" FontWeight="Bold" Margin="0,0,0,10"/>
+>         <Button Content="写入报警日志" Click="OnAlarmClick" Margin="0,0,0,8" Padding="8"
+>                 Background="#DA3633" Foreground="White"/>
+>         <Button Content="写入运行日志" Click="OnInfoClick" Margin="0,0,0,8" Padding="8"
+>                 Background="#21262D" Foreground="White"/>
+>         <TextBlock x:Name="StatusText" Foreground="#8B949E" Margin="0,4,0,8" TextWrapping="Wrap"/>
+>         <Border Background="#161B22" Padding="8" CornerRadius="6">
+>             <TextBox x:Name="LogBox" Height="150" IsReadOnly="True" TextWrapping="Wrap"
+>                      Background="#161B22" Foreground="#8B949E" BorderThickness="0"/>
+>         </Border>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.IO;
+> using System.Windows;
+> using Serilog;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         // 需通过 NuGet 安装 Serilog 与 Serilog.Sinks.File 包
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>
+>             // MessageTemplate 中的 {Device}、{Temp} 占位符会记录为独立字段
+>             Log.Logger = new LoggerConfiguration()
+>                 .MinimumLevel.Debug()
+>                 .WriteTo.File(Path.Combine(AppContext.BaseDirectory, "logs", "alarm-.log"),
+>                               rollingInterval: RollingInterval.Day)
+>                 .CreateLogger();
+>         }
+>
+>         private void OnAlarmClick(object sender, RoutedEventArgs e)
+>         {
+>             // 记录带设备编号与数值的结构化报警日志
+>             Log.Error("设备 {Device} 报警：温度 {Temp}℃ 超限", "1 号泵", 132);
+>             AppendLog("已写入 Error 级报警日志（含设备编号、温度字段）");
+>         }
+>
+>         private void OnInfoClick(object sender, RoutedEventArgs e)
+>         {
+>             Log.Information("设备 {Device} 正常启动", "2 号泵");
+>             AppendLog("已写入 Info 级运行日志");
+>         }
+>
+>         private void AppendLog(string message)
+>         {
+>             LogBox.Text = DateTime.Now.ToString("HH:mm:ss ") + message + "\n" + LogBox.Text;
+>         }
+>     }
+> }
 > ```
 > 
 

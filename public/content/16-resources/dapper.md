@@ -25,9 +25,61 @@ parent: 16.1 GitHub 优质 WPF 开源项目
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **Dapper 轻量 ORM：SQLite 设备列表查询演示：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="Dapper 演示" Height="420" Width="480"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="Dapper 轻量 ORM 查询" Foreground="#58A6FF" FontWeight="Bold" Margin="0,0,0,10"/>
+>         <Button Content="加载设备列表" Click="OnLoadClick" Margin="0,0,0,8" Padding="8"
+>                 Background="#238636" Foreground="White"/>
+>         <TextBlock x:Name="StatusText" Foreground="#8B949E" Margin="0,4,0,8" TextWrapping="Wrap"/>
+>         <DataGrid x:Name="Grid" Height="240" AutoGenerateColumns="True"
+>                   Background="#161B22" Foreground="#8B949E" BorderBrush="#21262D"
+>                   RowBackground="#161B22" AlternatingRowBackground="#0D1117"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Linq;
+> using System.Windows;
+> using Dapper;
+> using Microsoft.Data.Sqlite;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         // 需通过 NuGet 安装 Dapper 与 Microsoft.Data.Sqlite 包
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnLoadClick(object sender, RoutedEventArgs e)
+>         {
+>             using var conn = new SqliteConnection("Data Source=hmi_devices.db");
+>             conn.Open();
+>             conn.Execute(
+>                 "CREATE TABLE IF NOT EXISTS Devices(Id INTEGER PRIMARY KEY, Name TEXT, Running INTEGER)");
+>             conn.Execute(
+>                 "INSERT OR IGNORE INTO Devices(Id, Name, Running) VALUES(1, '1 号泵', 1), " +
+>                 "(2, '2 号泵', 0), (3, '空压机', 1)");
+>
+>             // Dapper 把 SELECT 结果映射为动态对象列表，直接绑定到 DataGrid
+>             var devices = conn.Query(
+>                 "SELECT Id, Name, CASE Running WHEN 1 THEN '运行' ELSE '停止' END AS State " +
+>                 "FROM Devices ORDER BY Id").ToList();
+>
+>             Grid.ItemsSource = devices;
+>             StatusText.Text = "已加载 " + devices.Count + " 台设备";
+>         }
+>     }
+> }
 > ```
 > 
 

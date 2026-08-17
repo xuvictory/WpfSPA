@@ -25,9 +25,71 @@ parent: 16.4 在线教程与文档
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **视频教程跟学打卡：按小节记录学习进度：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="教程学习打卡" Height="400" Width="440"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="视频教程学习打卡" Foreground="#58A6FF" FontWeight="Bold" Margin="0,0,0,10"/>
+>         <TextBlock Text="当前教程：" Foreground="#8B949E"/>
+>         <ComboBox x:Name="CourseBox" Margin="0,4,0,10" Background="#161B22" Foreground="White"
+>                   BorderBrush="#21262D"/>
+>         <TextBlock x:Name="ProgressText" Text="已完成 0 / 12 节" Foreground="White" FontSize="18"
+>                    Margin="0,0,0,10"/>
+>         <Button Content="完成当前小节" Click="OnDoneClick" Padding="8" Margin="0,0,0,8"
+>                 Background="#238636" Foreground="White"/>
+>         <Button Content="重置进度" Click="OnResetClick" Padding="8"
+>                 Background="#DA3633" Foreground="White"/>
+>         <TextBlock x:Name="StatusText" Foreground="#8B949E" Margin="0,10,0,0"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private int _done;
+>         private const int Total = 12;
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             CourseBox.Items.Add("WPF 入门到实战（B 站）");
+>             CourseBox.Items.Add("MVVM 深入浅出（YouTube）");
+>             CourseBox.Items.Add("上位机通信实战合集");
+>             CourseBox.SelectedIndex = 0;
+>         }
+>
+>         private void OnDoneClick(object sender, RoutedEventArgs e)
+>         {
+>             if (_done >= Total)
+>             {
+>                 StatusText.Text = "恭喜，本教程已全部学完";
+>                 return;
+>             }
+>             _done++;
+>             ProgressText.Text = $"已完成 {_done} / {Total} 节";
+>             StatusText.Text = "当前教程：" + CourseBox.SelectedItem;
+>         }
+>
+>         private void OnResetClick(object sender, RoutedEventArgs e)
+>         {
+>             _done = 0;
+>             ProgressText.Text = $"已完成 {_done} / {Total} 节";
+>             StatusText.Text = "进度已重置";
+>         }
+>     }
+> }
 > ```
 > 
 

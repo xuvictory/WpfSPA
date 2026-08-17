@@ -25,9 +25,94 @@ parent: 16.7 开发工具清单
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **通信调试思路演示：发送测试帧并观察十六进制收发日志（配合 VSPD / Modbus Poll / MQTTX）：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="通信调试辅助工具" Height="460" Width="520"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="通信调试工具使用演示" Foreground="#58A6FF" FontWeight="Bold" Margin="0,0,0,10"/>
+>         <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+>             <TextBlock Text="串口：" Foreground="#8B949E" VerticalAlignment="Center"/>
+>             <TextBox x:Name="PortBox" Text="COM3" Width="70" Margin="4,0,0,0"
+>                      Background="#0D1117" Foreground="White" BorderBrush="#21262D"/>
+>             <TextBlock Text="波特率：" Foreground="#8B949E" VerticalAlignment="Center" Margin="12,0,0,0"/>
+>             <TextBox x:Name="BaudBox" Text="9600" Width="70" Margin="4,0,0,0"
+>                      Background="#0D1117" Foreground="White" BorderBrush="#21262D"/>
+>         </StackPanel>
+>         <Button x:Name="OpenBtn" Content="打开串口" Click="OnOpenClick" Margin="0,0,0,8"
+>                 Padding="8" Background="#21262D" Foreground="White"/>
+>         <Button x:Name="SendBtn" Content="发送读取帧（01 03 00 00 00 0A C5 CD）"
+>                 Click="OnSendClick" Margin="0,0,0,8" Padding="8"
+>                 Background="#238636" Foreground="White" IsEnabled="False"/>
+>         <TextBlock x:Name="StatusText" Foreground="#8B949E" Margin="0,4,0,8" TextWrapping="Wrap"/>
+>         <Border Background="#161B22" Padding="8" CornerRadius="6">
+>             <TextBox x:Name="HexLog" Height="160" IsReadOnly="True" TextWrapping="Wrap"
+>                      FontFamily="Consolas" Background="#161B22" Foreground="#8B949E" BorderThickness="0"/>
+>         </Border>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.IO.Ports;
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         // 调试工具联动：VSPD 创建虚拟串口对 → Modbus Poll 模拟从站 → 本程序作为主站
+>         private SerialPort _port;
+>
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnOpenClick(object sender, RoutedEventArgs e)
+>         {
+>             try
+>             {
+>                 _port = new SerialPort(PortBox.Text, int.Parse(BaudBox.Text));
+>                 _port.DataReceived += OnDataReceived;  // 订阅接收事件
+>                 _port.Open();
+>                 SendBtn.IsEnabled = true;
+>                 StatusText.Text = "串口已打开：" + PortBox.Text;
+>                 AppendLog("串口已打开，等待发送 / 接收 ...");
+>             }
+>             catch (Exception ex)
+>             {
+>                 StatusText.Text = "打开失败：" + ex.Message;
+>             }
+>         }
+>
+>         private void OnSendClick(object sender, RoutedEventArgs e)
+>         {
+>             // 读取保持寄存器请求帧：站号 01 + 功能码 03 + 起始地址 + 数量 + CRC
+>             byte[] frame = { 0x01, 0x03, 0x00, 0x00, 0x00, 0x0A, 0xC5, 0xCD };
+>             _port.Write(frame, 0, frame.Length);
+>             AppendLog("[TX] 01 03 00 00 00 0A C5 CD");
+>         }
+>
+>         private void OnDataReceived(object sender, SerialDataReceivedEventArgs e)
+>         {
+>             // 收到响应后解析为十六进制字符串，便于与 Modbus Poll 的观测结果比对
+>             var bytes = new byte[_port.BytesToRead];
+>             _port.Read(bytes, 0, bytes.Length);
+>             var hex = BitConverter.ToString(bytes).Replace('-', ' ');
+>             Dispatcher.Invoke(() => AppendLog("[RX] " + hex));
+>         }
+>
+>         private void AppendLog(string line)
+>         {
+>             HexLog.Text = DateTime.Now.ToString("HH:mm:ss ") + line + "\n" + HexLog.Text;
+>         }
+>     }
+> }
 > ```
 > 
 

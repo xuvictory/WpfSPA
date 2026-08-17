@@ -25,9 +25,56 @@ parent: 16.7 开发工具清单
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **Visual Studio 调试功能演示：断点、监视窗口与条件断点：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="调试功能演示" Height="400" Width="440"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="Visual Studio 调试功能演示" Foreground="#58A6FF" FontWeight="Bold" Margin="0,0,0,10"/>
+>         <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+>             <TextBlock Text="温度：" Foreground="#8B949E" VerticalAlignment="Center"/>
+>             <TextBox x:Name="TempBox" Text="85" Width="80" Margin="4,0,0,0"
+>                      Background="#0D1117" Foreground="White" BorderBrush="#21262D"/>
+>         </StackPanel>
+>         <Button Content="计算报警等级" Click="OnCalcClick" Padding="8" Margin="0,0,0,8"
+>                 Background="#21262D" Foreground="White"/>
+>         <TextBlock x:Name="ResultText" Foreground="#8B949E" Margin="0,0,0,8" TextWrapping="Wrap"/>
+>         <Border Background="#161B22" Padding="8" CornerRadius="6">
+>             <TextBlock Text="调试建议：在 OnCalcClick 首行打断点，用监视窗口观察 temp 与 level；
+> 即时窗口可输入 temp * 2 直接求值；也可给断点设置 temp &gt;= 100 的条件。" 
+>                        Foreground="#8B949E" TextWrapping="Wrap"/>
+>         </Border>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Media;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnCalcClick(object sender, RoutedEventArgs e)
+>         {
+>             // 在此行打断点，配合监视窗口 / 即时窗口观察变量
+>             var temp = double.Parse(TempBox.Text);
+>             var level = temp >= 100 ? "危险" : temp >= 80 ? "警告" : "正常";
+>
+>             ResultText.Text = "当前温度 " + temp + " ℃，报警等级：" + level;
+>             ResultText.Foreground = level == "危险" ? Brushes.OrangeRed : Brushes.LimeGreen;
+>         }
+>     }
+> }
 > ```
 > 
 

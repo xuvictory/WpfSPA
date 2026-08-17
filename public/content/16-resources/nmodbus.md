@@ -25,9 +25,92 @@ parent: 16.1 GitHub 优质 WPF 开源项目
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **NModbus：串口读取从站保持寄存器（功能码 03）演示：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="Modbus RTU 调试" Height="440" Width="480"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="NModbus 保持寄存器读取" Foreground="#58A6FF" FontWeight="Bold" Margin="0,0,0,10"/>
+>         <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+>             <TextBlock Text="串口：" Foreground="#8B949E" VerticalAlignment="Center"/>
+>             <TextBox x:Name="PortBox" Text="COM3" Width="70" Margin="4,0,0,0"
+>                      Background="#0D1117" Foreground="White" BorderBrush="#21262D"/>
+>             <TextBlock Text="从站地址：" Foreground="#8B949E" VerticalAlignment="Center" Margin="12,0,0,0"/>
+>             <TextBox x:Name="SlaveBox" Text="1" Width="50" Margin="4,0,0,0"
+>                      Background="#0D1117" Foreground="White" BorderBrush="#21262D"/>
+>         </StackPanel>
+>         <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+>             <TextBlock Text="起始寄存器：" Foreground="#8B949E" VerticalAlignment="Center"/>
+>             <TextBox x:Name="StartBox" Text="0" Width="50" Margin="4,0,0,0"
+>                      Background="#0D1117" Foreground="White" BorderBrush="#21262D"/>
+>             <TextBlock Text="数量：" Foreground="#8B949E" VerticalAlignment="Center" Margin="12,0,0,0"/>
+>             <TextBox x:Name="CountBox" Text="10" Width="50" Margin="4,0,0,0"
+>                      Background="#0D1117" Foreground="White" BorderBrush="#21262D"/>
+>         </StackPanel>
+>         <Button Content="读取保持寄存器" Click="OnReadClick" Margin="0,0,0,8" Padding="8"
+>                 Background="#238636" Foreground="White"/>
+>         <TextBlock x:Name="StatusText" Foreground="#8B949E" Margin="0,4,0,8" TextWrapping="Wrap"/>
+>         <ListBox x:Name="RegList" Background="#161B22" Foreground="#8B949E"
+>                  BorderBrush="#21262D" Height="180"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.IO.Ports;
+> using System.Threading.Tasks;
+> using System.Windows;
+> using Modbus.Device;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         // 需通过 NuGet 安装 NModbus 包（Install-Package NModbus）
+>         public MainWindow() => InitializeComponent();
+>
+>         private async void OnReadClick(object sender, RoutedEventArgs e)
+>         {
+>             StatusText.Text = "正在读取保持寄存器 ...";
+>             try
+>             {
+>                 // 串口读写放到后台线程，避免阻塞 UI（配合 VSPD 虚拟串口可本地联调）
+>                 var registers = await Task.Run(() =>
+>                 {
+>                     using var port = new SerialPort(PortBox.Text, 9600, Parity.None, 8, StopBits.One)
+>                     {
+>                         ReadTimeout = 2000,
+>                         WriteTimeout = 2000
+>                     };
+>                     port.Open();
+>                     // 功能码 03：读取保持寄存器
+>                     return ModbusSerialMaster.CreateRtu(port).ReadHoldingRegisters(
+>                         byte.Parse(SlaveBox.Text),
+>                         ushort.Parse(StartBox.Text),
+>                         ushort.Parse(CountBox.Text));
+>                 });
+>
+>                 RegList.Items.Clear();
+>                 for (var i = 0; i < registers.Length; i++)
+>                 {
+>                     RegList.Items.Add($"寄存器 {int.Parse(StartBox.Text) + i}：{registers[i]}");
+>                 }
+>                 StatusText.Text = "读取成功，共 " + registers.Length + " 个寄存器";
+>             }
+>             catch (Exception ex)
+>             {
+>                 StatusText.Text = "读取失败：" + ex.Message;
+>             }
+>         }
+>     }
+> }
 > ```
 > 
 

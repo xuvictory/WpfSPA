@@ -25,9 +25,95 @@ parent: 16.6 常用 NuGet 包清单
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **日志工具类库：Serilog 文件日志与异常记录演示：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="日志工具演示" Height="420" Width="460"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="Serilog 日志记录演示" Foreground="#58A6FF" FontWeight="Bold" Margin="0,0,0,10"/>
+>         <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+>             <TextBlock Text="操作内容：" Foreground="#8B949E" VerticalAlignment="Center"/>
+>             <TextBox x:Name="ActionBox" Text="启动 1 号泵" Width="180" Margin="4,0,0,0"
+>                      Background="#0D1117" Foreground="White" BorderBrush="#21262D"/>
+>         </StackPanel>
+>         <Button Content="记录日志" Click="OnLogClick" Margin="0,0,0,8" Padding="8"
+>                 Background="#21262D" Foreground="White"/>
+>         <Button Content="模拟异常" Click="OnErrorClick" Margin="0,0,0,8" Padding="8"
+>                 Background="#DA3633" Foreground="White"/>
+>         <TextBlock x:Name="StatusText" Foreground="#8B949E" Margin="0,4,0,8" TextWrapping="Wrap"/>
+>         <Border Background="#161B22" Padding="8" CornerRadius="6">
+>             <TextBox x:Name="LogPreview" Height="140" IsReadOnly="True" TextWrapping="Wrap"
+>                      Background="#161B22" Foreground="#8B949E" BorderThickness="0"/>
+>         </Border>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.IO;
+> using System.Linq;
+> using System.Windows;
+> using Serilog;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         // 需通过 NuGet 安装 Serilog 与 Serilog.Sinks.File 包
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>
+>             // 配置：日志写入 logs 目录下的滚动文件，每天一个
+>             Log.Logger = new LoggerConfiguration()
+>                 .MinimumLevel.Information()
+>                 .WriteTo.File(Path.Combine(AppContext.BaseDirectory, "logs", "hmi-.log"),
+>                               rollingInterval: RollingInterval.Day)
+>                 .CreateLogger();
+>         }
+>
+>         private void OnLogClick(object sender, RoutedEventArgs e)
+>         {
+>             Log.Information("操作记录：{Action}", ActionBox.Text);
+>             StatusText.Text = "已写入一条 Info 日志";
+>             RefreshPreview();
+>         }
+>
+>         private void OnErrorClick(object sender, RoutedEventArgs e)
+>         {
+>             // 模拟一次异常并记录 Error 级别日志（含堆栈）
+>             try
+>             {
+>                 throw new InvalidOperationException("设备响应超时");
+>             }
+>             catch (Exception ex)
+>             {
+>                 Log.Error(ex, "设备通信异常");
+>                 StatusText.Text = "已写入一条 Error 日志：" + ex.Message;
+>             }
+>             RefreshPreview();
+>         }
+>
+>         private void RefreshPreview()
+>         {
+>             // 展示日志文件中最新的内容（生产环境可用日志推送组件做实时展示）
+>             var dir = Path.Combine(AppContext.BaseDirectory, "logs");
+>             if (!Directory.Exists(dir)) return;
+>             var file = Directory.GetFiles(dir, "*.log").FirstOrDefault();
+>             if (file != null)
+>             {
+>                 LogPreview.Text = File.ReadLines(file).LastOrDefault() ?? "";
+>             }
+>         }
+>     }
+> }
 > ```
 > 
 

@@ -25,9 +25,57 @@ parent: 16.1 GitHub 优质 WPF 开源项目
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **Prism 模块化导航：Region 视图切换流程演示：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="Prism 导航演示" Height="360" Width="440"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="Prism 模块化导航演示" Foreground="#58A6FF" FontWeight="Bold" Margin="0,0,0,10"/>
+>         <TextBlock Text="当前页面：" Foreground="#8B949E"/>
+>         <TextBlock x:Name="PageText" Text="主页" Foreground="White" FontSize="20" Margin="0,4,0,10"/>
+>         <Button Content="导航到 → 设备监控" Click="OnNavClick" Margin="0,0,0,8" Padding="8"
+>                 Background="#21262D" Foreground="White"/>
+>         <Button Content="导航到 → 参数设置" Click="OnSettingsClick" Padding="8"
+>                 Background="#21262D" Foreground="White"/>
+>         <TextBlock x:Name="StatusText" Foreground="#8B949E" Margin="0,8,0,0" TextWrapping="Wrap"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         // 真实 Prism 项目通过 RegionManager.RequestNavigate 切换 Region 中的视图，
+>         // 并用 DelegateCommand 承载导航命令；此处用最小示例演示导航流程
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnNavClick(object sender, RoutedEventArgs e)
+>         {
+>             NavigateTo("设备监控");
+>         }
+>
+>         private void OnSettingsClick(object sender, RoutedEventArgs e)
+>         {
+>             NavigateTo("参数设置");
+>         }
+>
+>         private void NavigateTo(string page)
+>         {
+>             PageText.Text = page;
+>             StatusText.Text = "Region 导航完成：" + page;
+>         }
+>     }
+> }
 > ```
 > 
 

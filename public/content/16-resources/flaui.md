@@ -25,9 +25,58 @@ parent: 16.1 GitHub 优质 WPF 开源项目
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **FlaUI 自动化测试目标应用（AUT）：可被测试脚本定位与操作：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="被测应用" Height="360" Width="420"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="FlaUI 自动化测试目标应用" Foreground="#58A6FF" FontWeight="Bold" Margin="0,0,0,10"/>
+>         <TextBlock Text="设备编号：" Foreground="#8B949E"/>
+>         <TextBox x:Name="DeviceIdBox" Text="DEV-001" Margin="0,4,0,10" Padding="6"
+>                  Background="#161B22" Foreground="White" BorderBrush="#21262D"/>
+>         <TextBlock Text="目标转速：" Foreground="#8B949E"/>
+>         <TextBox x:Name="SpeedBox" Text="1200" Margin="0,4,0,10" Padding="6"
+>                  Background="#161B22" Foreground="White" BorderBrush="#21262D"/>
+>         <Button Content="启动设备" Click="OnStartClick" Padding="8" Margin="0,0,0,8"
+>                 Background="#238636" Foreground="White"/>
+>         <Button Content="停止设备" Click="OnStopClick" Padding="8"
+>                 Background="#DA3633" Foreground="White"/>
+>         <TextBlock x:Name="StatusText" Foreground="#8B949E" Margin="0,10,0,0" TextWrapping="Wrap"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Media;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         // 本窗口作为 FlaUI 自动化测试的被测对象（AUT）。
+>         // 测试脚本通过 AutomationId（x:Name）定位控件并模拟键盘输入与点击。
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnStartClick(object sender, RoutedEventArgs e)
+>         {
+>             StatusText.Text = "设备 " + DeviceIdBox.Text + " 已启动，转速 " + SpeedBox.Text + " RPM";
+>             StatusText.Foreground = Brushes.LimeGreen;
+>         }
+>
+>         private void OnStopClick(object sender, RoutedEventArgs e)
+>         {
+>             StatusText.Text = "设备 " + DeviceIdBox.Text + " 已停止";
+>             StatusText.Foreground = Brushes.OrangeRed;
+>         }
+>     }
+> }
 > ```
 > 
 

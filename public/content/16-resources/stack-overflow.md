@@ -25,9 +25,57 @@ parent: 16.5 技术社区
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **Stack Overflow 提问法演示：最小复现模板生成器：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="问题定位流程" Height="420" Width="460"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="最小复现示例生成" Foreground="#58A6FF" FontWeight="Bold" Margin="0,0,0,10"/>
+>         <TextBlock Text="问题现象：" Foreground="#8B949E"/>
+>         <TextBox x:Name="SymptomBox" Height="70" TextWrapping="Wrap" AcceptsReturn="True"
+>                  Text="数据绑定后界面不刷新" Margin="0,4,0,8" Padding="6"
+>                  Background="#161B22" Foreground="White" BorderBrush="#21262D"/>
+>         <Button Content="生成复现模板" Click="OnGenerateClick" Padding="8" Margin="0,0,0,8"
+>                 Background="#21262D" Foreground="White"/>
+>         <Border Background="#161B22" Padding="8" CornerRadius="6">
+>             <TextBox x:Name="TemplateBox" Height="150" IsReadOnly="True" TextWrapping="Wrap"
+>                      Background="#161B22" Foreground="#8B949E" BorderThickness="0"/>
+>         </Border>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnGenerateClick(object sender, RoutedEventArgs e)
+>         {
+>             // 向 Stack Overflow 提问前，先按"最小复现示例"模板整理信息
+>             var symptom = string.IsNullOrEmpty(SymptomBox.Text.Trim())
+>                 ? "（请描述现象）"
+>                 : SymptomBox.Text.Trim();
+>             TemplateBox.Text =
+>                 "环境：.NET 8 / WPF / Windows 11\n" +
+>                 "问题：" + symptom + "\n" +
+>                 "复现步骤：1. 新建窗口 2. 绑定属性 3. 修改数据\n" +
+>                 "期望结果：界面自动刷新\n" +
+>                 "实际结果：界面无变化\n" +
+>                 "最小示例：粘贴精简后的 XAML 与 C# 代码";
+>         }
+>     }
+> }
 > ```
 > 
 

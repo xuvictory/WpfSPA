@@ -25,9 +25,87 @@ parent: 16.1 GitHub 优质 WPF 开源项目
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **LiveCharts2 实时折线图：模拟温度传感器数据采样：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
+>         Title="LiveCharts2 实时曲线" Height="420" Width="560"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>         </Grid.RowDefinitions>
+>         <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+>             <TextBlock Text="1 号炉温度实时监控" Foreground="#58A6FF" FontWeight="Bold"
+>                        VerticalAlignment="Center" Margin="0,0,20,0"/>
+>             <TextBlock x:Name="TempText" Text="0.0 ℃" Foreground="White" FontSize="20"
+>                        VerticalAlignment="Center"/>
+>         </StackPanel>
+>         <lvc:CartesianChart x:Name="Chart" Grid.Row="1"/>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Collections.Generic;
+> using System.Windows;
+> using System.Windows.Threading;
+> using LiveChartsCore;
+> using LiveChartsCore.SkiaSharpView;
+> using LiveChartsCore.SkiaSharpView.Painting;
+> using SkiaSharp;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         // 需通过 NuGet 安装 LiveChartsCore.SkiaSharpView.WPF 包
+>         private readonly List<ObservablePoint> _points = new List<ObservablePoint>();
+>         private readonly Random _random = new Random();
+>         private readonly DispatcherTimer _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+>         private int _index;
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>
+>             // 初始化曲线：x 为采样序号，y 为温度值
+>             Chart.Series = new ISeries[]
+>             {
+>                 new LineSeries<ObservablePoint>
+>                 {
+>                     Values = _points,
+>                     Stroke = new SolidColorPaint(SKColors.LimeGreen, 2),
+>                     Fill = null,
+>                     GeometrySize = 4
+>                 }
+>             };
+>
+>             _timer.Tick += OnTimerTick;
+>             _timer.Start();
+>         }
+>
+>         private void OnTimerTick(object sender, EventArgs e)
+>         {
+>             // 模拟温度传感器采样，每 1 秒追加一个点
+>             var temperature = 100 + _random.Next(-10, 10) * 0.5;
+>             _points.Add(new ObservablePoint(_index++, Math.Round(temperature, 1)));
+>             if (_points.Count > 60)
+>             {
+>                 _points.RemoveAt(0);   // 只保留最近 60 个点，形成滑动窗口
+>             }
+>
+>             TempText.Text = temperature.ToString("F1") + " ℃";
+>         }
+>     }
+> }
 > ```
 > 
 

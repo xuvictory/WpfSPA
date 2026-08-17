@@ -25,9 +25,118 @@ parent: 16.2 上位机相关开源项目
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **SCADA 设备监控主画面：状态指示灯与实时数据刷新演示：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="SCADA 监控主画面" Height="460" Width="560"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="车间设备 SCADA 监控" Foreground="#58A6FF" FontSize="18"
+>                    FontWeight="Bold" Margin="0,0,0,12"/>
+>         <UniformGrid Grid.Row="1" Columns="3" Margin="0,0,0,12">
+>             <Border Background="#161B22" Padding="10" CornerRadius="6" Margin="4">
+>                 <StackPanel>
+>                     <TextBlock Text="1 号泵" Foreground="#8B949E" FontSize="13"/>
+>                     <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+>                         <Ellipse x:Name="Pump1Dot" Width="12" Height="12" Fill="#DA3633" Margin="0,0,6,0"/>
+>                         <TextBlock x:Name="Pump1Text" Text="停止" Foreground="#8B949E"/>
+>                     </StackPanel>
+>                     <TextBlock x:Name="Pump1Speed" Text="0 RPM" Foreground="White" Margin="0,6,0,0"/>
+>                 </StackPanel>
+>             </Border>
+>             <Border Background="#161B22" Padding="10" CornerRadius="6" Margin="4">
+>                 <StackPanel>
+>                     <TextBlock Text="2 号泵" Foreground="#8B949E" FontSize="13"/>
+>                     <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+>                         <Ellipse x:Name="Pump2Dot" Width="12" Height="12" Fill="#DA3633" Margin="0,0,6,0"/>
+>                         <TextBlock x:Name="Pump2Text" Text="停止" Foreground="#8B949E"/>
+>                     </StackPanel>
+>                     <TextBlock x:Name="Pump2Speed" Text="0 RPM" Foreground="White" Margin="0,6,0,0"/>
+>                 </StackPanel>
+>             </Border>
+>             <Border Background="#161B22" Padding="10" CornerRadius="6" Margin="4">
+>                 <StackPanel>
+>                     <TextBlock Text="空压机" Foreground="#8B949E" FontSize="13"/>
+>                     <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+>                         <Ellipse x:Name="CompDot" Width="12" Height="12" Fill="#DA3633" Margin="0,0,6,0"/>
+>                         <TextBlock x:Name="CompText" Text="停止" Foreground="#8B949E"/>
+>                     </StackPanel>
+>                     <TextBlock x:Name="CompPress" Text="0.00 MPa" Foreground="White" Margin="0,6,0,0"/>
+>                 </StackPanel>
+>             </Border>
+>         </UniformGrid>
+>         <Border Grid.Row="2" Background="#161B22" Padding="10" CornerRadius="6">
+>             <DockPanel>
+>                 <Button Content="启动 / 停止巡检" Click="OnToggleClick" DockPanel.Dock="Top"
+>                         Padding="8" Background="#21262D" Foreground="White" Margin="0,0,0,8"/>
+>                 <TextBlock x:Name="LogText" Foreground="#8B949E" TextWrapping="Wrap"/>
+>             </DockPanel>
+>         </Border>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Windows;
+> using System.Windows.Media;
+> using System.Windows.Shapes;
+> using System.Windows.Threading;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         // 定时器模拟 PLC / 采集站推送的实时数据
+>         private readonly DispatcherTimer _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+>         private readonly Random _random = new Random();
+>         private bool _running;
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             _timer.Tick += OnTimerTick;
+>         }
+>
+>         private void OnToggleClick(object sender, RoutedEventArgs e)
+>         {
+>             _running = !_running;
+>             _timer.IsEnabled = _running;
+>             LogText.Text = _running ? "开始采集，实时刷新设备状态 ..." : "已停止采集";
+>         }
+>
+>         private void OnTimerTick(object sender, EventArgs e)
+>         {
+>             // 模拟 1 号泵运行、2 号泵待机、空压机压力波动
+>             UpdateDevice(Pump1Dot, Pump1Text, Pump1Speed, true, _random.Next(1200, 1500) + " RPM");
+>             UpdateDevice(Pump2Dot, Pump2Text, Pump2Speed, false, "0 RPM");
+>
+>             var pressure = _random.Next(30, 80) / 10.0;
+>             CompPress.Text = pressure.ToString("F2") + " MPa";
+>             CompDot.Fill = pressure > 0.5 ? Brushes.LimeGreen : Brushes.OrangeRed;
+>             CompText.Text = pressure > 0.5 ? "运行" : "低压";
+>         }
+>
+>         private void UpdateDevice(Ellipse dot, TextBlock state, TextBlock speed, bool running, string speedText)
+>         {
+>             // 统一的设备状态刷新逻辑：运行=绿色，停止=红色
+>             dot.Fill = running ? Brushes.LimeGreen : Brushes.OrangeRed;
+>             state.Text = running ? "运行" : "停止";
+>             state.Foreground = running ? Brushes.LimeGreen : Brushes.Gray;
+>             speed.Text = speedText;
+>         }
+>     }
+> }
 > ```
 > 
 

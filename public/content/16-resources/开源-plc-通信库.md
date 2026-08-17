@@ -25,9 +25,98 @@ parent: 16.2 上位机相关开源项目
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **西门子 S7 PLC 连接与数据读取演示（开源通信库 HslCommunication）：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="PLC 通信 - 开源通信库" Height="420" Width="460"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <Border Background="#161B22" Padding="12" CornerRadius="6" Margin="0,0,0,10">
+>             <StackPanel>
+>                 <TextBlock Text="PLC 连接配置（HslCommunication）" Foreground="#58A6FF"
+>                            FontWeight="Bold" Margin="0,0,0,8"/>
+>                 <StackPanel Orientation="Horizontal">
+>                     <TextBlock Text="IP：" Foreground="#8B949E" VerticalAlignment="Center"/>
+>                     <TextBox x:Name="IpBox" Text="192.168.0.1" Width="120" Margin="4,0,0,0"
+>                              Background="#0D1117" Foreground="White" BorderBrush="#21262D"/>
+>                     <TextBlock Text="端口：" Foreground="#8B949E" VerticalAlignment="Center" Margin="12,0,0,0"/>
+>                     <TextBox x:Name="PortBox" Text="102" Width="60" Margin="4,0,0,0"
+>                              Background="#0D1117" Foreground="White" BorderBrush="#21262D"/>
+>                 </StackPanel>
+>             </StackPanel>
+>         </Border>
+>         <Button Content="连接 PLC" Click="OnConnectClick" Margin="0,0,0,8" Padding="8"
+>                 Background="#21262D" Foreground="White"/>
+>         <Button x:Name="ReadBtn" Content="读取 DB1.DBW0" Click="OnReadClick" Margin="0,0,0,8"
+>                 Padding="8" Background="#238636" Foreground="White" IsEnabled="False"/>
+>         <TextBlock x:Name="StatusText" Foreground="#8B949E" Margin="0,4,0,8" TextWrapping="Wrap"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Threading.Tasks;
+> using System.Windows;
+> using System.Windows.Media;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         // 开源通信库 HslCommunication（NuGet：Install-Package HslCommunication）
+>         private readonly HslCommunication.Profinet.Siemens.SiemensS7Net _plc;
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             // 以 S7-1500 为例创建客户端，连接对象在窗口生命周期内复用
+>             _plc = new HslCommunication.Profinet.Siemens.SiemensS7Net(
+>                 HslCommunication.Profinet.Siemens.SiemensPLCS.S1500);
+>         }
+>
+>         private async void OnConnectClick(object sender, RoutedEventArgs e)
+>         {
+>             _plc.IpAddress = IpBox.Text;
+>             _plc.Port = int.Parse(PortBox.Text);
+>
+>             StatusText.Text = "正在连接 PLC ...";
+>             // 真实网络调用放到后台线程，避免阻塞 UI
+>             var result = await Task.Run(() => _plc.ConnectServer());
+>             if (result.IsSuccess)
+>             {
+>                 StatusText.Text = "连接成功，等待读取数据";
+>                 StatusText.Foreground = Brushes.LimeGreen;
+>                 ReadBtn.IsEnabled = true;
+>             }
+>             else
+>             {
+>                 StatusText.Text = "连接失败：" + result.Message;
+>                 StatusText.Foreground = Brushes.OrangeRed;
+>             }
+>         }
+>
+>         private async void OnReadClick(object sender, RoutedEventArgs e)
+>         {
+>             // 读取 DB1 数据块中 DBW0 的 16 位有符号整数（如温度、速度等工艺参数）
+>             var result = await Task.Run(() => _plc.ReadInt16("DB1.DBW0"));
+>             if (result.IsSuccess)
+>             {
+>                 StatusText.Text = $"DB1.DBW0 当前值 = {result.Content}";
+>                 StatusText.Foreground = Brushes.LimeGreen;
+>             }
+>             else
+>             {
+>                 StatusText.Text = "读取失败：" + result.Message;
+>                 StatusText.Foreground = Brushes.OrangeRed;
+>             }
+>         }
+>     }
+> }
 > ```
 > 
 

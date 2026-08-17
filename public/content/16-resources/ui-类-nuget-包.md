@@ -25,9 +25,80 @@ parent: 16.6 常用 NuGet 包清单
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **UI 类库快速选型：按场景推荐控件库组合演示：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="UI 类库选型" Height="420" Width="480"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="UI 类库快速选型" Foreground="#58A6FF" FontWeight="Bold" Margin="0,0,0,10"/>
+>         <Border Background="#161B22" Padding="10" CornerRadius="6" Margin="0,0,0,10">
+>             <StackPanel>
+>                 <TextBlock Text="HandyControl" Foreground="#238636" FontWeight="Bold"/>
+>                 <TextBlock Text="侧重：常用控件补充、扁平暗色主题" Foreground="#8B949E" Margin="0,4,0,0"/>
+>             </StackPanel>
+>         </Border>
+>         <Border Background="#161B22" Padding="10" CornerRadius="6" Margin="0,0,0,10">
+>             <StackPanel>
+>                 <TextBlock Text="MaterialDesignInXaml" Foreground="#238636" FontWeight="Bold"/>
+>                 <TextBlock Text="侧重：Material 设计语言、动效与提示" Foreground="#8B949E" Margin="0,4,0,0"/>
+>             </StackPanel>
+>         </Border>
+>         <Border Background="#161B22" Padding="10" CornerRadius="6" Margin="0,0,0,10">
+>             <StackPanel>
+>                 <TextBlock Text="LiveCharts2 / OxyPlot" Foreground="#238636" FontWeight="Bold"/>
+>                 <TextBlock Text="侧重：实时曲线与数据可视化" Foreground="#8B949E" Margin="0,4,0,0"/>
+>             </StackPanel>
+>         </Border>
+>         <ComboBox x:Name="LibBox" Margin="0,0,0,8" Background="#161B22" Foreground="White"
+>                   BorderBrush="#21262D"/>
+>         <Button Content="推荐组合" Click="OnSuggestClick" Padding="8"
+>                 Background="#21262D" Foreground="White"/>
+>         <TextBlock x:Name="StatusText" Foreground="#8B949E" Margin="0,8,0,0" TextWrapping="Wrap"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Media;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             LibBox.Items.Add("实时数据监控上位机");
+>             LibBox.Items.Add("产线看板大屏");
+>             LibBox.Items.Add("简单工具软件");
+>             LibBox.SelectedIndex = 0;
+>         }
+>
+>         private void OnSuggestClick(object sender, RoutedEventArgs e)
+>         {
+>             switch (LibBox.SelectedIndex)
+>             {
+>                 case 0:  // 实时数据监控
+>                     StatusText.Text = "推荐：HandyControl（界面）+ LiveCharts2（曲线）+ MQTTnet（通信）";
+>                     break;
+>                 case 1:  // 产线看板大屏
+>                     StatusText.Text = "推荐：MaterialDesignInXaml（大屏风格）+ OxyPlot（趋势）+ Serilog（日志）";
+>                     break;
+>                 default: // 简单工具软件
+>                     StatusText.Text = "推荐：纯 WPF 自带控件即可，按需引入 HandyControl 增强体验";
+>                     break;
+>             }
+>             StatusText.Foreground = Brushes.LimeGreen;
+>         }
+>     }
+> }
 > ```
 > 
 

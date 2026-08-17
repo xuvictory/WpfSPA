@@ -25,9 +25,53 @@ parent: 16.3 推荐书籍
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **《深入浅出 WPF》核心概念演示：XAML 界面 + ElementName 数据绑定：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="WPF 核心概念演示" Height="400" Width="460"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="《深入浅出 WPF》核心概念演示" Foreground="#58A6FF" FontWeight="Bold" Margin="0,0,0,10"/>
+>         <TextBlock Text="1. XAML 声明界面  2. 数据绑定连接逻辑  3. 模板定制外观"
+>                    Foreground="#8B949E" TextWrapping="Wrap" Margin="0,0,0,10"/>
+>         <TextBlock Text="设备名称：" Foreground="#8B949E"/>
+>         <TextBox x:Name="NameBox" Text="冷却泵" Margin="0,4,0,10" Padding="6"
+>                  Background="#161B22" Foreground="White" BorderBrush="#21262D"/>
+>         <Button Content="绑定并显示" Click="OnShowClick" Padding="8" Margin="0,0,0,8"
+>                 Background="#21262D" Foreground="White"/>
+>         <Border Background="#161B22" Padding="10" CornerRadius="6">
+>             <StackPanel>
+>                 <TextBlock Text="{Binding ElementName=NameBox, Path=Text}"
+>                            Foreground="White" FontSize="20"/>
+>                 <TextBlock x:Name="StateText" Foreground="#8B949E" Margin="0,6,0,0"/>
+>             </StackPanel>
+>         </Border>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         // 演示数据绑定的一种形式：ElementName 绑定同一窗口内的其他元素
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnShowClick(object sender, RoutedEventArgs e)
+>         {
+>             // 上方 TextBlock 已通过 ElementName 绑定 NameBox.Text，输入即同步
+>             StateText.Text = "ElementName 绑定已生效：修改输入框内容即可同步刷新上方文本";
+>         }
+>     }
+> }
 > ```
 > 
 

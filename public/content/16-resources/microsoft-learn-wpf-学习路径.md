@@ -25,9 +25,54 @@ parent: 16.4 在线教程与文档
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **Microsoft Learn 学习路径进度看板：分阶段展示完成度：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="学习路径" Height="400" Width="460"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="Microsoft Learn 学习路径" Foreground="#58A6FF" FontWeight="Bold" Margin="0,0,0,10"/>
+>         <TextBlock Text="阶段 1：C# 基础" Foreground="#8B949E" Margin="0,2,0,2"/>
+>         <ProgressBar x:Name="Stage1" Value="100" Maximum="100" Height="10" Foreground="#238636"
+>                      Background="#21262D" Margin="0,0,0,8"/>
+>         <TextBlock Text="阶段 2：XAML 与布局" Foreground="#8B949E" Margin="0,2,0,2"/>
+>         <ProgressBar x:Name="Stage2" Value="60" Maximum="100" Height="10" Foreground="#238636"
+>                      Background="#21262D" Margin="0,0,0,8"/>
+>         <TextBlock Text="阶段 3：数据绑定与 MVVM" Foreground="#8B949E" Margin="0,2,0,2"/>
+>         <ProgressBar x:Name="Stage3" Value="25" Maximum="100" Height="10" Foreground="#238636"
+>                      Background="#21262D" Margin="0,0,0,8"/>
+>         <TextBlock Text="阶段 4：上位机综合实战" Foreground="#8B949E" Margin="0,2,0,2"/>
+>         <ProgressBar x:Name="Stage4" Value="0" Maximum="100" Height="10" Foreground="#238636"
+>                      Background="#21262D" Margin="0,0,0,8"/>
+>         <Button Content="完成阶段 2 的一个模块" Click="OnLearnClick" Padding="8" Margin="0,12,0,8"
+>                 Background="#21262D" Foreground="White"/>
+>         <TextBlock x:Name="StatusText" Foreground="#8B949E" TextWrapping="Wrap"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnLearnClick(object sender, RoutedEventArgs e)
+>         {
+>             // 模拟完成路径中的一个学习模块，进度前进 20%
+>             Stage2.Value = System.Math.Min(100, Stage2.Value + 20);
+>             StatusText.Text = "阶段 2 进度：" + Stage2.Value + "% ，继续加油";
+>         }
+>     }
+> }
 > ```
 > 
 

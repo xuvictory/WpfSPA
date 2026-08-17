@@ -25,9 +25,67 @@ parent: 16.3 推荐书籍
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **C# 高级特性演示：LINQ、泛型与 lambda 筛选设备列表：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="C# 高级特性演示" Height="400" Width="460"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="C# 高级特性：LINQ 与泛型在 WPF 中的使用" Foreground="#58A6FF" FontWeight="Bold" Margin="0,0,0,10"/>
+>         <Button Content="筛选运行中的设备" Click="OnFilterClick" Padding="8" Margin="0,0,0,8"
+>                 Background="#21262D" Foreground="White"/>
+>         <TextBlock x:Name="StatusText" Foreground="#8B949E" Margin="0,4,0,8" TextWrapping="Wrap"/>
+>         <ListBox x:Name="DeviceList" Height="200" Background="#161B22" Foreground="#8B949E"
+>                  BorderBrush="#21262D"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Collections.Generic;
+> using System.Linq;
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         // 设备数据模型（泛型类的简单用法）
+>         private class Device
+>         {
+>             public string Name { get; set; }
+>             public bool Running { get; set; }
+>         }
+>
+>         private readonly List<Device> _devices = new List<Device>
+>         {
+>             new Device { Name = "1 号泵", Running = true },
+>             new Device { Name = "2 号泵", Running = false },
+>             new Device { Name = "空压机", Running = true },
+>             new Device { Name = "输送带", Running = false }
+>         };
+>
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnFilterClick(object sender, RoutedEventArgs e)
+>         {
+>             // LINQ 查询 + lambda 委托筛选，统计运行中的设备
+>             var running = _devices.Where(d => d.Running).Select(d => d.Name).ToList();
+>
+>             DeviceList.Items.Clear();
+>             foreach (var name in running)
+>             {
+>                 DeviceList.Items.Add(name);
+>             }
+>             StatusText.Text = "运行中设备 " + running.Count + " 台（LINQ Where 筛选）";
+>         }
+>     }
+> }
 > ```
 > 
 

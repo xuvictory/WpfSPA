@@ -25,9 +25,71 @@ parent: 16.1 GitHub 优质 WPF 开源项目
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **CommunityToolkit.Mvvm：源生成器属性通知与命令绑定演示：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         xmlns:local="clr-namespace:HmiDemo"
+>         Title="CommunityToolkit.Mvvm 演示" Height="380" Width="440"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Window.DataContext>
+>         <local:MainViewModel/>
+>     </Window.DataContext>
+>     <StackPanel Margin="15">
+>         <TextBlock Text="CommunityToolkit.Mvvm 绑定演示" Foreground="#58A6FF" FontWeight="Bold" Margin="0,0,0,10"/>
+>         <TextBlock Text="产量：" Foreground="#8B949E"/>
+>         <TextBlock Text="{Binding Output}" Foreground="White" FontSize="24" Margin="0,4,0,10"/>
+>         <Button Content="产量 +1" Command="{Binding IncrementCommand}" Padding="8" Margin="0,0,0,8"
+>                 Background="#21262D" Foreground="White"/>
+>         <Button Content="清零" Command="{Binding ResetCommand}" Padding="8"
+>                 Background="#DA3633" Foreground="White"/>
+>         <TextBlock Text="{Binding StateText}" Foreground="#58A6FF" Margin="0,10,0,0"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using CommunityToolkit.Mvvm.ComponentModel;
+> using CommunityToolkit.Mvvm.Input;
+>
+> namespace HmiDemo
+> {
+>     // 需通过 NuGet 安装 CommunityToolkit.Mvvm 包
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>     }
+>
+>     public partial class MainViewModel : ObservableObject
+>     {
+>         // [ObservableProperty] 在编译期自动生成 Output 属性并实现属性通知
+>         [ObservableProperty]
+>         private int _output;
+>
+>         [ObservableProperty]
+>         private string _stateText = "等待操作";
+>
+>         // [RelayCommand] 自动生成 IncrementCommand，绑定到按钮
+>         [RelayCommand]
+>         private void Increment()
+>         {
+>             Output++;
+>             StateText = "产量已更新为 " + Output;
+>         }
+>
+>         [RelayCommand]
+>         private void Reset()
+>         {
+>             Output = 0;
+>             StateText = "产量已清零";
+>         }
+>     }
+> }
 > ```
 > 
 

@@ -25,9 +25,113 @@ parent: 16.1 GitHub 优质 WPF 开源项目
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **MQTTnet 客户端：连接 Broker、订阅主题、发布消息演示：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="MQTT 通信演示" Height="460" Width="480"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="MQTTnet 客户端" Foreground="#58A6FF" FontWeight="Bold" Margin="0,0,0,10"/>
+>         <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+>             <TextBlock Text="Broker：" Foreground="#8B949E" VerticalAlignment="Center"/>
+>             <TextBox x:Name="BrokerBox" Text="127.0.0.1" Width="120" Margin="4,0,0,0"
+>                      Background="#0D1117" Foreground="White" BorderBrush="#21262D"/>
+>             <TextBlock Text="端口：" Foreground="#8B949E" VerticalAlignment="Center" Margin="12,0,0,0"/>
+>             <TextBox x:Name="PortBox" Text="1883" Width="60" Margin="4,0,0,0"
+>                      Background="#0D1117" Foreground="White" BorderBrush="#21262D"/>
+>         </StackPanel>
+>         <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+>             <TextBlock Text="主题：" Foreground="#8B949E" VerticalAlignment="Center"/>
+>             <TextBox x:Name="TopicBox" Text="factory/pump/status" Width="220" Margin="4,0,0,0"
+>                      Background="#0D1117" Foreground="White" BorderBrush="#21262D"/>
+>         </StackPanel>
+>         <Button x:Name="ConnectBtn" Content="连接并订阅" Click="OnConnectClick" Margin="0,0,0,8"
+>                 Padding="8" Background="#21262D" Foreground="White"/>
+>         <Button x:Name="PublishBtn" Content="发布一条消息" Click="OnPublishClick" Margin="0,0,0,8"
+>                 Padding="8" Background="#238636" Foreground="White" IsEnabled="False"/>
+>         <TextBlock x:Name="StatusText" Foreground="#8B949E" Margin="0,4,0,8" TextWrapping="Wrap"/>
+>         <Border Background="#161B22" Padding="8" CornerRadius="6">
+>             <TextBox x:Name="LogBox" Height="140" IsReadOnly="True" TextWrapping="Wrap"
+>                      Background="#161B22" Foreground="#8B949E" BorderThickness="0"/>
+>         </Border>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Text;
+> using System.Threading;
+> using System.Threading.Tasks;
+> using System.Windows;
+> using MQTTnet;
+> using MQTTnet.Client;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         // 需通过 NuGet 安装 MQTTnet 包（Install-Package MQTTnet）
+>         private IMqttClient _client;
+>
+>         public MainWindow() => InitializeComponent();
+>
+>         private async void OnConnectClick(object sender, RoutedEventArgs e)
+>         {
+>             var factory = new MqttFactory();
+>             _client = factory.CreateMqttClient();
+>
+>             // 订阅消息到达事件，在回调中把内容追加到日志框
+>             _client.ApplicationMessageReceivedAsync += args =>
+>             {
+>                 var payload = Encoding.UTF8.GetString(args.ApplicationMessage.PayloadSegment);
+>                 AppendLog($"[收到] {args.ApplicationMessage.Topic} : {payload}");
+>                 return Task.CompletedTask;
+>             };
+>
+>             var options = new MqttClientOptionsBuilder()
+>                 .WithTcpServer(BrokerBox.Text, int.Parse(PortBox.Text))
+>                 .WithClientId("HmiDemoClient")
+>                 .Build();
+>
+>             try
+>             {
+>                 await _client.ConnectAsync(options, CancellationToken.None);
+>                 await _client.SubscribeAsync(TopicBox.Text);
+>                 StatusText.Text = "已连接并订阅主题：" + TopicBox.Text;
+>                 PublishBtn.IsEnabled = true;
+>             }
+>             catch (Exception ex)
+>             {
+>                 StatusText.Text = "连接失败：" + ex.Message;
+>             }
+>         }
+>
+>         private async void OnPublishClick(object sender, RoutedEventArgs e)
+>         {
+>             // 上位机把设备状态发布到主题，供大屏、Web 等其他端订阅
+>             var payload = "{\"pump\":1,\"rpm\":1450,\"status\":\"running\"}";
+>             var message = new MqttApplicationMessageBuilder()
+>                 .WithTopic(TopicBox.Text)
+>                 .WithPayload(payload)
+>                 .Build();
+>             await _client.PublishAsync(message);
+>             AppendLog("[发布] " + payload);
+>         }
+>
+>         private void AppendLog(string line)
+>         {
+>             // 回调可能来自后台线程，通过 Dispatcher 切回 UI 线程
+>             Dispatcher.Invoke(() => LogBox.Text =
+>                 DateTime.Now.ToString("HH:mm:ss ") + line + "\n" + LogBox.Text);
+>         }
+>     }
+> }
 > ```
 > 
 

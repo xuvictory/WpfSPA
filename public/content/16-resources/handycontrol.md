@@ -25,9 +25,71 @@ parent: 16.1 GitHub 优质 WPF 开源项目
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **HandyControl 卡片控件与设备状态演示：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         xmlns:hc="https://handyorg.github.io/handycontrol"
+>         Title="HandyControl 演示" Height="420" Width="560"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="HandyControl 卡片控件" Foreground="#58A6FF" FontWeight="Bold" Margin="0,0,0,10"/>
+>         <UniformGrid Columns="2" Margin="0,0,0,10">
+>             <hc:Card Background="#161B22" CornerRadius="6" Margin="4">
+>                 <StackPanel>
+>                     <TextBlock Text="1 号泵" Foreground="#8B949E"/>
+>                     <TextBlock x:Name="Pump1Status" Text="运行中" Foreground="#238636" FontSize="16" Margin="0,6,0,0"/>
+>                 </StackPanel>
+>             </hc:Card>
+>             <hc:Card Background="#161B22" CornerRadius="6" Margin="4">
+>                 <StackPanel>
+>                     <TextBlock Text="2 号泵" Foreground="#8B949E"/>
+>                     <TextBlock x:Name="Pump2Status" Text="已停止" Foreground="#DA3633" FontSize="16" Margin="0,6,0,0"/>
+>                 </StackPanel>
+>             </hc:Card>
+>         </UniformGrid>
+>         <Button Content="切换 1 号泵状态" Click="OnToggleClick" Margin="0,0,0,8" Padding="8"
+>                 Background="#21262D" Foreground="White"/>
+>         <TextBlock x:Name="StatusText" Foreground="#8B949E" TextWrapping="Wrap"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Media;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         // 需通过 NuGet 安装 HandyControl 包（Install-Package HandyControl）
+>         private bool _running = true;
+>
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnToggleClick(object sender, RoutedEventArgs e)
+>         {
+>             _running = !_running;
+>             if (_running)
+>             {
+>                 Pump1Status.Text = "运行中";
+>                 Pump1Status.Foreground = Brushes.LimeGreen;
+>                 StatusText.Text = "1 号泵已启动";
+>             }
+>             else
+>             {
+>                 Pump1Status.Text = "已停止";
+>                 Pump1Status.Foreground = Brushes.OrangeRed;
+>                 StatusText.Text = "1 号泵已停止";
+>             }
+>         }
+>     }
+> }
 > ```
 > 
 

@@ -25,9 +25,55 @@ parent: 16.4 在线教程与文档
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **微软官方文档典型控件演示：Slider 联动文本与进度条：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="官方文档控件演示" Height="360" Width="440"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="微软官方文档典型控件演示" Foreground="#58A6FF" FontWeight="Bold" Margin="0,0,0,10"/>
+>         <TextBlock Text="文档地址：learn.microsoft.com/zh-cn/dotnet/desktop/wpf/"
+>                    Foreground="#8B949E" TextWrapping="Wrap" Margin="0,0,0,10"/>
+>         <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+>             <TextBlock Text="转速：" Foreground="#8B949E" VerticalAlignment="Center"/>
+>             <Slider x:Name="SpeedSlider" Minimum="0" Maximum="3000" Width="220"
+>                     ValueChanged="OnSpeedChanged" VerticalAlignment="Center"/>
+>             <TextBlock x:Name="SpeedText" Text="0" Foreground="#58A6FF" FontSize="18"
+>                        Margin="10,0,0,0" Width="80"/>
+>         </StackPanel>
+>         <ProgressBar x:Name="SpeedBar" Height="12" Maximum="3000" Value="0"
+>                      Foreground="#238636" Background="#21262D" Margin="0,0,0,10"/>
+>         <TextBlock x:Name="StatusText" Foreground="#8B949E"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Controls;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnSpeedChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+>         {
+>             // 官方文档常用控件的联动示例：Slider 驱动文本与进度条
+>             SpeedText.Text = ((int)SpeedSlider.Value) + " RPM";
+>             SpeedBar.Value = SpeedSlider.Value;
+>             StatusText.Text = SpeedSlider.Value > 2400
+>                 ? "转速过高，请注意设备安全"
+>                 : "设备运行正常";
+>         }
+>     }
+> }
 > ```
 > 
 

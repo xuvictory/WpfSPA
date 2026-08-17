@@ -25,9 +25,62 @@ parent: 16.3 推荐书籍
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **async/await 并发采集演示：Task.WhenAll 并行读取 3 路传感器：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="并发编程演示" Height="360" Width="440"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="async/await 并发采集演示" Foreground="#58A6FF" FontWeight="Bold" Margin="0,0,0,10"/>
+>         <Button x:Name="CollectBtn" Content="并行采集 3 路传感器" Click="OnCollectClick"
+>                 Padding="8" Margin="0,0,0,8" Background="#238636" Foreground="White"/>
+>         <TextBlock x:Name="StatusText" Foreground="#8B949E" Margin="0,4,0,8" TextWrapping="Wrap"/>
+>         <Border Background="#161B22" Padding="8" CornerRadius="6">
+>             <TextBlock x:Name="ResultText" Foreground="White" TextWrapping="Wrap"/>
+>         </Border>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Threading.Tasks;
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         private async void OnCollectClick(object sender, RoutedEventArgs e)
+>         {
+>             CollectBtn.IsEnabled = false;
+>             StatusText.Text = "并行采集中 ...";
+>
+>             // Task.WhenAll 让 3 路采集并发执行，总耗时约等于最慢的一路
+>             var results = await Task.WhenAll(CollectAsync("1 号温度", 1200),
+>                                              CollectAsync("2 号温度", 800),
+>                                              CollectAsync("3 号温度", 1500));
+>
+>             ResultText.Text = string.Join("\n", results);
+>             StatusText.Text = "采集完成，耗时约等于最慢一路（1500 ms）";
+>             CollectBtn.IsEnabled = true;
+>         }
+>
+>         // 模拟一路传感器采集：延迟后返回测量值
+>         private async Task<string> CollectAsync(string sensor, int delayMs)
+>         {
+>             await Task.Delay(delayMs);
+>             return sensor + "：" + new Random().Next(80, 120) + " ℃（" + delayMs + " ms）";
+>         }
+>     }
+> }
 > ```
 > 
 

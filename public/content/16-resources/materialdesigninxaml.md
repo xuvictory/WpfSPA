@@ -25,9 +25,56 @@ parent: 16.1 GitHub 优质 WPF 开源项目
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **MaterialDesignInXaml 主题控件：提示输入与保存操作演示：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+>         Title="MaterialDesign 演示" Height="400" Width="460"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="MaterialDesignInXaml 主题控件" Foreground="#58A6FF" FontWeight="Bold" Margin="0,0,0,10"/>
+>         <TextBox x:Name="DeviceBox" Text="写入设备名称" Margin="0,0,0,10" Padding="6"
+>                  materialDesign:HintAssist.Hint="设备名称"
+>                  Background="#161B22" Foreground="White" BorderBrush="#21262D"/>
+>         <Button Content="保存设备信息" Click="OnSaveClick" Margin="0,0,0,10" Padding="8"
+>                 Background="#238636" Foreground="White"/>
+>         <TextBlock x:Name="StatusText" Foreground="#8B949E" TextWrapping="Wrap"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Media;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         // 需通过 NuGet 安装 MaterialDesignThemes 包，并在 App.xaml 合并主题资源
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnSaveClick(object sender, RoutedEventArgs e)
+>         {
+>             var name = DeviceBox.Text.Trim();
+>             if (string.IsNullOrEmpty(name))
+>             {
+>                 StatusText.Text = "设备名称不能为空";
+>                 StatusText.Foreground = Brushes.OrangeRed;
+>             }
+>             else
+>             {
+>                 StatusText.Text = "已保存设备：" + name;
+>                 StatusText.Foreground = Brushes.LimeGreen;
+>             }
+>         }
+>     }
+> }
 > ```
 > 
 

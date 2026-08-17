@@ -25,9 +25,57 @@ parent: 16.5 技术社区
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **技术文章学习法演示：知识点笔记记录工具：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="学习笔记" Height="420" Width="460"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="技术文章学习笔记" Foreground="#58A6FF" FontWeight="Bold" Margin="0,0,0,10"/>
+>         <TextBlock Text="知识点：" Foreground="#8B949E"/>
+>         <TextBox x:Name="TopicBox" Text="DependencyProperty" Margin="0,4,0,8" Padding="6"
+>                  Background="#161B22" Foreground="White" BorderBrush="#21262D"/>
+>         <TextBlock Text="我的理解：" Foreground="#8B949E"/>
+>         <TextBox x:Name="NoteBox" Height="90" TextWrapping="Wrap" AcceptsReturn="True"
+>                  Margin="0,4,0,8" Padding="6" Background="#161B22" Foreground="White"
+>                  BorderBrush="#21262D"/>
+>         <Button Content="保存笔记" Click="OnSaveClick" Padding="8" Margin="0,0,0,8"
+>                 Background="#21262D" Foreground="White"/>
+>         <TextBlock x:Name="StatusText" Foreground="#8B949E" TextWrapping="Wrap"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         // 阅读博客 / CSDN 技术文章时的笔记法：标题 + 用自己的话复述
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnSaveClick(object sender, RoutedEventArgs e)
+>         {
+>             var topic = TopicBox.Text.Trim();
+>             var note = NoteBox.Text.Trim();
+>             if (string.IsNullOrEmpty(topic) || string.IsNullOrEmpty(note))
+>             {
+>                 StatusText.Text = "知识点与理解内容不能为空";
+>             }
+>             else
+>             {
+>                 StatusText.Text = $"已保存笔记：《{topic}》共 {note.Length} 字";
+>             }
+>         }
+>     }
+> }
 > ```
 > 
 

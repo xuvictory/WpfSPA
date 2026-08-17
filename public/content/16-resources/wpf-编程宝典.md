@@ -25,9 +25,59 @@ parent: 16.3 推荐书籍
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **《WPF 编程宝典》常见技巧演示：Style 样式与 Trigger 触发器：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="WPF 技巧演示" Height="380" Width="460"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Window.Resources>
+>         <!-- 宝典技巧：用样式与触发器统一控件外观，悬停时变色 -->
+>         <Style x:Key="HmiButton" TargetType="Button">
+>             <Setter Property="Background" Value="#21262D"/>
+>             <Setter Property="Foreground" Value="White"/>
+>             <Setter Property="Padding" Value="10"/>
+>             <Setter Property="Margin" Value="0,0,0,8"/>
+>             <Style.Triggers>
+>                 <Trigger Property="IsMouseOver" Value="True">
+>                     <Setter Property="Background" Value="#58A6FF"/>
+>                 </Trigger>
+>             </Style.Triggers>
+>         </Style>
+>     </Window.Resources>
+>     <StackPanel Margin="15">
+>         <TextBlock Text="《WPF 编程宝典》样式与触发器演示" Foreground="#58A6FF" FontWeight="Bold" Margin="0,0,0,10"/>
+>         <Button Content="启动设备" Style="{StaticResource HmiButton}" Click="OnStartClick"/>
+>         <Button Content="停止设备" Style="{StaticResource HmiButton}" Click="OnStopClick"/>
+>         <TextBlock x:Name="StatusText" Foreground="#8B949E"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnStartClick(object sender, RoutedEventArgs e)
+>         {
+>             StatusText.Text = "设备已启动（样式由 Style + Trigger 控制）";
+>         }
+>
+>         private void OnStopClick(object sender, RoutedEventArgs e)
+>         {
+>             StatusText.Text = "设备已停止";
+>         }
+>     }
+> }
 > ```
 > 
 

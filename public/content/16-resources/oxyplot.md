@@ -25,9 +25,81 @@ parent: 16.1 GitHub 优质 WPF 开源项目
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **OxyPlot 曲线图：管道压力实时曲线演示：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         xmlns:oxy="http://oxyplot.org/wpf"
+>         Title="OxyPlot 曲线" Height="420" Width="560"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>         </Grid.RowDefinitions>
+>         <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+>             <TextBlock Text="管道压力曲线" Foreground="#58A6FF" FontWeight="Bold"
+>                        VerticalAlignment="Center" Margin="0,0,20,0"/>
+>             <TextBlock x:Name="PressText" Text="0.00 MPa" Foreground="White" FontSize="20"
+>                        VerticalAlignment="Center"/>
+>             <Button Content="暂停 / 继续" Click="OnToggleClick" Margin="20,0,0,0" Padding="6"
+>                     Background="#21262D" Foreground="White"/>
+>         </StackPanel>
+>         <oxy:PlotView x:Name="Plot" Grid.Row="1"/>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Windows;
+> using System.Windows.Threading;
+> using OxyPlot;
+> using OxyPlot.Series;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         // 需通过 NuGet 安装 OxyPlot.Wpf 包（Install-Package OxyPlot.Wpf）
+>         private readonly LineSeries _series =
+>             new LineSeries { Title = "压力", Color = OxyColor.FromRgb(0x58, 0xA6, 0xFF) };
+>         private readonly Random _random = new Random();
+>         private readonly DispatcherTimer _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+>         private bool _running = true;
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             Plot.Model = new PlotModel { Title = "管道压力实时曲线" };
+>             Plot.Model.Series.Add(_series);
+>             _timer.Tick += OnTimerTick;
+>             _timer.Start();
+>         }
+>
+>         private void OnTimerTick(object sender, EventArgs e)
+>         {
+>             if (!_running) return;
+>
+>             // 模拟压力传感器数据，每秒追加一个点
+>             var pressure = 0.4 + _random.Next(0, 20) / 100.0;
+>             _series.Points.Add(new DataPoint(_series.Points.Count, pressure));
+>             if (_series.Points.Count > 100)
+>             {
+>                 _series.Points.RemoveAt(0);   // 滑动窗口，只保留最近 100 个点
+>             }
+>
+>             PressText.Text = pressure.ToString("F2") + " MPa";
+>             Plot.InvalidatePlot();   // 通知曲线重绘
+>         }
+>
+>         private void OnToggleClick(object sender, RoutedEventArgs e) => _running = !_running;
+>     }
+> }
 > ```
 > 
 

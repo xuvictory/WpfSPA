@@ -25,9 +25,68 @@ parent: 16.1 GitHub 优质 WPF 开源项目
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **PropertyChanged.Fody：编译期自动注入属性通知演示：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="PropertyChanged.Fody 演示" Height="360" Width="440"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="PropertyChanged.Fody 自动属性通知" Foreground="#58A6FF" FontWeight="Bold" Margin="0,0,0,10"/>
+>         <TextBlock Text="电机转速：" Foreground="#8B949E"/>
+>         <TextBlock x:Name="SpeedText" Text="0 RPM" Foreground="White" FontSize="24" Margin="0,4,0,10"/>
+>         <Button Content="加速 100 RPM" Click="OnAccelClick" Margin="0,0,0,8" Padding="8"
+>                 Background="#21262D" Foreground="White"/>
+>         <Button Content="停止" Click="OnStopClick" Padding="8"
+>                 Background="#DA3633" Foreground="White"/>
+>         <TextBlock x:Name="StatusText" Foreground="#8B949E" Margin="0,10,0,0"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using PropertyChanged;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         // 需通过 NuGet 安装 PropertyChanged.Fody，并在项目根目录放 FodyWeavers.xml
+>         private readonly Motor _motor = new Motor();
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             // Speed 变化时（Fody 注入的通知）自动刷新 UI
+>             _motor.PropertyChanged += (s, e) =>
+>                 SpeedText.Text = _motor.Speed + " RPM";
+>         }
+>
+>         private void OnAccelClick(object sender, RoutedEventArgs e)
+>         {
+>             _motor.Speed += 100;
+>             StatusText.Text = "已加速，当前转速 " + _motor.Speed + " RPM";
+>         }
+>
+>         private void OnStopClick(object sender, RoutedEventArgs e)
+>         {
+>             _motor.Speed = 0;
+>             StatusText.Text = "电机已停止";
+>         }
+>     }
+>
+>     // [AddINotifyPropertyChanged] 在编译期自动注入 INotifyPropertyChanged 实现
+>     [AddINotifyPropertyChanged]
+>     public class Motor
+>     {
+>         public int Speed { get; set; }
+>     }
+> }
 > ```
 > 
 

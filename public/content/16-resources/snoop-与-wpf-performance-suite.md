@@ -25,9 +25,55 @@ parent: 16.7 开发工具清单
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **Snoop 可视化树检查演示：可附加检查的报警列表窗口：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="Snoop 检查演示" Height="400" Width="440"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="Snoop 可视化树检查演示" Foreground="#58A6FF" FontWeight="Bold" Margin="0,0,0,10"/>
+>         <TextBlock Text="用 Snoop 附加到本窗口，可查看下方控件的可视化树、属性和绑定值"
+>                    Foreground="#8B949E" TextWrapping="Wrap" Margin="0,0,0,10"/>
+>         <Button Content="添加报警记录" Click="OnAddClick" Padding="8" Margin="0,0,0,10"
+>                 Background="#21262D" Foreground="White"/>
+>         <Border Background="#161B22" Padding="8" CornerRadius="6">
+>             <ListBox x:Name="AlarmList" Height="180" Background="Transparent"
+>                      Foreground="#8B949E" BorderThickness="0"/>
+>         </Border>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private int _count;
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             // 启动后自动添加几条报警记录，供 Snoop 检查可视化树
+>             AlarmList.Items.Add("09:00:00  系统启动");
+>             AlarmList.Items.Add("09:01:12  1 号泵过流报警");
+>         }
+>
+>         private void OnAddClick(object sender, RoutedEventArgs e)
+>         {
+>             _count++;
+>             AlarmList.Items.Add(DateTime.Now.ToString("HH:mm:ss ") + " 新报警 " + _count);
+>         }
+>     }
+> }
 > ```
 > 
 
