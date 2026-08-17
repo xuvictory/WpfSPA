@@ -7,22 +7,23 @@ parent: 9.7 其他通信方式
 # WebSocket 全双工通信
 
 > [!plain] 白话理解
-> "WebSocket 全双工通信"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"WebSocket 全双工通信"是一个重要的知识点。通信是上位机的命脉。没有通信，上位机就是一个空壳。掌握了它，你就能更好地构建工业级上位机应用程序。
+> HTTP 是"一问一答"（客户端请求→服务器响应→断开），服务器想主动推数据只能靠轮询。WebSocket 则是一条"双向长通道"：握手后客户端和服务器随时都能互发消息。上位机用它对接 Web 看板、浏览器 HMI 非常合适——网页不用刷新就能实时显示设备数据。示例演示了用 .NET 的 WebSocket 客户端连接服务并接收实时推送的完整流程。
 
 > [!def] 官方定义
-> WebSocket 全双工通信是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> WebSocket 是基于 TCP 的全双工通信协议（RFC 6455），通过 HTTP Upgrade 握手建立：客户端发 `GET ... Upgrade: websocket` 请求，服务端返回 101 Switching Protocols 后连接升级为 WebSocket。此后双方可随时互发数据帧（文本/二进制），无需重新握手。.NET 提供 ClientWebSocket（客户端，支持 wss:// 加密）与 System.Net.WebSockets 服务器端；客户端 API：ConnectAsync、SendAsync、ReceiveAsync、CloseAsync。适用于浏览器-服务器、实时看板、双向推送场景。
 
 > [!origin] 由来背景
-> WebSocket 全双工通信的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：通信是上位机的命脉。没有通信，上位机就是一个空壳。
+> 早期 Web 应用要实现"实时"只能靠 HTTP 轮询（客户端不断问"有新数据吗"），浪费带宽且延迟高；长轮询、Server-Sent Events 等方案也各有限制。2011 年 RFC 6455 发布 WebSocket，在单一 TCP 连接上实现真正的双向实时通信，浏览器原生支持，WebSocket 很快成为实时 Web 的标准。对工控而言，它让"浏览器当 HMI 看板""远程监控页面实时刷新"成为现实，上位机作为数据源用 WebSocket 把设备数据推给 Web 端。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"WebSocket 全双工通信"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **核心类**：ClientWebSocket（客户端）；WebSocket 服务端可用 ASP.NET Core 或自建监听
+> - **握手升级**：ConnectAsync(uri) 内部完成 HTTP Upgrade；uri 用 ws://（明文）或 wss://（TLS 加密）
+> - **发送**：SendAsync(buffer, WebSocketMessageType.Text/Binary, true, ct)；文本用 UTF8 编码
+> - **接收**：ReceiveAsync 返回 WebSocketReceiveResult，MessageType=Close 表示对端关闭；EndOfMessage=false 需继续收
+> - **帧与消息**：大消息分多帧到达，需循环接收并拼接直至 EndOfMessage=true
+> - **保持连接**：客户端需定期发 Ping 帧或应用层心跳，检测死连接（代理超时会静默断开）
+> - **关闭流程**：CloseAsync(WebSocketCloseStatus.NormalClosure, ...) 优雅关闭，服务端收到后回 Close 帧
+> - **跨线程**：ReceiveAsync 循环放后台任务，UI 更新要切线程
 
 > [!example] 完整示例
 > **WebSocket 全双工演示：ClientWebSocket 连接公共 Echo 服务，同一条连接上双向同时收发：**
@@ -142,26 +143,30 @@ parent: 9.7 其他通信方式
 > ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
-> 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 1：**ReceiveAsync 一次没收完整条消息** → 大消息分帧到达，EndOfMessage=false 时必须继续循环接收拼接，否则丢数据
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 2：**收不到服务端主动推送** → 检查服务端是否真的在推送、客户端是否在接收循环中；有的库需要显式启动接收 Task，别等消息自动来
+>
+> 坑 3：**代理/防火墙静默断开连接** → 无活动时代理会断开 WebSocket；定期发 Ping/心跳保活，收到 Close 帧或异常后自动重连
+>
+> 坑 4：**Text 与 Binary 混用解析失败** → 协议里约定统一用 Text（JSON）或 Binary；收到对方不支持的帧类型要兼容处理
+>
+> 坑 5：**UI 线程卡在 ConnectAsync** → 握手和接收都是异步的，别在 UI 线程同步等待；用 await + CancellationToken
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - **封装 WsClientService**：连接、接收循环、重连、消息分发收敛成服务类，UI 只订阅消息事件
+> - **JSON 消息协议**：消息统一 `{type, data}` 结构，按 type 分发处理，扩展业务不改连接层
+> - **心跳保活**：每 30s 发 Ping 或心跳消息；连续无响应判定断线并重连（带退避）
+> - **重连后重订阅**：断线重连成功后重新发送订阅请求，恢复数据推送
+> - **限流与节流**：高频推送合并/限流，避免打爆 UI 线程；界面刷新用定时器节流
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"WebSocket 全双工通信"实现一个上位机中的小功能模块
+> **Lv.1 照猫画虎**：用公共 WebSocket 回显服务（如 wss://echo.websocket.org）运行示例，验证双向收发
+> **Lv.2 小试牛刀**：给示例增加"心跳保活"：每 30 秒发 Ping，状态栏显示最后心跳时间；断开服务后验证自动重连
+> **Lv.3 融会贯通**：实现一个"数据推送服务"：上位机作为 WebSocket 客户端订阅设备数据，转发给本地启动的 WebSocket 服务，浏览器打开页面即可实时看数
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"WebSocket 全双工通信"
-> - → 后续必学：掌握"WebSocket 全双工通信"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：《HTTP API 调用》理解与 HTTP 的区别、《TCP 通信（TcpListener、TcpClient）》底层
+> - → 后续必学：《异步通信与高并发》优化推送性能
+> - ⇄ 关联概念：《上位机 MQTT 应用》（同属推送型通信，可对比选型）
+> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/api/system.net.websockets.clientwebsocket

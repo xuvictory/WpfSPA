@@ -7,22 +7,23 @@ parent: 9.7 其他通信方式
 # HTTP API 调用
 
 > [!plain] 白话理解
-> "HTTP API 调用"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"HTTP API 调用"是一个重要的知识点。通信是上位机的命脉。没有通信，上位机就是一个空壳。掌握了它，你就能更好地构建工业级上位机应用程序。
+> 现代上位机不只是连 PLC，还要连"云端"：把产量上报到 MES/ERP、从 Web API 拉取工单、调用第三方服务。HTTP 就是最通用的"网上对话"协议：客户端发请求（GET 取数据 / POST 提交数据），服务器返回 JSON。示例演示了 WPF 上位机调用 Web API 的完整流程——连接前、连接后、数据处理三件套。
 
 > [!def] 官方定义
-> HTTP API 调用是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> HTTP（HyperText Transfer Protocol）是基于 TCP 的应用层协议，采用请求-响应模型。核心要素：方法（GET 读、POST 创建、PUT 改、DELETE 删）、URL（协议+主机+路径+查询参数）、请求头/响应头（Content-Type、Authorization、Accept 等）、状态码（200 成功、201 创建、400 参数错、401 未认证、404 不存在、500 服务器错误）、消息体（常为 JSON）。.NET 推荐用 HttpClient（.NET Core 起）调用；GET/POST 异步发送，服务器返回 JSON 反序列化为 DTO。
 
 > [!origin] 由来背景
-> HTTP API 调用的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：通信是上位机的命脉。没有通信，上位机就是一个空壳。
+> 上位机原先只跟现场设备点对点通信，但随着"数字工厂/设备上云"，上位机需要与 MES、ERP、云平台、第三方 Web 服务频繁交换数据。HTTP 因通用、简单、跨语言、有成熟生态（JSON 序列化、REST 设计、OAuth 认证）成为系统间集成的默认标准。.NET 的 HttpClient 提供了线程安全、连接复用、异步支持的高效客户端，取代了老旧的 WebClient/HttpWebRequest，成为 WPF 上位机对接 Web 的标准入口。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"HTTP API 调用"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **HttpClient 是首选**：线程安全可复用；别每次请求 new 一个（会耗尽 socket），应用级单例或注入
+> - **GetAsync/PostAsync**：GetStringAsync 直接取文本；PostAsJsonAsync 自动序列化 DTO 并设置 Content-Type
+> - **JSON 序列化**：System.Text.Json（.NET 内建）或 Newtonsoft.Json；属性名大小写用 JsonSerializerOptions 处理
+> - **响应处理**：EnsureSuccessStatusCode() 或判 IsSuccessStatusCode；失败时读取错误内容（ErrorContent）辅助排障
+> - **状态码语义**：200/201 成功、401 认证失败（检查 Token）、404 路径错、500 服务器错
+> - **超时与取消**：HttpClient.Timeout 设置超时；长任务用 CancellationToken 支持用户取消
+> - **认证**：Bearer Token 加进 Authorization 请求头；Token 过期要刷新重试
+> - **日志**：请求 URL、状态码、耗时记日志，联调排障必备
 
 > [!example] 完整示例
 > **HTTP API 调用演示：HttpClient 执行 GET 与 POST 请求并显示响应：**
@@ -124,26 +125,31 @@ parent: 9.7 其他通信方式
 > ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
-> 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 1：**每次请求 new HttpClient 导致 socket 耗尽** → HttpClient 内部持有连接池，必须复用（静态字段/DI 单例），否则高并发时端口耗尽
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 2：**JSON 字段大小写/类型不匹配解析异常** → 服务端字段可能是小写 camelCase；设置 PropertyNameCaseInsensitive，缺字段用可空类型，先读原始 JSON 再排错
+>
+> 坑 3：**未判状态码直接取内容** → 404/500 也会返回"内容"（错误页）；必须先 EnsureSuccessStatusCode 或判 IsSuccessStatusCode
+>
+> 坑 4：**UI 线程同步 .Result 卡死** → HttpClient 方法都是异步，同步阻塞 UI 线程会死锁或卡死；必须 await
+>
+> 坑 5：**超时没设，服务器挂起时界面无限等待** → HttpClient.Timeout 默认 100 秒，联网场景显式设短（如 10s），并支持用户取消
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - HttpClient **全局单例复用**（静态字段或 DI 单例），不要每次请求 new；用 `IHttpClientFactory` 管理生命周期与 DNS 刷新
+> - 统一封装 `ApiClientService`：强类型 GET/POST、自动 JSON 序列化、统一状态码处理与错误消息，业务层不接触 HttpClient 细节
+> - 超时与取消必配：`Timeout` 设 10s 左右，耗时请求支持 `CancellationToken` 让用户可取消，避免界面无限等待
+> - 结构化错误处理：捕获 `HttpRequestException`/`TaskCanceledException`，区分"网络不可达/超时/业务错误"三类并给用户明确提示
+> - 生产环境启用**日志与重试**：记录请求 URL、耗时、状态码；对 5xx/超时做有限次重试（指数退避），幂等写接口才可重试
+> - 涉及认证的 API 集中处理 Token（获取/刷新/过期重登），不散落各请求；HTTPS 证书在调试环境临时放行时加 TODO 标记，上线前必须收紧
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"HTTP API 调用"实现一个上位机中的小功能模块
+> **Lv.1 照猫画虎**：用公共 API（如 JSONPlaceholder）运行示例，完成 GET 列表与 POST 提交，观察状态码与 JSON 解析
+> **Lv.2 小试牛刀**：给示例加"统一错误处理"：404/500 时界面弹出明确错误提示，并把请求 URL 与状态码写入日志
+> **Lv.3 融会贯通**：封装 ApiClientService（单例 HttpClient + 强类型 GET/POST + 超时重试），模拟"产量上报 MES"业务：定时上报设备产量到 Web API
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"HTTP API 调用"
-> - → 后续必学：掌握"HTTP API 调用"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：《网络基础概念（IP、端口、TCP vs UDP）》HTTP 基于 TCP
+> - → 后续必学：《WebSocket 全双工通信》实时推送对比
+> - ⇄ 关联概念：《异步通信与高并发》（HTTP 请求是典型异步场景）
+> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/fundamentals/networking/http/httpclient-guidelines（HttpClient 使用指南）

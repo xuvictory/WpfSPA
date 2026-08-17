@@ -7,22 +7,23 @@ parent: 9.6 MQTT 协议
 # .NET 中使用 MQTT（MQTTnet）
 
 > [!plain] 白话理解
-> ".NET 中使用 MQTT（MQTTnet）"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，".NET 中使用 MQTT（MQTTnet）"是一个重要的知识点。通信是上位机的命脉。没有通信，上位机就是一个空壳。掌握了它，你就能更好地构建工业级上位机应用程序。
+> .NET 生态做 MQTT 几乎必选 MQTTnet 这个 NuGet 包：它把"连接 Broker、发布消息、订阅主题、处理回调"全封装成异步 API，三五行代码就能跑通收发。示例把连接、订阅、发布、接收消息四个核心动作完整演示了一遍——其中"消息回调在后台线程，更新 WPF 控件要切线程"是唯一需要特别注意的点。
 
 > [!def] 官方定义
-> .NET 中使用 MQTT（MQTTnet）是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> MQTTnet 是 .NET（支持 .NET Framework 4.6+/.NET Core/.NET 5+）下最流行的开源 MQTT 客户端/服务器库（GitHub 高星项目，许可证 MIT）。核心类型：MqttClientFactory（创建客户端）、MqttClientOptionsBuilder（配置 Broker 地址/端口/ClientId/账号密码/遗嘱）、MqttClientOptions、ConnectAsync/DisconnectAsync（连接管理）、SubscribeAsync/UnsubscribeAsync（订阅管理，可带 QoS）、PublishAsync（发布，支持 QoS 与 Retain）、ApplicationMessageReceivedAsync 事件（接收消息回调）。库内还含 MqttServer 实现，可在本机模拟 Broker。
 
 > [!origin] 由来背景
-> .NET 中使用 MQTT（MQTTnet）的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：通信是上位机的命脉。没有通信，上位机就是一个空壳。
+> .NET 早期做 MQTT 客户端要么用 M2Mqtt（停更已久、API 老旧），要么自己拼报文，体验不佳。MQTTnet 由德国开发者 Christian Kratky 创建，以"完全异步、高性能、跨平台、客户端服务器双支持"迅速成为 .NET 社区标准选择，几乎取代了旧库。它持续跟进 MQTT 5.0 特性，且提供可注入的日志/存储扩展点，让 WPF 上位机接入 MQTT 变得简单可靠——这也是官方文档和社区示例普遍采用它的原因。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚".NET 中使用 MQTT（MQTTnet）"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **NuGet 包**：`MQTTnet`（最新稳定版），命名空间 `MQTTnet` / `MQTTnet.Client`
+> - **创建客户端**：`new MqttClientFactory().CreateMqttClient()`，一次创建复用，不要每次收发都重建
+> - **配置连接**：`MqttClientOptionsBuilder().WithTcpServer("broker.emqx.io", 1883).WithClientId(Guid.NewGuid().ToString())`
+> - **异步操作**：ConnectAsync/SubscribeAsync/PublishAsync 全部 async，UI 调用需 await（按钮事件可 async void）
+> - **接收回调**：`ApplicationMessageReceivedAsync` 返回 Task，处理消息后可返回 CompletedTask；回调在后台线程
+> - **发布参数**：`new MqttApplicationMessageBuilder().WithTopic(...).WithPayload(...).WithQualityOfServiceLevel(...)`
+> - **连接事件**：`ConnectedAsync`/`DisconnectedAsync` 可做状态提示与自动重连
+> - **释放**：窗口关闭 DisconnectAsync + Dispose，防止连接泄漏
 
 > [!example] 完整示例
 > **MQTTnet 客户端演示：连接 Broker、订阅主题、发布消息（需安装 NuGet 包 MQTTnet）：**
@@ -140,34 +141,38 @@ parent: 9.6 MQTT 协议
 > 
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ WPF 上位机订阅云端/网关发布的设备状态与告警
+> ✅ 上位机向云端上报数据（采集 → 封装 JSON → Publish）
+> ✅ 多客户端协同（工位机、看板、手机同时订阅）
+> ✅ 本机自建 MqttServer 做开发联调（库内建服务器）
+> ❌ 严格实时控制（异步消息不适合闭环控制）
+> ❌ 纯点对点简单通信（Modbus/SerialPort 更直接）
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
+> 坑 1：**版本差异 API 变动** → MQTTnet 4.x 把工厂类改为 `MqttClientFactory`、消息接收是 `ApplicationMessageReceivedAsync` 事件，按 3.x 老教程写会编译不过；先确认 NuGet 版本再查对应文档
 > 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
->
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 2：**忘记 await 连接完成就发布** → ConnectAsync 未完成时 PublishAsync 会抛"未连接"异常；先 await ConnectAsync 并检查 IsConnected 再发
+> 
+> 坑 3：**消息事件回调里做耗时操作** → ApplicationMessageReceivedAsync 回调在高频订阅下被密集调用，里面做数据库写入会拖垮；只投递到队列，消费端异步处理
+> 
+> 坑 4：**客户端退出不 CleanSession/不 Disconnect** → 若 CleanSession=false 又正常下线，Broker 保留会话导致重连后收到堆积旧消息；退出时显式 DisconnectAsync 并按需清理会话
+> 
+> 坑 5：**断线不重连** → 网络抖动断线后消息静默丢失；在 DisconnectedAsync 里实现退避重连，并把连接状态事件通知 UI 显示"离线"
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - **封装 MqttService**：连接状态、重连、订阅表集中管理，界面只订阅"消息到达"事件与调用 Send 方法
+> - **自动重连**：DisconnectedAsync 中延时（如 5s）后 ReconnectAsync，注意退避与停止标志防无限重连
+> - **消息统一走 JSON 序列化**：定义消息 DTO，序列化/反序列化在封装层完成，业务层面对强类型
+> - **主题集中定义常量**：主题字符串收敛到静态类（TopicDefs.Temp = "factory/line1/temp"），避免散落魔法字符串
+> - **QoS 与 Retain 显式指定**：不依赖库默认值，按数据类型显式设置，避免"静默丢消息"或"收到陈旧消息"
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用".NET 中使用 MQTT（MQTTnet）"实现一个上位机中的小功能模块
+> **Lv.1 照猫画虎**：安装 MQTTnet 运行示例，连接公共 Broker 完成订阅+发布，用 MQTTX 双向验证收发
+> **Lv.2 小试牛刀**：给示例增加"自动重连"：杀掉 Broker 进程观察 DisconnectedAsync 触发，重启 Broker 后验证自动恢复订阅
+> **Lv.3 融会贯通**：封装 MqttService（连接/重连/订阅/JSON 消息），接入 MVVM：设备状态列表订阅云端主题实时刷新
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习".NET 中使用 MQTT（MQTTnet）"
-> - → 后续必学：掌握".NET 中使用 MQTT（MQTTnet）"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：《MQTT 概述与核心概念》主题/QoS/遗嘱
+> - → 后续必学：《上位机 MQTT 应用》完整业务落地
+> - ⇄ 关联概念：《网络基础概念（IP 端口 TCP vs UDP）》
+> - 📖 官方文档：https://github.com/dotnet/MQTTnet（MQTTnet 仓库与示例）

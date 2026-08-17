@@ -7,22 +7,23 @@ parent: 9.5 OPC 协议
 # OPC UA .NET 开发
 
 > [!plain] 白话理解
-> "OPC UA .NET 开发"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"OPC UA .NET 开发"是一个重要的知识点。通信是上位机的命脉。没有通信，上位机就是一个空壳。掌握了它，你就能更好地构建工业级上位机应用程序。
+> 在 WPF 里做 OPC UA 客户端，几乎都在用 OPC 基金会的官方 .NET 库（OPCFoundation.NetStandard.Opc.Ua）。固定套路是：建 ApplicationConfiguration → 选端点 → 创建 Session → 读写节点（或订阅）。示例把"连接/读取/写入"三个最常用动作完整演示了一遍，跑通它就等于掌握了 UA 客户端开发的主体。
 
 > [!def] 官方定义
-> OPC UA .NET 开发是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> OPC UA .NET 开发基于 OPCFoundation.NetStandard.Opc.Ua 库（OPC 基金会官方实现，支持 .NET Standard/.NET Core/.NET Framework）。核心类型：ApplicationConfiguration（应用配置：应用名、证书、安全策略）、CoreClientUtils.SelectEndpoint（端点发现与选择）、Session.Create（创建会话）、session.ReadValue/WriteValue（读写）、Subscription + MonitoredItem（订阅）、UserIdentity（匿名/用户名密码/证书认证）。库内同时提供客户端与服务器实现，可自建 UA 服务器做联调。
 
 > [!origin] 由来背景
-> OPC UA .NET 开发的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：通信是上位机的命脉。没有通信，上位机就是一个空壳。
+> 早期 .NET 上做 OPC 只能依赖 Classic 的 COM 组件（OPCDA.NET 等），跨平台、x64/32 位、DCOM 配置问题层出不穷。OPC 基金会推出 NetStandard 版 UA 库后，.NET 开发者可以用统一、跨平台、异步友好的 API 实现完整 UA 客户端；库还内建服务器端支持，开发者甚至能在本机起一个 UA 服务器模拟设备做开发联调。它让 WPF 上位机对接 UA 从"折腾 COM"变成"写几行配置 + 调用 API"。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"OPC UA .NET 开发"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **NuGet 包**：`OPCFoundation.NetStandard.Opc.Ua`（含 Client 与 Server），目标框架选 .NET 6+ 或 .NET Framework 4.8
+> - **配置必做 Validate**：ApplicationConfiguration 创建后必须 `await config.Validate(ApplicationType.Client)`，否则证书目录等未初始化
+> - **选端点**：`CoreClientUtils.SelectEndpoint(config, url, useSecurity: false)` 返回 EndpointDescription；None 模式开发期最省事
+> - **创建会话**：`Session.Create(config, endpoint, updateBeforeConnect, sessionName, sessionTimeout, identity, preferredLocales)`
+> - **读**：`DataValue v = session.ReadValue(new NodeId("ns=2;s=..."));` 判 v.StatusCode 再取 v.Value
+> - **写**：`session.WriteValue(nodeId, new DataValue(value))`，节点只读时返回 BadNotWritable
+> - **订阅**：`session.AddSubscription(...)` + `subscription.AddItem(monitoredItem)`，DataChange 事件在回调线程触发
+> - **释放**：Session 是 IDisposable，用 using 或窗口关闭时 Dispose，防止服务器会话泄漏
 
 > [!example] 完整示例
 > **OPC UA .NET 开发演示：客户端连接、读取与写入节点值：**
@@ -142,34 +143,38 @@ parent: 9.5 OPC 协议
 > 
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ WPF 上位机读取/写入 OPC UA 服务器（PLC、传感器、网关）
+> ✅ 需要异步不阻塞 UI 的 UA 操作（async/await 天然支持）
+> ✅ 需要订阅推送高频数据的实时监控界面
+> ✅ 自建 UA 模拟服务器做开发/测试（库内建 Server API）
+> ❌ 设备仅支持 OPC Classic（需要 UA 网关桥接，本库不直接支持 DCOM）
+> ❌ 只读几个寄存器（Modbus 客户端库更轻量）
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
+> 坑 1：**异步方法没 await 导致连接未建立就操作** → Session.Create 是异步的，忘记 await 会拿到未连接会话，后续读写全抛异常；所有 UA 操作严格 await
 > 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
->
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 2：**证书信任问题连接被拒** → 服务器拒绝未信任客户端（BadSecurityChecksFailed/BadCertificateUntrusted）；开发环境可关闭校验，生产环境导入对方证书到信任列表
+> 
+> 坑 3：**安全策略不一致握手失败** → 客户端配置的 SecurityPolicy（None/Sign/SignAndEncrypt）与服务器端点不一致；用 UaExpert 查服务器端点后对齐配置
+> 
+> 坑 4：**同步 .Result 阻塞 UI 线程死锁** → 库内部用到同步上下文，UI 线程调用 `.Result` 会死锁；一律用 async/await
+> 
+> 坑 5：**Session 异常后不重连** → 服务器重启/网络抖动后旧 Session 失效，读写抛 ServiceResultException；监听 SessionStatus/自动重建会话并重订阅
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - **封装 UAClientService**：连接状态、会话生命周期、读写方法收敛成一个类，界面只调业务方法
+> - **配置外置**：端点 URL、安全模式、用户名密码放 App.config/JSON，不改代码切换环境
+> - **订阅生命周期管理**：页面关闭时 RemoveMonitoredItem + DeleteSubscriptions，防止服务器残留
+> - **统一异常处理**：连接/读写失败统一转为业务事件（Offline/ReadError），界面提示而非抛栈
+> - **写操作权限校验**：写前确认节点可写（AccessLevel），只读节点写入返回 BadNotWritable 时给出友好提示
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"OPC UA .NET 开发"实现一个上位机中的小功能模块
+> **Lv.1 照猫画虎**：安装 NuGet 包，用库自带的 SampleServer 起一个本地 UA 服务器，运行示例完成连接/读取/写入
+> **Lv.2 小试牛刀**：把读取改为订阅 2 个节点（如 Temperature、Pressure），界面实时显示变化值
+> **Lv.3 融会贯通**：封装 UAClientService（连接管理 + 读写 + 订阅 + 断线重连），并接入 MVVM：按钮绑定命令，状态用属性绑定显示
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"OPC UA .NET 开发"
-> - → 后续必学：掌握"OPC UA .NET 开发"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：《OPC UA 核心概念》节点/订阅/地址空间
+> - → 后续必学：《与 PLC 的 OPC UA 连接》真实 PLC 场景
+> - ⇄ 关联概念：《OPC 概述（Classic vs UA）》选型
+> - 📖 官方文档：https://github.com/OPCFoundation/UA-.NETStandard（官方 .NET UA 库与示例）

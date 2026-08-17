@@ -7,22 +7,23 @@ parent: 9.3 Socket 网络通信
 # Socket 通信实战
 
 > [!plain] 白话理解
-> "Socket 通信实战"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"Socket 通信实战"是一个重要的知识点。通信是上位机的命脉。没有通信，上位机就是一个空壳。掌握了它，你就能更好地构建工业级上位机应用程序。
+> TcpClient/UdpClient 是 Socket 的"傻瓜版"，直接操作 Socket 能拿到更多控制权：自定义缓冲区、精确控制收发、设置更细的超时与标志、甚至用 Select 做非阻塞检查。当上位机需要"一个服务端同时处理成百上千连接"或"细粒度控制网络行为"时，就该上原生 Socket。本文用 Socket 实现一套可多客户端接入的 TCP 服务端，讲解基本用法。
 
 > [!def] 官方定义
-> Socket 通信实战是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> Socket（套接字）是 .NET System.Net.Sockets 中操作系统网络接口的封装，是 TCP/UDP 通信的底层基础。关键成员：Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp) 创建；Bind()/Listen()/Accept()（服务端）；Connect()（客户端）；Send/Receive 与异步版 SendAsync/ReceiveAsync；Shutdown()/Close()；SetSocketOption()（如 KeepAlive、ReceiveTimeout）；Select() 非阻塞检查可读/可写状态。相比 TcpClient 更底层、更灵活，适合高性能/多连接/自定义控制的场景。
 
 > [!origin] 由来背景
-> Socket 通信实战的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：通信是上位机的命脉。没有通信，上位机就是一个空壳。
+> Socket 是伯克利 UNIX 于 1980 年代提出的网络编程抽象，几乎所有操作系统网络栈都基于它。.NET 早期只有同步 Socket API，写多连接服务端要靠线程池轮询 Accept/Receive，代码复杂；后来加入异步 API 与 Task 封装，Socket 编程变得相对友好。虽然 TcpClient/TcpListener 覆盖了多数业务，但遇到"上万个并发连接、精细超时控制、UDP 广播组播、原始协议适配"等场景仍需直接用 Socket，因此它始终是网络编程的进阶必修。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"Socket 通信实战"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **创建与协议选择**：`new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)` 或 Dgram/Udp 组合
+> - **服务端四步**：Bind(IPEndPoint) → Listen(backlog) → Accept()/AcceptAsync() 接受连接 → 每连接一 Socket 收发
+> - **客户端两步**：Connect(remoteEndPoint) → Send/Receive；连接后与对端共享双向字节流
+> - **接收可能不足一次取全**：Receive 返回本次实际接收字节数（可能少于缓冲区），TCP 要循环接收直至完整帧
+> - **Send 不保证一次发完**：Send 返回值可能小于要发的长度，大数据要循环发送
+> - **超时与保活**：ReceiveTimeout/SendTimeout 设置超时；SetSocketOption KeepAlive 检测死连接
+> - **异步与多连接**：AcceptAsync 循环 + 每连接 Task 处理；高并发用 SocketAsyncEventArgs 避免线程爆炸
+> - **关闭顺序**：Shutdown(SocketShutdown.Both) → Close()，先停收发再释放
 
 > [!example] 完整示例
 > **Socket 实战演示：原生 Socket 实现 TCP 服务端与客户端（本机回环）：**
@@ -162,26 +163,30 @@ parent: 9.3 Socket 网络通信
 > ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
-> 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 1：**Receive 一次没读全就解析** → TCP 是字节流，Receive 可能只返回部分数据；必须按帧长度循环接收，参考缓冲拼接思路
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 2：**SocketException 频繁出现且难定位** → 10048 端口占用、10054 对端强制断开、10060 连接超时；把 ErrorCode 记入日志，按码排查
+>
+> 坑 3：**高并发下线程爆炸** → 每连接一个 Thread 会撑爆系统；用 async/await 或 SocketAsyncEventArgs，别用同步 Accept 起线程
+>
+> 坑 4：**忘记 Shutdown 直接 Close 丢数据** → 直接 Close 会终止未发送的数据；先 Shutdown(Both) 再 Close，给对端发完的机会
+>
+> 坑 5：**无 KeepAlive 检测不到死连接** → 对端断电后 Socket 可能一直"看似连接"；启用 KeepAlive 或应用层心跳
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - **默认先用 TcpClient，确需控制再上 Socket**：能用高级封装就别裸 Socket，减少出错面
+> - **接收循环 + 帧协议**：Receive 返回的字节追加缓冲，按长度前缀拆帧；与《串口数据接收最佳实践》同一套思路
+> - **统一异常处理**：Socket 异常（断线/超时/地址占用）在封装层统一捕获，转业务事件上报界面
+> - **连接列表管理**：服务端用 ConcurrentDictionary 维护连接，断线即移除并通知界面刷新连接数
+> - **性能测试先行**：上线前用多客户端压测连接数与吞吐，确认无句柄/线程泄漏
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"Socket 通信实战"实现一个上位机中的小功能模块
+> **Lv.1 照猫画虎**：运行示例，用本机客户端连接服务端，多开几个客户端观察连接数列表变化
+> **Lv.2 小试牛刀**：给服务端加"客户端断线清理"：客户端关闭后，服务端 3 秒内从列表移除并刷新界面
+> **Lv.3 融会贯通**：用 Socket 实现一个"广播服务器"：接收客户端注册，向所有在线客户端广播消息，支持多客户端并发连接
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"Socket 通信实战"
-> - → 后续必学：掌握"Socket 通信实战"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：《TCP 通信（TcpListener、TcpClient）》《UDP 通信（UdpClient）》
+> - → 后续必学：《WebSocket 全双工通信》应用层双向通道
+> - ⇄ 关联概念：《异步通信与高并发》《网络基础概念（IP、端口、TCP vs UDP）》
+> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/api/system.net.sockets.socket

@@ -7,22 +7,23 @@ parent: 9.3 Socket 网络通信
 # TCP 通信（TcpListener、TcpClient）
 
 > [!plain] 白话理解
-> "TCP 通信（TcpListener、TcpClient）"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"TCP 通信（TcpListener、TcpClient）"是一个重要的知识点。通信是上位机的命脉。没有通信，上位机就是一个空壳。掌握了它，你就能更好地构建工业级上位机应用程序。
+> TCP 是上位机网络通信最常用的方式：一端是服务器（TcpListener，开端口等人连），一端是客户端（TcpClient，连服务器）。连上后就是一条"可靠管道"，两边都能随时写字节、读字节。上位机既可以是客户端（连 PLC/服务器），也可以是服务器（接收设备上报、供看板连接）。本文演示这两种角色的最小实现，并处理了"断线重连"这个网络通信的必备能力。
 
 > [!def] 官方定义
-> TCP 通信（TcpListener、TcpClient）是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> .NET 的 System.Net.Sockets 提供 TcpListener（TCP 服务器端）与 TcpClient（客户端）封装。TcpListener：Start() 开始监听、AcceptTcpClientAsync() 接受连接返回 TcpClient、Stop() 停止。TcpClient：ConnectAsync(ip, port) 连接、GetStream() 获取 NetworkStream 用于读写、Connected 属性、Close() 释放。NetworkStream.ReadAsync/WriteAsync 传输字节流；断线检测通过 ReadAsync 返回 0 或抛异常判断。TCP 是面向连接的可靠字节流，适合 Modbus TCP、自定义帧协议等上位机业务。
 
 > [!origin] 由来背景
-> TCP 通信（TcpListener、TcpClient）的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：通信是上位机的命脉。没有通信，上位机就是一个空壳。
+> 早期 .NET 写 TCP 服务要直接操作 Socket API（Bind/Listen/Accept/Receive），代码啰嗦且易错。.NET Framework 2.0 起提供 TcpListener/TcpClient 这对高级封装，把监听、连接、流读写收敛成几行代码，成为 C# 网络编程的事实标准。随着上位机联网需求增长（连 PLC、接网关、供看板展示），这对类几乎出现在每个工控项目的通信层；配合 async/await 异步模式后，即使大量客户端连接也不会阻塞 UI。
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"TCP 通信（TcpListener、TcpClient）"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **服务端三步**：TcpListener.Start() 监听 → AcceptTcpClientAsync() 接受连接 → 对每个客户端开独立线程/任务读写
+> - **客户端两步**：ConnectAsync(ip, port) → GetStream() 用 NetworkStream 读写字节
+> - **读是阻塞的**：ReadAsync 返回 0 表示对端关闭；读不到数据时会挂起等待，必须在独立任务中调用，别堵 UI 线程
+> - **消息边界问题**：TCP 是字节流，一次发送可能拆成多次接收，多次发送也可能粘包；必须自己定义帧边界（长度前缀/分隔符）
+> - **断线检测**：读返回 0 或读写抛 SocketException 即断线；客户端需重连逻辑，服务端需清理断开客户端
+> - **并发连接**：AcceptTcpClientAsync 循环 + 每连接一个 Task，客户端多时用客户端列表管理
+> - **超时设置**：ReadTimeout/WriteTimeout 必须设置，否则设备离线时读会无限等待
+> - **优雅关闭**：关闭前 shutdown 发送端、关闭流、再 Close，顺序错会丢数据
 
 > [!example] 完整示例
 > **TCP 通信演示：TcpListener 服务端监听 + TcpClient 客户端连接，本机回环测试：**
@@ -177,26 +178,31 @@ parent: 9.3 Socket 网络通信
 > ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
-> 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 1：**ReadAsync 阻塞 UI 线程卡死界面** → 网络读是阻塞的，必须在后台 Task/async 中执行，UI 只通过事件/属性接收结果
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 2：**没做粘包/拆包处理，报文错乱** → TCP 是字节流无消息边界，必须用长度前缀或结束符拆帧，参考《串口数据接收最佳实践》同样的缓冲思路
+>
+> 坑 3：**客户端连不上但不知道原因** → 常见：服务端没监听、防火墙拦截、IP/端口错；用 telnet 或 Test-NetConnection 先验证端口可达
+>
+> 坑 4：**服务端不清理已断开客户端** → 客户端异常退出后连接还留在列表里，反复收异常；读返回 0 或抛异常时从列表移除并释放
+>
+> 坑 5：**服务端重启后客户端不重连** → 客户端必须实现重连循环（带退避），服务端恢复后自动恢复通信
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - 收发全用 **async/await**（`AcceptTcpClientAsync`/`ReadAsync`/`WriteAsync`），避免阻塞线程池与 UI 卡死
+> - TCP 是字节流，必须自定义**帧协议**：推荐"4 字节长度前缀 + 载荷"或"帧头+长度+数据+校验"，收包统一走缓冲拼包解析
+> - 服务端用**客户端连接字典**（TcpClient→ID），断开时从字典移除并释放；用 `ConcurrentDictionary` 保证多线程安全
+> - 客户端实现**断线重连**：捕获连接异常后指数退避重连（1s/2s/4s…），并触发状态事件通知 UI 显示连接状态
+> - 心跳保活：业务层定时发心跳包（如 30s），连续 N 次无响应判定离线，区分"网络死链"与"设备宕机"
+> - 收发日志记录**Hex 报文 + 时间戳**，粘包/乱码等现场问题全靠日志还原现场
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"TCP 通信（TcpListener、TcpClient）"实现一个上位机中的小功能模块
+> **Lv.1 照猫画虎**：运行示例，本机起服务端监听 127.0.0.1:8888，用客户端连上并互发消息，观察收发日志
+> **Lv.2 小试牛刀**：给示例加"粘包/拆包"测试：客户端一次发 3 条消息，服务端用长度前缀正确拆出 3 帧
+> **Lv.3 融会贯通**：封装 TcpServer 与 TcpClient 两个类（连接管理 + 帧协议 + 断线重连），并用 Modbus TCP 模拟器验证能正确收发
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"TCP 通信（TcpListener、TcpClient）"
-> - → 后续必学：掌握"TCP 通信（TcpListener、TcpClient）"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：《网络基础概念（IP、端口、TCP vs UDP）》《OSI 七层模型简化》
+> - → 后续必学：《Socket 通信实战》底层能力、《异步通信与高并发》
+> - ⇄ 关联概念：《Modbus TCP（网口）》应用层实例、《串口数据接收最佳实践》帧解析思路复用
+> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/api/system.net.sockets.tcpclient
