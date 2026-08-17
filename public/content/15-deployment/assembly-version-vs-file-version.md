@@ -25,9 +25,74 @@ parent: 15.3 版本管理
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **版本信息查看器：Assembly.GetName().Version 读取程序集版本、FileVersionInfo 读取文件版本与产品版本并对比展示：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="Assembly Version vs File Version" Height="420" Width="580"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="版本信息查看器" FontSize="18" FontWeight="Bold"
+>                    Foreground="#58A6FF" Margin="0,0,0,10"/>
+>         <Border Background="#161B22" Padding="12" CornerRadius="6" Margin="0,0,0,10">
+>             <StackPanel>
+>                 <TextBlock x:Name="TxtAssemblyName" Foreground="#8B949E" Margin="0,2"/>
+>                 <TextBlock x:Name="TxtAssemblyVersion" Foreground="#58A6FF" Margin="0,2" FontWeight="Bold"/>
+>                 <TextBlock x:Name="TxtFileVersion" Foreground="#238636" Margin="0,2" FontWeight="Bold"/>
+>                 <TextBlock x:Name="TxtProductVersion" Foreground="#8B949E" Margin="0,2"/>
+>                 <TextBlock x:Name="TxtLocation" Foreground="#8B949E" Margin="0,2" TextWrapping="Wrap"/>
+>             </StackPanel>
+>         </Border>
+>         <Button Content="重新读取" Click="OnReadClick" Padding="8" Margin="0,0,0,10"
+>                 Background="#21262D" Foreground="White"/>
+>         <TextBlock x:Name="TxtExplain" Foreground="#8B949E" TextWrapping="Wrap"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Diagnostics;
+> using System.Reflection;
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             Loaded += (_, _) => OnReadClick(null, null);
+>         }
+>
+>         private void OnReadClick(object sender, RoutedEventArgs e)
+>         {
+>             try
+>             {
+>                 // AssemblyVersion：程序集标识的一部分，影响强名称绑定与引用兼容性，改动需谨慎
+>                 Assembly asm = Assembly.GetExecutingAssembly();
+>                 TxtAssemblyName.Text = "程序集：" + asm.GetName().Name;
+>                 TxtAssemblyVersion.Text = "Assembly Version：" + asm.GetName().Version;
+>                 // FileVersion：写入文件属性，面向展示与排障，每次构建都可以递增
+>                 FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(asm.Location);
+>                 TxtFileVersion.Text = "File Version：" + fvi.FileVersion;
+>                 TxtProductVersion.Text = "Product Version：" + fvi.ProductVersion;
+>                 TxtLocation.Text = "程序集路径：" + asm.Location;
+>                 TxtExplain.Text = "区别：Assembly Version 决定程序集引用解析，变更可能破坏依赖；" +
+>                     "File Version 仅用于资源管理器/安装包显示，可随发布随意递增。";
+>             }
+>             catch (Exception ex)
+>             {
+>                 MessageBox.Show("读取版本失败：" + ex.Message, "版本信息");
+>             }
+>         }
+>     }
+> }
 > ```
 > 
 

@@ -25,9 +25,80 @@ parent: 15.2 部署注意事项
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **运行环境体检：RuntimeInformation 读取框架/架构/系统信息、注册表查询 .NET Framework 版本、给出部署要求判定：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="目标机器 .NET Runtime 检查" Height="440" Width="560"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="运行环境体检" FontSize="18" FontWeight="Bold"
+>                    Foreground="#58A6FF" Margin="0,0,0,10"/>
+>         <Border Background="#161B22" Padding="12" CornerRadius="6" Margin="0,0,0,10">
+>             <StackPanel>
+>                 <TextBlock x:Name="TxtFramework" Foreground="#8B949E" Margin="0,2"/>
+>                 <TextBlock x:Name="TxtVersion" Foreground="#8B949E" Margin="0,2"/>
+>                 <TextBlock x:Name="TxtArch" Foreground="#8B949E" Margin="0,2"/>
+>                 <TextBlock x:Name="TxtOs" Foreground="#8B949E" Margin="0,2"/>
+>                 <TextBlock x:Name="TxtCheck" Foreground="#8B949E" Margin="0,2" TextWrapping="Wrap"/>
+>             </StackPanel>
+>         </Border>
+>         <Button Content="重新体检" Click="OnCheckClick" Padding="8"
+>                 Background="#21262D" Foreground="White"/>
+>         <TextBlock x:Name="TxtRequire" Foreground="#58A6FF" TextWrapping="Wrap" Margin="0,10,0,0"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Runtime.InteropServices;
+> using System.Windows;
+> using Microsoft.Win32;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             Loaded += (_, _) => OnCheckClick(null, null);
+>         }
+>
+>         private void OnCheckClick(object sender, RoutedEventArgs e)
+>         {
+>             try
+>             {
+>                 // RuntimeInformation：获取当前进程运行时的框架描述、进程架构与系统架构
+>                 TxtFramework.Text = "框架：" + RuntimeInformation.FrameworkDescription;
+>                 TxtVersion.Text = "CLR 版本：" + Environment.Version;
+>                 TxtArch.Text = "进程架构：" + RuntimeInformation.ProcessArchitecture +
+>                     "　系统架构：" + RuntimeInformation.OSArchitecture;
+>                 TxtOs.Text = "操作系统：" + RuntimeInformation.OSDescription;
+>
+>                 // 注册表查询 .NET Framework 4.x 版本（仅作展示；框架依赖发布可据此判断目标机是否达标）
+>                 string installed = "未安装/未记录";
+>                 using (RegistryKey ndp = Registry.LocalMachine.OpenSubKey(
+>                     @"SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full"))
+>                 {
+>                     if (ndp?.GetValue("Version") is string v)
+>                         installed = v;
+>                 }
+>                 TxtCheck.Text = "注册表检测 .NET Framework 4.x：" + installed;
+>                 TxtRequire.Text = "部署要求：框架依赖发布需目标机安装 .NET 6.0+ Runtime；独立发布无需安装运行时。";
+>             }
+>             catch (Exception ex)
+>             {
+>                 MessageBox.Show("体检失败：" + ex.Message, "环境检查");
+>             }
+>         }
+>     }
+> }
 > ```
 > 
 

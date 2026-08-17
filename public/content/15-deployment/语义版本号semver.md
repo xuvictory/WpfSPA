@@ -25,9 +25,87 @@ parent: 15.3 版本管理
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **语义版本号比较工具：解析 主.次.修订 格式并逐级比较，结合 SemVer 规则给出升级类型提示：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="语义版本号（SemVer）工具" Height="400" Width="500"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="语义版本号比较工具" FontSize="18" FontWeight="Bold"
+>                    Foreground="#58A6FF" Margin="0,0,0,10"/>
+>         <Border Background="#161B22" Padding="12" CornerRadius="6" Margin="0,0,0,10">
+>             <StackPanel>
+>                 <TextBlock Text="版本 A（主.次.修订）" Foreground="#8B949E" Margin="0,2"/>
+>                 <TextBox x:Name="TxtVerA" Text="1.2.3" Margin="0,0,0,8" Padding="6"
+>                          Background="#0D1117" Foreground="#58A6FF" BorderBrush="#21262D"/>
+>                 <TextBlock Text="版本 B（主.次.修订）" Foreground="#8B949E" Margin="0,2"/>
+>                 <TextBox x:Name="TxtVerB" Text="1.3.0" Padding="6"
+>                          Background="#0D1117" Foreground="#58A6FF" BorderBrush="#21262D"/>
+>             </StackPanel>
+>         </Border>
+>         <Button Content="比较版本" Click="OnCompare" Padding="8" Margin="0,0,0,10"
+>                 Background="#21262D" Foreground="White"/>
+>         <TextBlock x:Name="TxtResult" Foreground="#238636" TextWrapping="Wrap"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnCompare(object sender, RoutedEventArgs e)
+>         {
+>             try
+>             {
+>                 // 语义版本号格式：主版本.次版本.修订版本，缺失段按 0 处理
+>                 Version a = ParseVersion(TxtVerA.Text);
+>                 Version b = ParseVersion(TxtVerB.Text);
+>                 int cmp = a.CompareTo(b);   // 内置比较：主版本优先，其次次版本，最后修订
+>                 string relation = cmp < 0 ? "<" : (cmp > 0 ? ">" : "=");
+>                 TxtResult.Text = "比较结果：" + a + " " + relation + " " + b;
+>                 // 按 SemVer 规则提示升级类型
+>                 if (a.Major != b.Major)
+>                     TxtResult.Text += "\n提示：主版本号不同，属于不兼容的重大变更";
+>                 else if (a.Minor != b.Minor)
+>                     TxtResult.Text += "\n提示：次版本号不同，属于向后兼容的新功能更新";
+>                 else if (a.Build != b.Build)
+>                     TxtResult.Text += "\n提示：修订号不同，属于向后兼容的 bug 修复";
+>                 else
+>                     TxtResult.Text += "\n提示：两个版本完全一致";
+>             }
+>             catch (Exception ex)
+>             {
+>                 // 输入非法时给出友好提示，程序不崩溃
+>                 TxtResult.Text = "版本号格式错误：" + ex.Message +
+>                     "\n请按 主.次.修订 格式输入，如 2.1.0";
+>             }
+>         }
+>
+>         // 解析 主.次.修订；1 段 -> 主.0.0，2 段 -> 主.次.0
+>         private static Version ParseVersion(string text)
+>         {
+>             string[] parts = text.Trim().Split('.');
+>             return parts.Length switch
+>             {
+>                 1 => new Version(int.Parse(parts[0]), 0, 0),
+>                 2 => new Version(int.Parse(parts[0]), int.Parse(parts[1]), 0),
+>                 _ => Version.Parse(text.Trim())
+>             };
+>         }
+>     }
+> }
 > ```
 > 
 

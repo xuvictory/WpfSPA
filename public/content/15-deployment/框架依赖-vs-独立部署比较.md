@@ -25,9 +25,79 @@ parent: 15.1 发布方式
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **部署方式对比看板：FrameworkDescription 区分框架依赖/独立发布、发布目录文件数与体积扫描、部署形态判定：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="部署方式对比 - 框架依赖 vs 独立部署" Height="440" Width="560"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="部署方式对比看板" FontSize="18" FontWeight="Bold"
+>                    Foreground="#58A6FF" Margin="0,0,0,10"/>
+>         <Border Background="#161B22" Padding="12" CornerRadius="6" Margin="0,0,0,10">
+>             <StackPanel>
+>                 <TextBlock x:Name="TxtFramework" Foreground="#8B949E" Margin="0,2"/>
+>                 <TextBlock x:Name="TxtRuntimeVersion" Foreground="#8B949E" Margin="0,2"/>
+>                 <TextBlock x:Name="TxtDepsCount" Foreground="#8B949E" Margin="0,2"/>
+>                 <TextBlock x:Name="TxtDepsSize" Foreground="#8B949E" Margin="0,2"/>
+>                 <TextBlock x:Name="TxtVerdict" Foreground="#238636" Margin="0,2" TextWrapping="Wrap"/>
+>             </StackPanel>
+>         </Border>
+>         <Button Content="重新扫描发布目录" Click="OnScanClick" Padding="8"
+>                 Background="#21262D" Foreground="White"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.IO;
+> using System.Runtime.InteropServices;
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             Loaded += (_, _) => OnScanClick(null, null);
+>         }
+>
+>         private void OnScanClick(object sender, RoutedEventArgs e)
+>         {
+>             try
+>             {
+>                 // FrameworkDescription：框架依赖发布显示目标机已安装的 .NET 版本；独立发布显示随包携带的运行时
+>                 TxtFramework.Text = "当前框架：" + RuntimeInformation.FrameworkDescription;
+>                 TxtRuntimeVersion.Text = "运行时版本：" + Environment.Version;
+>
+>                 // 独立发布会把整个运行时带入发布目录，文件数与总大小明显更大
+>                 string dir = AppContext.BaseDirectory;
+>                 string[] files = Directory.GetFiles(dir);
+>                 long totalSize = 0;
+>                 foreach (string file in files)
+>                     totalSize += new FileInfo(file).Length;
+>
+>                 TxtDepsCount.Text = "发布目录文件数：" + files.Length + " 个";
+>                 TxtDepsSize.Text = "发布目录总大小：" + (totalSize / 1024.0 / 1024.0).ToString("F1") + " MB";
+>                 // 经验判断：文件数很多（>50）多为独立发布；很少则多为框架依赖
+>                 TxtVerdict.Text = "判断结论：" + (files.Length > 50
+>                     ? "发布目录包含大量运行时文件，疑似独立发布（目标机无需安装 .NET）"
+>                     : "发布目录文件较少，疑似框架依赖（目标机需安装对应 .NET Runtime）");
+>             }
+>             catch (Exception ex)
+>             {
+>                 MessageBox.Show("扫描失败：" + ex.Message, "部署对比");
+>             }
+>         }
+>     }
+> }
 > ```
 > 
 

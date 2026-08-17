@@ -25,9 +25,79 @@ parent: 15.1 发布方式
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **ClickOnce 更新检查面板：IsNetworkDeployed 判断部署来源、CurrentDeployment 读取版本与更新位置、CheckForUpdate 检查新版本（非 ClickOnce 环境安全回退）：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="ClickOnce 发布检查" Height="420" Width="520"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="ClickOnce 更新检查面板" FontSize="18" FontWeight="Bold"
+>                    Foreground="#58A6FF" Margin="0,0,0,10"/>
+>         <Border Background="#161B22" Padding="12" CornerRadius="6" Margin="0,0,0,10">
+>             <StackPanel>
+>                 <TextBlock x:Name="TxtDeployed" Foreground="#8B949E" Margin="0,2"/>
+>                 <TextBlock x:Name="TxtVersion" Foreground="#8B949E" Margin="0,2" TextWrapping="Wrap"/>
+>                 <TextBlock x:Name="TxtUpdateLocation" Foreground="#8B949E" Margin="0,2" TextWrapping="Wrap"/>
+>                 <TextBlock x:Name="TxtUpdateResult" Foreground="#8B949E" Margin="0,2" TextWrapping="Wrap"/>
+>             </StackPanel>
+>         </Border>
+>         <Button Content="检查更新" Click="OnCheckUpdate" Padding="8"
+>                 Background="#238636" Foreground="White"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Deployment.Application;
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             Loaded += (_, _) => OnCheckUpdate(null, null);
+>         }
+>
+>         private void OnCheckUpdate(object sender, RoutedEventArgs e)
+>         {
+>             try
+>             {
+>                 // IsNetworkDeployed：当前程序是否由 ClickOnce 部署发布（本机调试/直接复制运行时为 false）
+>                 if (!ApplicationDeployment.IsNetworkDeployed)
+>                 {
+>                     TxtDeployed.Text = "ClickOnce 部署：否";
+>                     TxtVersion.Text = "当前为普通发布/调试运行，无法读取 ClickOnce 版本";
+>                     TxtUpdateLocation.Text = "提示：请用发布向导生成部署包并从站点启动后，再验证更新逻辑";
+>                     TxtUpdateResult.Text = "";
+>                     return;   // 非 ClickOnce 环境安全回退，不抛异常
+>                 }
+>
+>                 ApplicationDeployment dep = ApplicationDeployment.CurrentDeployment;
+>                 TxtDeployed.Text = "ClickOnce 部署：是";
+>                 TxtVersion.Text = "当前版本：" + dep.CurrentVersion;
+>                 TxtUpdateLocation.Text = "更新位置：" + dep.UpdateLocation;
+>
+>                 if (dep.CheckForUpdate())   // 同步检查部署服务器是否存在更高版本
+>                     TxtUpdateResult.Text = "发现新版本：" + dep.UpdatedVersion + "，可调用 Update() 下载并重启应用";
+>                 else
+>                     TxtUpdateResult.Text = "已是最新版本";
+>             }
+>             catch (Exception ex)
+>             {
+>                 MessageBox.Show("更新检查失败：" + ex.Message, "ClickOnce");
+>             }
+>         }
+>     }
+> }
 > ```
 > 
 

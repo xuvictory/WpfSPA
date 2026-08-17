@@ -25,9 +25,91 @@ parent: 15.2 部署注意事项
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **设备服务监控面板：ServiceController 列出自动启动/名称含 HMI 的服务并读取状态与启动类型（仅查询不写）：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="Windows 服务模式监控" Height="480" Width="640"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Grid.Row="0" Text="上位机相关 Windows 服务" FontSize="16" FontWeight="Bold"
+>                    Foreground="#58A6FF" Margin="0,0,0,8"/>
+>         <ListBox Grid.Row="1" x:Name="ServiceList" Background="#161B22" Foreground="#8B949E"
+>                  BorderBrush="#21262D" SelectionChanged="OnSelectionChanged"/>
+>         <StackPanel Grid.Row="2" Margin="0,8,0,0">
+>             <TextBlock x:Name="TxtDetail" Foreground="#8B949E" TextWrapping="Wrap"/>
+>             <Button Content="刷新服务状态" Click="OnRefreshClick" Padding="8" Margin="0,8,0,0"
+>                     Background="#21262D" Foreground="White"/>
+>         </StackPanel>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Collections.Generic;
+> using System.ServiceProcess;
+> using System.Windows;
+> using System.Windows.Controls;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private readonly List<ServiceController> _services = new();
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             Loaded += (_, _) => OnRefreshClick(null, null);
+>         }
+>
+>         private void OnRefreshClick(object sender, RoutedEventArgs e)
+>         {
+>             try
+>             {
+>                 ServiceList.Items.Clear();
+>                 _services.Clear();
+>                 // GetServices 返回本机全部服务；过滤自动启动或名称含 HMI 的服务便于上位机场景监控
+>                 foreach (ServiceController sc in ServiceController.GetServices())
+>                 {
+>                     if (sc.StartType == ServiceStartMode.Automatic ||
+>                         sc.ServiceName.ToUpper().Contains("HMI") ||
+>                         sc.DisplayName.ToUpper().Contains("HMI"))
+>                     {
+>                         _services.Add(sc);
+>                         ServiceList.Items.Add(sc.DisplayName + "（" + sc.ServiceName + "）");
+>                     }
+>                 }
+>                 TxtDetail.Text = "共监控 " + _services.Count + " 个服务（自动启动或名称含 HMI）";
+>             }
+>             catch (Exception ex)
+>             {
+>                 MessageBox.Show("读取服务失败：" + ex.Message, "服务监控");
+>             }
+>         }
+>
+>         private void OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+>         {
+>             int index = ServiceList.SelectedIndex;
+>             if (index < 0 || index >= _services.Count) return;
+>             ServiceController sc = _services[index];
+>             // 仅读取状态与启动类型；Start/Stop 等写操作需要管理员权限，示例不做
+>             TxtDetail.Text = "名称：" + sc.DisplayName +
+>                 "\n状态：" + sc.Status +
+>                 "\n启动类型：" + sc.StartType;
+>         }
+>     }
+> }
 > ```
 > 
 

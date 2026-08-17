@@ -25,9 +25,100 @@ parent: 15.1 发布方式
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **MSI 安装信息读取器：遍历 Uninstall 注册表项读取 DisplayName/DisplayVersion/InstallLocation、选中项回显详情：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="MSI 安装信息读取器" Height="480" Width="640"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Grid.Row="0" Text="已安装程序列表（来自 MSI 注册表项）" FontSize="16" FontWeight="Bold"
+>                    Foreground="#58A6FF" Margin="0,0,0,8"/>
+>         <ListBox Grid.Row="1" x:Name="InstalledList" Background="#161B22" Foreground="#8B949E"
+>                  BorderBrush="#21262D" SelectionChanged="OnSelectionChanged"/>
+>         <StackPanel Grid.Row="2" Margin="0,8,0,0">
+>             <TextBlock x:Name="TxtDetail" Foreground="#8B949E" TextWrapping="Wrap"/>
+>             <Button Content="重新加载" Click="OnReloadClick" Padding="8" Margin="0,8,0,0"
+>                     Background="#21262D" Foreground="White"/>
+>         </StackPanel>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Collections.Generic;
+> using System.Windows;
+> using System.Windows.Controls;
+> using Microsoft.Win32;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private readonly List<KeyValuePair<string, string>> _apps = new();   // 名称 -> 安装详情
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             Loaded += (_, _) => OnReloadClick(null, null);
+>         }
+>
+>         private void OnReloadClick(object sender, RoutedEventArgs e)
+>         {
+>             try
+>             {
+>                 InstalledList.Items.Clear();
+>                 _apps.Clear();
+>                 // WiX/MSI 安装的信息写入 Uninstall 注册表项，读取 DisplayName/DisplayVersion/InstallLocation
+>                 string[] roots =
+>                 {
+>                     @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall",
+>                     @"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"
+>                 };
+>                 foreach (string root in roots)
+>                 {
+>                     using RegistryKey key = Registry.LocalMachine.OpenSubKey(root);
+>                     if (key == null) continue;
+>                     foreach (string sub in key.GetSubKeyNames())
+>                     {
+>                         using RegistryKey app = key.OpenSubKey(sub);
+>                         string name = app?.GetValue("DisplayName") as string;
+>                         if (string.IsNullOrEmpty(name)) continue;   // 无显示名的多为驱动/系统补丁，跳过
+>                         string version = app?.GetValue("DisplayVersion") as string ?? "未知";
+>                         string location = app?.GetValue("InstallLocation") as string ?? "";
+>                         _apps.Add(new KeyValuePair<string, string>(
+>                             name,
+>                             "版本：" + version + "\n安装位置：" +
+>                             (string.IsNullOrEmpty(location) ? "未记录" : location)));
+>                         InstalledList.Items.Add(name);
+>                     }
+>                 }
+>                 TxtDetail.Text = "共读取到 " + _apps.Count + " 个已安装程序";
+>             }
+>             catch (Exception ex)
+>             {
+>                 MessageBox.Show("读取注册表失败：" + ex.Message, "MSI 安装信息");
+>             }
+>         }
+>
+>         private void OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+>         {
+>             int index = InstalledList.SelectedIndex;
+>             if (index >= 0 && index < _apps.Count)
+>                 TxtDetail.Text = _apps[index].Value;
+>         }
+>     }
+> }
 > ```
 > 
 
