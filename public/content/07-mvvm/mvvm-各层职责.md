@@ -7,22 +7,28 @@ parent: 7.1 MVVM 基础概念
 # MVVM 各层职责
 
 > [!plain] 白话理解
-> "MVVM 各层职责"是 WPF 上位机开发中的一项重要知识。在学习 WPF 上位机开发的过程中，"MVVM 各层职责"是一个重要的知识点。MVVM 是 WPF 开发的黄金标准。学好 MVVM，你的代码将变得清晰、可测试、可维护。掌握了它，你就能更好地构建工业级上位机应用程序。
+> 把上位机项目想象成一个工厂车间：
+> - **Model（仓库）**：只存放"原料"——设备数据、参数、规则，不知道外面有车间，更不认识屏幕上的控件；
+> - **ViewModel（生产调度台）**：从仓库取原料，加工成车间（界面）能直接展示的东西——把 10.5 安培加工成"电流：10.5 A"，把温度判断成"超温/正常"，并决定哪个按钮能按；
+> - **View（车间展示牌）**：只负责把调度台给的信息亮出来，按下按钮就把指令发给调度台，自己不做任何加工。
+> 职责守则就一句话：**仓库不搞加工、展示牌不做决策、调度台不碰屏幕。**
 
 > [!def] 官方定义
-> MVVM 各层职责是 WPF / .NET 技术栈中由微软官方定义和实现的一个特性/概念/控件。它遵循 .NET 标准规范，为开发者提供了一套完整的编程接口（API）和最佳实践指南。详细定义请参考 Microsoft Docs 官方文档。
+> MVVM 将界面程序划分为三层，各层职责边界如下：
+> - **Model（模型）**：业务领域对象与数据访问（POCO 实体、仓储、服务调用）。特征：**不引用 UI**，可独立编译、独立测试；
+> - **ViewModel（视图模型）**：为 View 提供状态与行为。暴露可绑定属性（实现 `System.ComponentModel.INotifyPropertyChanged`）与命令（实现 `System.Windows.Input.ICommand`），负责把 Model 加工为界面友好形态、执行交互逻辑、管理界面状态（忙碌、可用、选中项）；
+> - **View（视图）**：XAML 界面。只做数据展示、输入收集与视觉状态（样式、模板、动画），后台代码仅保留 `InitializeComponent` 与 `DataContext` 装配（或交给 ViewModelLocator）。
+> 分层铁律：**View → ViewModel → Model 单向依赖，任何反向引用（ViewModel 引用控件、Model 引用 ViewModel）都是职责越界。**
 
 > [!origin] 由来背景
-> MVVM 各层职责的诞生源于实际开发中的痛点。微软在设计 .NET 和 WPF 框架时，为了满足企业级应用（尤其是工业自动化、数据可视化等场景）的需求，引入了这一特性。它的设计理念参考了业界最佳实践，并在日后的版本迭代中不断优化。
-
-> 本章节背景：MVVM 是 WPF 开发的黄金标准。学好 MVVM，你的代码将变得清晰、可测试、可维护。
+> 分层思想是软件工程的通用答案：数据库要分层（DAO/Service/UI）、网络要分层（OSI 七层），界面程序同样需要。早期 WinForms 把"数据、逻辑、控件操作"全塞进一个 Form 类，一个设备详情页几百行，改需求像拆炸弹。MVVM 把既有分层思想移植到 WPF：利用绑定让 View 层退化为"数据投影"，利用命令让 ViewModel 接管"行为"，Model 保持纯净。**分层不是 MVVM 独有，但 MVVM 让 WPF 下分层变得最自然、样板最少。**
 
 > [!essentials] 核心要点
-> - **概念理解**：首先搞清楚"MVVM 各层职责"是什么，它解决了什么问题
-> - **关键 API**：掌握最常用的属性和方法，能用代码表达你的意图
-> - **使用模式**：了解惯用的写法套路，避免重复造轮子
-> - **注意事项**：知道什么能做，什么不能做，踩坑前先看清路
-> - **实战检验**：用一个小项目或练习来验证你真的理解了
+> - **Model 三不做**：不引用 UI 命名空间、不触发属性通知（它是普通数据类）、不含界面状态（选中项、排序属于 ViewModel）
+> - **ViewModel 两职责**：把 Model 加工成"界面友好形态"（格式化、枚举转文本、合并字段）+ 承载交互行为（命令与状态机）
+> - **View 两允许**：允许样式/模板/动画/布局这些"纯展示"代码，允许写无逻辑的事件（如关闭窗口、拖拽行为）
+> - **DataContext 是分界线**：View 只能通过绑定读 ViewModel，后台代码中出现 `viewModel.Property` 已是越界信号
+> - **判责口诀**：看不清该放哪层时问——"它被界面独占吗？是→View；它要加工数据吗？是→ViewModel；它描述业务本身吗？是→Model"
 
 > [!example] 完整示例
 > **三层职责演示：Model（设备实体）只管数据，ViewModel（主视图模型）负责状态与命令，View（窗口）纯展示。一台设备的实时数据从 Model 经 ViewModel 流向界面：**
@@ -127,34 +133,37 @@ parent: 7.1 MVVM 基础概念
 > 
 
 > [!scene] 适用场景
-> ✅ 上位机数据展示与交互界面开发
-> ✅ 工业自动化设备状态监控系统
-> ✅ 需要高效数据绑定的实时数据处理场景
-> ✅ 多窗口、多页面复杂导航的企业级应用
-> ❌ 简单的控制台工具程序（用控制台更省事）
-> ❌ 对性能要求极端苛刻的底层驱动开发（用 C++ 更合适）
+> ✅ 设备详情/参数配置页：Model 存设备数据，ViewModel 提供"电流 A"、"状态"等展示文本，View 纯展示
+> ✅ 数据采集监控：Model 对应采集点表，ViewModel 处理实时值格式化与报警判断，View 用绑定自动刷新
+> ✅ 报表/历史查询：Model 管数据源，ViewModel 管筛选条件与分页状态，View 管表格展示
+> ✅ 登录/权限模块：Model 存用户与角色，ViewModel 管登录命令与验证，View 管表单
+> ❌ 无状态的一次性脚本式页面：直接绑 Model 即可，不必为每个窗口硬造 ViewModel
+> ❌ 纯可视化控件开发（自绘仪表）：那是控件内部逻辑，不属于 MVVM 分层范畴
 
 > [!pitfall] 常见踩坑
-> 坑 1：**概念理解不清就上手** → 建议先把本章节的前置知识点学完，理解基础原理后再动手写代码
-> 
-> 坑 2：**忽略了官方文档** → Microsoft Docs 上有最权威的说明和最完整的示例代码，遇到问题先查文档
+> 坑 1：**Model 里放 `ObservableCollection` 或属性通知** → Model 变成"半 ViewModel"，复用性和纯净性受损。Model 用普通类/`IReadOnlyList`，集合通知交给 ViewModel
 >
-> 坑 3：**代码写的太"一次性"** → 养成写可复用代码的习惯，以后项目中会反复用到这些知识
+> 坑 2：**ViewModel 里放控件类型**（`Visibility`、`Brush`、`Window` 引用）→ 无法脱离 WPF 测试。把界面形态映射成"状态枚举 + 字符串"，用 View 的触发器/转换器翻译成视觉
+>
+> 坑 3：**View 后台代码做数据加工** → 在 `Click` 里拼接字符串、算数值。加工逻辑进了 View 就不可测。一律下沉到 ViewModel
+>
+> 坑 4：**ViewModel 直接 new 依赖的 Service**（`new SerialPortService()`）→ 无法替换假实现测试。构造注入接口，让容器或测试代码提供实现
 
 > [!best] 最佳实践
-> - 编写代码时保持一致的命名规范（PascalCase 用于公共成员，_camelCase 用于私有字段）
-> - 善用 Visual Studio 的智能提示和代码片段，提高开发效率
-> - 每个关键代码块加上注释，解释"为什么这样写"而不仅仅是"写的是什么"
-> - 遵循 SOLID 原则，尤其是单一职责原则：一个类只做一件事
-> - 经常重构：写完功能后回头看看有没有更简洁的写法
+> - 按"目录即分层"组织项目：`Models/`、`ViewModels/`、`Views/`、`Services/`，新人一眼看懂归属（见「项目结构与目录规划」）
+> - Model 命名用业务词汇（`TemperaturePoint`、`DeviceConfig`），别用 `Data1`、`M` 这类无意义名
+> - ViewModel 用"面向 View 的状态名"（`IsRunning`、`CurrentText`、`CanStart`），让 XAML 读起来像在念需求
+> - 展示文本（`"运行中"`、`"超温"`）由 ViewModel 提供，View 不翻译业务词；颜色/图标等纯视觉映射放 View 的 DataTrigger
+> - 一个页面一个 ViewModel 文件；页面变复杂就拆子 ViewModel（如 `DeviceDetailViewModel` 组合 `AlarmListViewModel`）
 
 > [!practice] 上手练习
-> **Lv.1 照猫画虎**：阅读并运行本节示例代码，确保程序可以正常运行，修改一些参数观察效果变化
-> **Lv.2 小试牛刀**：在示例代码的基础上，添加一个小功能或修改一项设置，观察程序的响应
-> **Lv.3 融会贯通**：结合前面学过的知识，用"MVVM 各层职责"实现一个上位机中的小功能模块
+> **Lv.1 照猫画虎**：运行示例，逐行指出 `DeviceModel`、`MainViewModel`、`MainWindow.xaml` 分属哪一层，说清各自职责
+> **Lv.2 小试牛刀**：给 `DeviceModel` 加 `Temperature`（double）属性，在 ViewModel 增加 `TemperatureText` 并格式化，XAML 加一行展示
+> **Lv.3 融会贯通**：故意把 `CurrentText` 的拼接逻辑挪到 XAML 的 `Click` 事件里，运行后说明"为什么这样做测试不了、改不了"
+> **Lv.4 挑战**：给示例加"运行状态"的颜色变化——ViewModel 暴露 `StatusText`（文本），View 用 `DataTrigger` 按文本切绿色/红色，体会"文本归 VM、颜色归 View"
 
 > [!related] 相关知识链接
-> - ← 前置知识：请确保你已经理解了本章节之前的内容，再学习"MVVM 各层职责"
-> - → 后续必学：掌握"MVVM 各层职责"后，建议接着学习本章节的下一个知识点
-> - ⇄ 关联概念：数据绑定、命令系统、MVVM 模式（WPF 开发的核心支柱）
-> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/
+> - ← 前置知识：「什么是-mvvm」「为什么要用-mvvm」理解三层模型与收益
+> - → 后续必学：7.2 节「数据实体定义」「数据验证逻辑」落地 Model 层写法；7.4 节 ViewModel 层写法
+> - ⇄ 关联概念：「datacontext-绑定到-viewmodel」（View 与 VM 的装配）、「command-绑定」（View 与命令的装配）
+> - 📖 官方文档：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/data/
