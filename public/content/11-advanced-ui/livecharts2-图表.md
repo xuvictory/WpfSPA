@@ -25,9 +25,92 @@ parent: 11.7 第三方 UI 控件库
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **LiveCharts2 实时温度曲线演示：NuGet 安装 LiveChartsCore.SkiaSharpView.WPF 后，用 CartesianChart 绑定可观察集合，DispatacherTimer 定时追加数据点，实现上位机实时曲线：**
+>
+> **说明：先通过 NuGet 安装 `Install-Package LiveChartsCore.SkiaSharpView.WPF`。**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
+>         Title="LiveCharts2 实时温度曲线" Height="440" Width="560"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="LiveCharts2 实时曲线（NuGet：LiveChartsCore.SkiaSharpView.WPF）"
+>                    Foreground="#58A6FF" FontSize="14" FontWeight="Bold"/>
+>         <!-- CartesianChart 是绘图控件：Series 绑定数据，XAxes/YAxes 配置坐标轴 -->
+>         <lvc:CartesianChart x:Name="Chart" Grid.Row="1" Margin="0,12,0,0"
+>                             Background="#161B22"/>
+>         <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,12,0,0">
+>             <Button Content="开始采集" Click="OnStart" Padding="12,6" Margin="0,0,10,0"
+>                     Background="#21262D" Foreground="White"/>
+>             <Button Content="停止采集" Click="OnStop" Padding="12,6" Margin="0,0,10,0"
+>                     Background="#21262D" Foreground="White"/>
+>             <Button Content="清空数据" Click="OnClear" Padding="12,6"
+>                     Background="#21262D" Foreground="White"/>
+>         </StackPanel>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Collections.Generic;
+> using System.Collections.ObjectModel;
+> using System.Windows;
+> using System.Windows.Threading;
+> using LiveChartsCore;
+> using LiveChartsCore.SkiaSharpView;
+> using LiveChartsCore.SkiaSharpView.Painting;
+> using SkiaSharp;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         // 定时器：模拟数据采集线程（真实项目里应换成后台线程 + 调度回 UI）
+>         private readonly DispatcherTimer _timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
+>         private readonly ObservableCollection<double> _temps = new ObservableCollection<double>();
+>         private readonly Random _random = new Random();
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             _timer.Tick += OnTick;
+>             Chart.Series = new ISeries[]
+>             {
+>                 new LineSeries<double>
+>                 {
+>                     Values = _temps,
+>                     Name = "车间温度",
+>                     Stroke = new SolidColorPaint(new SKColor(0x58, 0xA6, 0xFF), 2),
+>                     Fill = null
+>                 }
+>             };
+>             Chart.XAxes = new Axis[] { new Axis { Name = "采样点" } };
+>             Chart.YAxes = new Axis[] { new Axis { Name = "温度 ℃", MinLimit = 0, MaxLimit = 120 } };
+>         }
+>
+>         // 每个采样周期追加一个温度点，滚动窗口只保留最近 60 个点
+>         private void OnTick(object sender, EventArgs e)
+>         {
+>             _temps.Add(60 + _random.NextDouble() * 40);
+>             if (_temps.Count > 60) _temps.RemoveAt(0);
+>         }
+>
+>         private void OnStart(object sender, RoutedEventArgs e) => _timer.Start();
+>         private void OnStop(object sender, RoutedEventArgs e) => _timer.Stop();
+>         private void OnClear(object sender, RoutedEventArgs e) => _temps.Clear();
+>     }
+> }
 > ```
 > 
 

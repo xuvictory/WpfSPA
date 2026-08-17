@@ -25,9 +25,73 @@ parent: 11.9 高 DPI 适配
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **DPI 感知模式设置演示：通过 app.manifest 声明 System DPI Aware，再用 GetDpiForWindow 读取当前窗口 DPI 并换算缩放因子，展示不同感知模式对界面清晰度的影响：**
+>
+> **说明：在项目 app.manifest 中添加 DPI 感知声明（默认 manifest 需显式加入）：**
+>
+> **app.manifest（片段）：**
+> ```xml
+> <?xml version="1.0" encoding="utf-8"?>
+> <assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1">
+>   <!-- System DPI Aware：系统自动按 DPI 缩放，画面清晰无模糊 -->
+>   <application xmlns="urn:schemas-microsoft-com:asm.v3">
+>     <windowsSettings>
+>       <dpiAware xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">true</dpiAware>
+>     </windowsSettings>
+>   </application>
+> </assembly>
+> ```
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="DPI 感知模式设置" Height="340" Width="460"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="DPI 感知模式设置（GetDpiForWindow）"
+>                    Foreground="#58A6FF" FontSize="14" FontWeight="Bold"/>
+>         <Button Content="读取当前窗口 DPI" Click="OnReadDpi" Padding="12,6" Margin="0,18,0,0"
+>                 HorizontalAlignment="Left" Background="#21262D" Foreground="White"/>
+>         <TextBox x:Name="DpiBox" Margin="0,14,0,0" IsReadOnly="True" TextWrapping="Wrap"
+>                  Height="140" Background="#161B22" Foreground="#8B949E" BorderBrush="#21262D"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Runtime.InteropServices;
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         // 获取指定窗口所在显示器的 DPI（每英寸点数，96 = 100% 缩放）
+>         [DllImport("user32.dll")]
+>         private static extern uint GetDpiForWindow(IntPtr hwnd);
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>         }
+>
+>         private void OnReadDpi(object sender, RoutedEventArgs e)
+>         {
+>             // 拿到窗口句柄后调用 Win32 API 读取实际 DPI
+>             var hwnd = new System.Windows.Interop.WindowInteropHelper(this).Handle;
+>             uint dpi = GetDpiForWindow(hwnd);
+>
+>             DpiBox.AppendText($"当前窗口 DPI：{dpi}\n");
+>             DpiBox.AppendText($"缩放比例：{dpi / 96.0:P0}\n");   // 96 DPI 为基准
+>             DpiBox.AppendText($"1 英寸实际像素：{dpi}\n");
+>             DpiBox.AppendText("系统 DPI Aware 模式下字体、控件由系统统一缩放，不会模糊。\n");
+>         }
+>     }
+> }
 > ```
 > 
 

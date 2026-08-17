@@ -25,9 +25,71 @@ parent: 11.4 多语言与国际化
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **上位机中英文切换演示：通过 CultureInfo + ResourceManager 读取 resx 资源文件实现界面本地化，点击按钮在中文/英文之间动态切换（依赖 System.Resources 资源文件，需先在项目中新建 Strings.resx 与 Strings.en-US.resx）：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="WPF 本地化方案" Height="320" Width="460"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="WPF 本地化方案（resx + CultureInfo 动态切换）"
+>                    Foreground="#58A6FF" FontSize="14" FontWeight="Bold"/>
+>         <TextBlock x:Name="TitleText" Margin="0,18,0,0" FontSize="16" FontWeight="Bold"
+>                    Foreground="White"/>
+>         <TextBlock x:Name="HintText" Margin="0,8,0,0" Foreground="#8B949E" TextWrapping="Wrap"/>
+>         <StackPanel Orientation="Horizontal" Margin="0,22,0,0">
+>             <Button x:Name="BtnZh" Content="切换为中文" Padding="14,8" Margin="0,0,10,0"
+>                     Background="#21262D" Foreground="White" Click="OnSwitchToZh"/>
+>             <Button x:Name="BtnEn" Content="Switch to English" Padding="14,8"
+>                     Background="#21262D" Foreground="White" Click="OnSwitchToEn"/>
+>         </StackPanel>
+>         <TextBlock x:Name="CultureText" Foreground="#58A6FF" Margin="0,18,0,0"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Globalization;
+> using System.Threading;
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         // 资源管理器的命名空间须与 .resx 文件生成的强类型一致
+>         private readonly Resources.Strings _strings = new Resources.Strings();
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             ApplyLanguage(new CultureInfo("zh-CN"));
+>         }
+>
+>         // 切换语言核心：设置线程当前区域文化 → 重新读取资源 → 刷新界面文字
+>         private void ApplyLanguage(CultureInfo culture)
+>         {
+>             Thread.CurrentThread.CurrentUICulture = culture;
+>             Thread.CurrentThread.CurrentCulture = culture;
+>
+>             // ResourceManager 按 CurrentUICulture 自动选择对应语言的资源
+>             TitleText.Text = _strings.MainTitle;
+>             HintText.Text = _strings.MainHint;
+>             CultureText.Text = $"当前区域：{culture.Name}（{culture.DisplayName}）";
+>             Title = _strings.WindowTitle;
+>         }
+>
+>         private void OnSwitchToZh(object sender, RoutedEventArgs e)
+>             => ApplyLanguage(new CultureInfo("zh-CN"));
+>
+>         private void OnSwitchToEn(object sender, RoutedEventArgs e)
+>             => ApplyLanguage(new CultureInfo("en-US"));
+>     }
+> }
 > ```
 > 
 

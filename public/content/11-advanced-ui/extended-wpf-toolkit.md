@@ -25,9 +25,76 @@ parent: 11.7 第三方 UI 控件库
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **Extended WPF Toolkit 参数配置演示：NuGet 安装 Extended.Wpf.Toolkit 后，用 xctk: 命名空间的 ColorPicker（颜色选择）、DateTimePicker（时间选择）、IntegerUpDown（数字步进）搭建上位机参数配置界面：**
+>
+> **说明：先通过 NuGet 安装 `Install-Package Extended.Wpf.Toolkit`。**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+>         xmlns:sys="clr-namespace:System;assembly=System.Runtime"
+>         Title="Extended WPF Toolkit 参数配置" Height="460" Width="480"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="Extended WPF Toolkit 控件（NuGet：Extended.Wpf.Toolkit）"
+>                    Foreground="#58A6FF" FontSize="14" FontWeight="Bold" TextWrapping="Wrap"/>
+>         <StackPanel Grid.Row="1" Margin="0,15,0,0">
+>             <!-- ColorPicker：选择设备指示灯颜色 -->
+>             <TextBlock Text="指示灯颜色" Foreground="#8B949E" Margin="0,0,0,4"/>
+>             <xctk:ColorPicker x:Name="LampColor" SelectedColor="#58A6FF" Width="200"
+>                               HorizontalAlignment="Left" Margin="0,0,0,14"/>
+>             <!-- DateTimePicker：设定计划检修时间 -->
+>             <TextBlock Text="计划检修时间" Foreground="#8B949E" Margin="0,0,0,4"/>
+>             <xctk:DateTimePicker x:Name="MaintainTime" Value="{x:Static sys:DateTime.Now}"
+>                                  Width="200" HorizontalAlignment="Left" Margin="0,0,0,14"/>
+>             <!-- IntegerUpDown：输入最高温度 -->
+>             <TextBlock Text="最高温度（℃）" Foreground="#8B949E" Margin="0,0,0,4"/>
+>             <xctk:IntegerUpDown x:Name="MaxTemp" Value="80" Minimum="0" Maximum="200"
+>                                 Width="200" HorizontalAlignment="Left"/>
+>             <!-- WatermarkTextBox：带水印提示的输入框 -->
+>             <TextBlock Text="备注" Foreground="#8B949E" Margin="0,14,0,4"/>
+>             <xctk:WatermarkTextBox x:Name="Remark" Watermark="请输入备注信息" Padding="6"
+>                                    Background="#161B22" Foreground="White" BorderBrush="#21262D"/>
+>         </StackPanel>
+>         <Button Grid.Row="2" Content="读取参数并预览" Click="OnReadParams" Padding="12,6"
+>                 HorizontalAlignment="Left" Background="#21262D" Foreground="White"/>
+>         <TextBlock x:Name="ResultText" Grid.Row="2" Foreground="#8B949E"
+>                    VerticalAlignment="Bottom" TextWrapping="Wrap" Margin="0,0,0,30"/>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>         }
+>
+>         // 汇总读取各扩展控件的值，验证与普通控件一致的取值方式
+>         private void OnReadParams(object sender, RoutedEventArgs e)
+>         {
+>             ResultText.Text = $"指示灯颜色：{LampColor.SelectedColor}\n" +
+>                               $"检修时间：{MaintainTime.Value:yyyy-MM-dd HH:mm}\n" +
+>                               $"最高温度：{MaxTemp.Value}℃\n" +
+>                               $"备注：{Remark.Text}";
+>         }
+>     }
+> }
 > ```
 > 
 

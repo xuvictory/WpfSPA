@@ -25,9 +25,103 @@ parent: 11.2 数据模板高级应用
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **设备列表演示：自定义 DeviceTemplateSelector 重写 SelectTemplate 方法，根据设备运行状态自动切换绿色/红色两种列表模板：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         xmlns:local="clr-namespace:HmiDemo"
+>         Title="DataTemplateSelector - 设备列表" Height="420" Width="460"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="设备列表（按运行状态自动选择模板）"
+>                    Foreground="#58A6FF" FontSize="14" FontWeight="Bold"/>
+>         <Grid.Resources>
+>             <!-- 停止状态模板：红色圆点 + 设备信息 -->
+>             <DataTemplate x:Key="StoppedTemplate">
+>                 <StackPanel Orientation="Horizontal" Margin="4">
+>                     <Ellipse Width="10" Height="10" Fill="#DA3633"
+>                              VerticalAlignment="Center" Margin="0,0,8,0"/>
+>                     <StackPanel>
+>                         <TextBlock Text="{Binding Name}" Foreground="White" FontWeight="Bold"/>
+>                         <TextBlock Text="{Binding State}" Foreground="#8B949E" FontSize="12"/>
+>                     </StackPanel>
+>                 </StackPanel>
+>             </DataTemplate>
+>             <!-- 运行状态模板：绿色圆点 + 设备信息 -->
+>             <DataTemplate x:Key="RunningTemplate">
+>                 <StackPanel Orientation="Horizontal" Margin="4">
+>                     <Ellipse Width="10" Height="10" Fill="#238636"
+>                              VerticalAlignment="Center" Margin="0,0,8,0"/>
+>                     <StackPanel>
+>                         <TextBlock Text="{Binding Name}" Foreground="#58A6FF" FontWeight="Bold"/>
+>                         <TextBlock Text="{Binding State}" Foreground="#8B949E" FontSize="12"/>
+>                     </StackPanel>
+>                 </StackPanel>
+>             </DataTemplate>
+>             <!-- 选择器实例：两个模板分别赋给两个公开属性 -->
+>             <local:DeviceTemplateSelector x:Key="DeviceSelector"
+>                                           RunningTemplate="{StaticResource RunningTemplate}"
+>                                           StoppedTemplate="{StaticResource StoppedTemplate}"/>
+>         </Grid.Resources>
+>         <ListBox x:Name="DeviceList" Grid.Row="1" Margin="0,12,0,0"
+>                  ItemTemplateSelector="{StaticResource DeviceSelector}"
+>                  Background="#161B22" BorderBrush="#21262D"/>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码与选择器：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Collections.Generic;
+> using System.Windows;
+> using System.Windows.Controls;
+>
+> namespace HmiDemo
+> {
+>     // 设备数据模型
+>     public class Device
+>     {
+>         public string Name { get; set; }
+>         public string State { get; set; }
+>         public bool IsRunning { get; set; }
+>     }
+>
+>     // 选择器：核心是重写 SelectTemplate，按数据内容返回对应模板
+>     public class DeviceTemplateSelector : DataTemplateSelector
+>     {
+>         public DataTemplate RunningTemplate { get; set; }
+>         public DataTemplate StoppedTemplate { get; set; }
+>
+>         public override DataTemplate SelectTemplate(object item, DependencyObject container)
+>         {
+>             // 判断逻辑：运行中的设备用绿色模板，否则用红色模板
+>             if (item is Device d && d.IsRunning) return RunningTemplate;
+>             return StoppedTemplate;
+>         }
+>     }
+>
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             DeviceList.ItemsSource = new List<Device>
+>             {
+>                 new Device { Name = "1# 注塑机", State = "运行中", IsRunning = true },
+>                 new Device { Name = "2# 注塑机", State = "已停止", IsRunning = false },
+>                 new Device { Name = "3# 注塑机", State = "运行中", IsRunning = true },
+>                 new Device { Name = "4# 注塑机", State = "已停止", IsRunning = false },
+>             };
+>         }
+>     }
+> }
 > ```
 > 
 

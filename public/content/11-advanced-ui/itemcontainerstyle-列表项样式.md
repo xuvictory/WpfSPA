@@ -25,9 +25,94 @@ parent: 11.2 数据模板高级应用
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **设备列表演示：通过 ItemContainerStyle 为 ListBoxItem 设置斑马纹交替底色、悬停高亮与选中态样式（Trigger 联动）：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="ItemContainerStyle - 设备列表" Height="440" Width="460"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="列表项样式：交替颜色 + 悬停高亮 + 选中状态"
+>                    Foreground="#58A6FF" FontSize="14" FontWeight="Bold"/>
+>         <ListBox x:Name="DeviceList" Grid.Row="1" Margin="0,12,0,0"
+>                  AlternationCount="2" Background="#161B22" BorderBrush="#21262D"
+>                  Foreground="#8B949E">
+>             <!-- ItemContainerStyle 作用于每个列表项容器 ListBoxItem -->
+>             <ListBox.ItemContainerStyle>
+>                 <Style TargetType="ListBoxItem">
+>                     <Setter Property="Padding" Value="10,7"/>
+>                     <Style.Triggers>
+>                         <!-- AlternationIndex 与 AlternationCount 配合实现斑马纹 -->
+>                         <Trigger Property="ItemsControl.AlternationIndex" Value="0">
+>                             <Setter Property="Background" Value="#161B22"/>
+>                         </Trigger>
+>                         <Trigger Property="ItemsControl.AlternationIndex" Value="1">
+>                             <Setter Property="Background" Value="#1C2128"/>
+>                         </Trigger>
+>                         <!-- 鼠标悬停高亮 -->
+>                         <Trigger Property="IsMouseOver" Value="True">
+>                             <Setter Property="Background" Value="#21262D"/>
+>                         </Trigger>
+>                         <!-- 选中态：深色背景 + 强调蓝文字 -->
+>                         <Trigger Property="IsSelected" Value="True">
+>                             <Setter Property="Background" Value="#0D1117"/>
+>                             <Setter Property="Foreground" Value="#58A6FF"/>
+>                             <Setter Property="FontWeight" Value="Bold"/>
+>                         </Trigger>
+>                     </Style.Triggers>
+>                 </Style>
+>             </ListBox.ItemContainerStyle>
+>             <ListBox.ItemTemplate>
+>                 <DataTemplate>
+>                     <StackPanel Orientation="Horizontal">
+>                         <TextBlock Text="{Binding Name}" Width="180"/>
+>                         <TextBlock Text="{Binding State}"/>
+>                     </StackPanel>
+>                 </DataTemplate>
+>             </ListBox.ItemTemplate>
+>         </ListBox>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Collections.Generic;
+> using System.Windows;
+> using System.Windows.Controls;
+>
+> namespace HmiDemo
+> {
+>     // 设备信息数据模型
+>     public class DeviceInfo
+>     {
+>         public string Name { get; set; }
+>         public string State { get; set; }
+>     }
+>
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             DeviceList.ItemsSource = new List<DeviceInfo>
+>             {
+>                 new DeviceInfo { Name = "1# 注塑机", State = "运行中" },
+>                 new DeviceInfo { Name = "2# 注塑机", State = "已停止" },
+>                 new DeviceInfo { Name = "3# 注塑机", State = "运行中" },
+>                 new DeviceInfo { Name = "4# 注塑机", State = "检修中" },
+>                 new DeviceInfo { Name = "5# 注塑机", State = "已停止" },
+>             };
+>         }
+>     }
+> }
 > ```
 > 
 

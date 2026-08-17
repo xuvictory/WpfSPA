@@ -25,9 +25,102 @@ parent: 11.9 高 DPI 适配
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **Per-Monitor DPI Awareness 演示：manifest 声明 PerMonitorV2，窗口跨屏移动时监听 DpiChanged 事件，实时读取新显示器 DPI 并动态换算字号与布局，保证高 DPI 屏上界面依然清晰：**
+>
+> **说明：PerMonitorV2 是 Win10 1703+ 的推荐模式，需在 app.manifest 中声明：**
+>
+> **app.manifest（片段）：**
+> ```xml
+> <?xml version="1.0" encoding="utf-8"?>
+> <assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1">
+>   <application xmlns="urn:schemas-microsoft-com:asm.v3">
+>     <windowsSettings>
+>       <!-- PerMonitorV2：每个显示器独立 DPI，跨屏拖拽时动态适配 -->
+>       <dpiAwareness xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">PerMonitorV2</dpiAwareness>
+>       <dpiAware xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">true</dpiAware>
+>     </windowsSettings>
+>   </application>
+> </assembly>
+> ```
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="Per-Monitor DPI Awareness" Height="400" Width="500"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="Per-Monitor DPI Awareness（跨屏动态适配）"
+>                    Foreground="#58A6FF" FontSize="14" FontWeight="Bold"/>
+>         <TextBlock Text="把窗口拖到另一块不同缩放的屏幕，DPI 会实时更新" Foreground="#8B949E"
+>                    Margin="0,10,0,0" TextWrapping="Wrap"/>
+>         <Border Margin="0,18,0,0" Background="#161B22" BorderBrush="#21262D"
+>                 BorderThickness="1" CornerRadius="6" Padding="14">
+>             <StackPanel>
+>                 <TextBlock x:Name="TitleInfo" Text="当前显示器 DPI：--" Foreground="White"
+>                            FontSize="16" FontWeight="Bold"/>
+>                 <TextBlock x:Name="ScaleInfo" Text="缩放比例：--" Foreground="#8B949E"
+>                            Margin="0,6,0,0"/>
+>                 <TextBlock x:Name="PixelInfo" Text="1 DIP = -- 物理像素" Foreground="#58A6FF"
+>                            Margin="0,6,0,0"/>
+>             </StackPanel>
+>         </Border>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Windows;
+> using System.Windows.Interop;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             SourceInitialized += OnSourceInitialized;
+>         }
+>
+>         // 窗口句柄就绪后：订阅 DpiChanged 消息，并读取初始 DPI
+>         private void OnSourceInitialized(object sender, EventArgs e)
+>         {
+>             var hwnd = new WindowInteropHelper(this).Handle;
+>             var source = HwndSource.FromHwnd(hwnd);
+>             source?.AddHook(WndProc);
+>             UpdateDpiInfo();
+>         }
+>
+>         // 拦截窗口消息：DPI 变化（WM_DPICHANGED = 0x02E0）时刷新显示
+>         private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+>         {
+>             if (msg == 0x02E0) // WM_DPICHANGED
+>             {
+>                 UpdateDpiInfo();
+>                 handled = true;
+>             }
+>             return IntPtr.Zero;
+>         }
+>
+>         // 读取当前窗口所在显示器 DPI 并换算显示
+>         private void UpdateDpiInfo()
+>         {
+>             var hwnd = new WindowInteropHelper(this).Handle;
+>             double dpi = GetDpiForWindow(hwnd);
+>
+>             TitleInfo.Text = $"当前显示器 DPI：{dpi:0}";
+>             ScaleInfo.Text = $"缩放比例：{dpi / 96.0:P0}";
+>             PixelInfo.Text = $"1 DIP = {dpi / 96.0:F2} 物理像素";
+>         }
+>
+>         [System.Runtime.InteropServices.DllImport("user32.dll")]
+>         private static extern uint GetDpiForWindow(IntPtr hwnd);
+>     }
+> }
 > ```
 > 
 

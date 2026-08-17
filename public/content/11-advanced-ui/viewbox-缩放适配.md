@@ -25,9 +25,72 @@ parent: 11.8 响应式布局与自适应
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **Viewbox 整图缩放演示：把用固定坐标绘制的设备平面图放进 Viewbox，窗口缩放时整张图等比缩放，无需逐个坐标适配，适合上位机里的流程示意图、管道布局图：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="Viewbox 缩放适配" Height="460" Width="560"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="Viewbox 缩放适配（固定坐标系内容自动等比缩放）"
+>                    Foreground="#58A6FF" FontSize="14" FontWeight="Bold" TextWrapping="Wrap"/>
+>         <!-- Viewbox 核心：子元素按自己的尺寸绘制，Viewbox 负责整体缩放 -->
+>         <Viewbox Grid.Row="1" Margin="0,12,0,0" Stretch="Uniform">
+>             <!-- 内部固定 800×400 的设计坐标，缩放时全部元素同比放大/缩小 -->
+>             <Canvas Width="800" Height="400" Background="#161B22">
+>                 <!-- 生产线上三台设备 -->
+>                 <Border Canvas.Left="30" Canvas.Top="80" Width="180" Height="120"
+>                         Background="#21262D" CornerRadius="8">
+>                     <TextBlock Text="原料仓" Foreground="White" FontSize="22"
+>                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
+>                 </Border>
+>                 <Border Canvas.Left="310" Canvas.Top="80" Width="180" Height="120"
+>                         Background="#1F3A5F" CornerRadius="8">
+>                     <TextBlock Text="反应釜" Foreground="#58A6FF" FontSize="22"
+>                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
+>                 </Border>
+>                 <Border Canvas.Left="590" Canvas.Top="80" Width="180" Height="120"
+>                         Background="#21262D" CornerRadius="8">
+>                     <TextBlock Text="成品罐" Foreground="White" FontSize="22"
+>                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
+>                 </Border>
+>                 <!-- 连接管道 -->
+>                 <Line X1="210" Y1="140" X2="310" Y2="140" Stroke="#58A6FF" StrokeThickness="6"/>
+>                 <Line X1="490" Y1="140" X2="590" Y2="140" Stroke="#58A6FF" StrokeThickness="6"/>
+>                 <Ellipse Canvas.Left="245" Canvas.Top="125" Width="30" Height="30"
+>                          Fill="#238636"/>
+>                 <Ellipse Canvas.Left="525" Canvas.Top="125" Width="30" Height="30"
+>                          Fill="#238636"/>
+>                 <TextBlock Canvas.Left="50" Canvas.Top="320" Text="工艺流程：原料 → 反应 → 成品"
+>                            Foreground="#8B949E" FontSize="20"/>
+>             </Canvas>
+>         </Viewbox>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             // Viewbox 无需任何代码参与：布局引擎自动按可用空间计算缩放比例
+>         }
+>     }
+> }
 > ```
 > 
 

@@ -25,9 +25,110 @@ parent: 11.7 第三方 UI 控件库
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **MaterialDesignInXAML 上位机面板演示：NuGet 安装 MaterialDesignThemes 后，在 App.xaml 合并 BundledTheme 与默认样式，窗口用 md: 命名空间下的卡片、按钮、对话框等控件搭建设备控制面板：**
+>
+> **说明：先通过 NuGet 安装 `Install-Package MaterialDesignThemes`。**
+>
+> **App.xaml：**
+> ```xml
+> <Application x:Class="HmiDemo.App"
+>              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+>              StartupUri="MainWindow.xaml">
+>     <Application.Resources>
+>         <ResourceDictionary>
+>             <ResourceDictionary.MergedDictionaries>
+>                 <!-- 深色主题 + 品牌色 -->
+>                 <materialDesign:BundledTheme BaseTheme="Dark"
+>                                               PrimaryColor="Blue"
+>                                               SecondaryColor="Lime"/>
+>                 <!-- 组件默认样式必须合并，否则控件无样式 -->
+>                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesign2.Defaults.xaml"/>
+>             </ResourceDictionary.MergedDictionaries>
+>         </ResourceDictionary>
+>     </Application.Resources>
+> </Application>
+> ```
+>
+> **MainWindow.xaml —— MaterialDesign 风格控件：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+>         Title="MaterialDesignInXAML 上位机面板" Height="420" Width="520"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="MaterialDesignInXAML 控件库（NuGet：MaterialDesignThemes）"
+>                    Foreground="#58A6FF" FontSize="14" FontWeight="Bold"/>
+>         <Grid Grid.Row="1" Margin="0,12,0,0">
+>             <Grid.ColumnDefinitions>
+>                 <ColumnDefinition Width="*"/>
+>                 <ColumnDefinition Width="*"/>
+>             </Grid.ColumnDefinitions>
+>             <!-- MaterialDesign 卡片 -->
+>             <materialDesign:Card Padding="16" Margin="0,0,6,0" UniformCornerRadius="6">
+>                 <StackPanel>
+>                     <TextBlock Text="设备启停" Foreground="White" FontWeight="Bold" FontSize="15"/>
+>                     <TextBlock Text="状态：运行中" x:Name="StateText" Foreground="#238636"
+>                                Margin="0,8,0,0"/>
+>                     <Button Style="{StaticResource MaterialDesignRaisedButton}"
+>                             Content="启动设备" Margin="0,14,0,0" Click="OnStart"/>
+>                     <Button Style="{StaticResource MaterialDesignOutlinedButton}"
+>                             Content="停止设备" Margin="0,10,0,0" Click="OnStop"/>
+>                 </StackPanel>
+>             </materialDesign:Card>
+>             <!-- MaterialDesign 浮动输入框 + 滑动条 -->
+>             <materialDesign:Card Grid.Column="1" Padding="16" Margin="6,0,0,0"
+>                                  UniformCornerRadius="6">
+>                 <StackPanel>
+>                     <TextBlock Text="参数设置" Foreground="White" FontWeight="Bold" FontSize="15"/>
+>                     <materialDesign:HintAssist.Hint>
+>                         <TextBlock Text="输入温度上限"/>
+>                     </materialDesign:HintAssist.Hint>
+>                     <TextBox materialDesign:HintAssist.Hint="输入温度上限（℃）"
+>                              Text="80" Margin="0,12,0,0" Foreground="White"/>
+>                     <TextBlock Text="目标转速" Foreground="#8B949E" Margin="0,16,0,4"/>
+>                     <Slider Minimum="0" Maximum="3000" Value="1200" Foreground="#58A6FF"/>
+>                 </StackPanel>
+>             </materialDesign:Card>
+>         </Grid>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Media;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>         }
+>
+>         private void OnStart(object sender, RoutedEventArgs e)
+>         {
+>             StateText.Text = "状态：运行中";
+>             StateText.Foreground = new SolidColorBrush(Color.FromRgb(0x23, 0x86, 0x36));
+>         }
+>
+>         private void OnStop(object sender, RoutedEventArgs e)
+>         {
+>             StateText.Text = "状态：已停止";
+>             StateText.Foreground = new SolidColorBrush(Color.FromRgb(0xDA, 0x36, 0x33));
+>         }
+>     }
+> }
 > ```
 > 
 

@@ -25,9 +25,95 @@ parent: 11.3 主题与换肤
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **第三方库主题定制演示：在同一个窗口同时引入 MaterialDesignInXAML（md: 命名空间）与 HandyControl（hc: 命名空间），合并两者主题资源字典，用各自的特色控件构建上位机监控面板。运行前需通过 NuGet 安装 MaterialDesignThemes 与 HandyControl 两个包：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <!-- 前置准备：
+>      1. NuGet 安装 MaterialDesignThemes（提供 materialDesign 资源字典与 md: 控件）
+>      2. NuGet 安装 HandyControl（提供 hc: 控件与皮肤资源字典）
+>      3. App.xaml 中合并：
+>         <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Light.xaml"/>
+>         <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesign2.Defaults.xaml"/>
+>         <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/SkinDefault.xaml"/>
+>         <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/Theme.xaml"/> -->
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+>         xmlns:hc="https://handyorg.github.io/handycontrol"
+>         Title="第三方库主题定制" Height="420" Width="560"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="MaterialDesignInXAML + HandyControl 主题定制"
+>                    Foreground="#58A6FF" FontSize="14" FontWeight="Bold"/>
+>         <Grid Grid.Row="1" Margin="0,12,0,0">
+>             <Grid.ColumnDefinitions>
+>                 <ColumnDefinition Width="*"/>
+>                 <ColumnDefinition Width="*"/>
+>             </Grid.ColumnDefinitions>
+>             <!-- MaterialDesign 卡片：md:Card + 按钮 + 开关 -->
+>             <md:Card Padding="16" Margin="0,0,6,0">
+>                 <StackPanel>
+>                     <TextBlock Text="Material 风格" Foreground="White"
+>                                FontWeight="Bold" FontSize="15"/>
+>                     <TextBlock Text="卡面悬浮阴影 + 圆角按钮" Foreground="#8B949E"
+>                                Margin="0,6,0,0" TextWrapping="Wrap"/>
+>                     <md:Button Content="开始采集" Margin="0,14,0,0" HorizontalAlignment="Left"/>
+>                     <md:ToggleButton x:Name="MdSwitch" Content="自动巡检" Margin="0,10,0,0"
+>                                      HorizontalAlignment="Left" Checked="OnMdChecked"
+>                                      Unchecked="OnMdUnchecked"/>
+>                 </StackPanel>
+>             </md:Card>
+>             <!-- HandyControl 控件：仪表盘 + 进度条 -->
+>             <hc:Card Grid.Column="1" Padding="16" Margin="6,0,0,0">
+>                 <StackPanel>
+>                     <TextBlock Text="HandyControl 风格" Foreground="White"
+>                                FontWeight="Bold" FontSize="15"/>
+>                     <hc:Gauge x:Name="SpeedGauge" Width="130" Height="110"
+>                               Value="80" Maximum="120" Foreground="#58A6FF"/>
+>                     <TextBlock Text="主轴转速 r/min" Foreground="#8B949E"
+>                                HorizontalAlignment="Center" FontSize="12"/>
+>                     <hc:ProgressBar x:Name="LoadBar" Value="62" Foreground="#238636"
+>                                     Height="8" Margin="0,10,0,0"/>
+>                 </StackPanel>
+>             </hc:Card>
+>         </Grid>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>         }
+>
+>         // MaterialDesign 开关选中：更新 HandyControl 仪表盘数值，演示两库协作
+>         private void OnMdChecked(object sender, RoutedEventArgs e)
+>         {
+>             SpeedGauge.Value = 95;
+>             LoadBar.Value = 85;
+>         }
+>
+>         private void OnMdUnchecked(object sender, RoutedEventArgs e)
+>         {
+>             SpeedGauge.Value = 40;
+>             LoadBar.Value = 35;
+>         }
+>     }
+> }
 > ```
 > 
 

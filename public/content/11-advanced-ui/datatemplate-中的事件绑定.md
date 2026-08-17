@@ -25,9 +25,104 @@ parent: 11.2 数据模板高级应用
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **设备启停列表演示：DataTemplate 内的按钮点击事件，通过 Button.DataContext 取到列表项数据，并用 RelativeSource AncestorType 向上查找 ListBox 容器：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="DataTemplate 事件绑定 - 设备启停" Height="420" Width="500"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="列表项按钮：DataContext 取数据，RelativeSource 找 ListBox"
+>                    Foreground="#58A6FF" FontSize="14" FontWeight="Bold" TextWrapping="Wrap"/>
+>         <Grid.Resources>
+>             <DataTemplate x:Key="DeviceTemplate">
+>                 <Grid Margin="4">
+>                     <Grid.ColumnDefinitions>
+>                         <ColumnDefinition Width="160"/>
+>                         <ColumnDefinition Width="90"/>
+>                         <ColumnDefinition Width="*"/>
+>                     </Grid.ColumnDefinitions>
+>                     <TextBlock Text="{Binding Name}" Foreground="White" VerticalAlignment="Center"/>
+>                     <TextBlock Grid.Column="1" Text="{Binding State}"
+>                                Foreground="#8B949E" VerticalAlignment="Center"/>
+>                     <!-- RelativeSource AncestorType=ListBox：模板内向上找父级 ListBox -->
+>                     <Button Grid.Column="2" Content="切换状态" Click="OnToggleClick" Padding="8,4"
+>                             HorizontalAlignment="Left" Background="#21262D" Foreground="White"
+>                             ToolTip="{Binding RelativeSource={RelativeSource AncestorType=ListBox},
+>                                               Path=Items.Count,
+>                                               StringFormat=列表共 {0} 台设备}"/>
+>                 </Grid>
+>             </DataTemplate>
+>         </Grid.Resources>
+>         <ListBox x:Name="DeviceList" Grid.Row="1" Margin="0,12,0,0"
+>                  ItemTemplate="{StaticResource DeviceTemplate}"
+>                  Background="#161B22" BorderBrush="#21262D"/>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Collections.Generic;
+> using System.ComponentModel;
+> using System.Runtime.CompilerServices;
+> using System.Windows;
+> using System.Windows.Controls;
+>
+> namespace HmiDemo
+> {
+>     // 设备模型：实现属性通知，界面才能自动刷新
+>     public class Device : INotifyPropertyChanged
+>     {
+>         private string _state;
+>
+>         public string Name { get; set; }
+>
+>         public string State
+>         {
+>             get => _state;
+>             set { _state = value; OnPropertyChanged(); }
+>         }
+>
+>         public bool IsRunning { get; set; }
+>
+>         public event PropertyChangedEventHandler PropertyChanged;
+>         private void OnPropertyChanged([CallerMemberName] string name = null)
+>             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+>     }
+>
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             DeviceList.ItemsSource = new List<Device>
+>             {
+>                 new Device { Name = "1# 注塑机", State = "运行中", IsRunning = true },
+>                 new Device { Name = "2# 注塑机", State = "已停止", IsRunning = false },
+>                 new Device { Name = "3# 注塑机", State = "运行中", IsRunning = true },
+>             };
+>         }
+>
+>         // 模板内按钮点击：按钮的 DataContext 就是该列表项绑定的数据对象
+>         private void OnToggleClick(object sender, RoutedEventArgs e)
+>         {
+>             if (sender is Button btn && btn.DataContext is Device d)
+>             {
+>                 d.IsRunning = !d.IsRunning;
+>                 d.State = d.IsRunning ? "运行中" : "已停止";
+>                 DeviceList.Items.Refresh(); // 刷新列表让模板重新求值
+>             }
+>         }
+>     }
+> }
 > ```
 > 
 

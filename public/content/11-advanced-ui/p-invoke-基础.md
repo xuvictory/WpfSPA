@@ -25,9 +25,92 @@ parent: 11.6 WPF 与 Windows API 交互
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **P/Invoke 调用 Win32 API 演示：用 DllImport 声明 user32.dll / kernel32.dll 中的原生函数（MessageBox、GetSystemMetrics、GetTickCount），在 WPF 按钮中直接调用，展示托管代码与非托管代码互操作：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="P/Invoke 基础" Height="380" Width="460"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="P/Invoke 调用 Win32 API（DllImport 互操作）"
+>                    Foreground="#58A6FF" FontSize="14" FontWeight="Bold"/>
+>         <TextBlock Text="DllImport 特性声明外部函数，CLR 自动完成类型封送" Foreground="#8B949E"
+>                    Margin="0,10,0,0" TextWrapping="Wrap"/>
+>         <StackPanel Margin="0,20,0,0">
+>             <Button Content="弹出原生 MessageBox（user32.dll）" Padding="12,7" Margin="0,0,0,10"
+>                     HorizontalAlignment="Left" Background="#21262D" Foreground="White"
+>                     Click="OnNativeMessageBox"/>
+>             <Button Content="读取屏幕分辨率（GetSystemMetrics）" Padding="12,7" Margin="0,0,0,10"
+>                     HorizontalAlignment="Left" Background="#21262D" Foreground="White"
+>                     Click="OnScreenMetrics"/>
+>             <Button Content="查询系统已运行时长（GetTickCount）" Padding="12,7" Margin="0,0,0,10"
+>                     HorizontalAlignment="Left" Background="#21262D" Foreground="White"
+>                     Click="OnUptime"/>
+>         </StackPanel>
+>         <TextBlock x:Name="ResultText" Foreground="#58A6FF" Margin="0,12,0,0" TextWrapping="Wrap"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码与 P/Invoke 声明：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Runtime.InteropServices;
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         // ---- P/Invoke 声明：DllImport 告诉运行时去哪个 DLL 找函数 ----
+>
+>         // user32.dll：Windows 用户界面核心库
+>         [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+>         private static extern int NativeMessageBox(IntPtr hWnd, string text,
+>             string caption, uint type);
+>
+>         // 屏幕指标枚举（仅列本次用到的几项）
+>         private const int SM_CXSCREEN = 0;   // 主屏宽（像素）
+>         private const int SM_CYSCREEN = 1;   // 主屏高（像素）
+>
+>         [DllImport("user32.dll")]
+>         private static extern int GetSystemMetrics(int index);
+>
+>         // kernel32.dll：系统内核函数
+>         [DllImport("kernel32.dll")]
+>         private static extern uint GetTickCount();
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>         }
+>
+>         // 调用原生 MessageBox：第一个参数传窗口句柄，实现模态归属
+>         private void OnNativeMessageBox(object sender, RoutedEventArgs e)
+>         {
+>             NativeMessageBox(new System.Windows.Interop.WindowInteropHelper(this).Handle,
+>                 "这条消息框来自 Win32 API 调用！", "P/Invoke", 0x40 /* MB_ICONINFORMATION */);
+>         }
+>
+>         // 读取屏幕宽高，证明能获取 .NET 层没有直接暴露的系统信息
+>         private void OnScreenMetrics(object sender, RoutedEventArgs e)
+>         {
+>             int w = GetSystemMetrics(SM_CXSCREEN);
+>             int h = GetSystemMetrics(SM_CYSCREEN);
+>             ResultText.Text = $"主屏幕分辨率：{w} × {h} 像素";
+>         }
+>
+>         // 系统运行时长：返回自启动以来的毫秒数
+>         private void OnUptime(object sender, RoutedEventArgs e)
+>         {
+>             uint ms = GetTickCount();
+>             ResultText.Text = $"系统已运行：{ms / 3600000.0:F1} 小时";
+>         }
+>     }
+> }
 > ```
 > 
 

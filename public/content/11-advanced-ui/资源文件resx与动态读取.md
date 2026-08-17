@@ -25,9 +25,73 @@ parent: 11.4 多语言与国际化
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **参数描述资源动态读取演示：资源文件（.resx）集中管理界面文案，用 ResourceManager.GetString 在运行时按 key 动态读取，并支持按资源名称预览全部条目：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="resx 资源动态读取" Height="420" Width="480"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="resx 资源文件与动态读取（ResourceManager.GetString）"
+>                    Foreground="#58A6FF" FontSize="14" FontWeight="Bold" TextWrapping="Wrap"/>
+>         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,15,0,0">
+>             <ComboBox x:Name="KeyBox" Width="200" HorizontalAlignment="Left" Margin="0,0,10,0"
+>                       Background="#21262D" Foreground="White"/>
+>             <Button Content="读取资源值" Click="OnReadResource" Padding="12,6"
+>                     Background="#21262D" Foreground="White"/>
+>         </StackPanel>
+>         <TextBox x:Name="ResultBox" Grid.Row="2" Margin="0,15,0,0" IsReadOnly="True"
+>                  TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
+>                  Background="#161B22" Foreground="#8B949E" BorderBrush="#21262D"/>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Collections.Generic;
+> using System.Resources;
+> using System.Windows;
+> using System.Windows.Controls;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         // 直接使用 ResourceManager 按名称动态读取（不依赖强类型类）
+>         private readonly ResourceManager _manager =
+>             new ResourceManager("HmiDemo.Resources.Strings", typeof(MainWindow).Assembly);
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             // 列出常用的资源 key，供下拉框选择
+>             KeyBox.ItemsSource = new List<string>
+>             {
+>                 "WindowTitle", "MainTitle", "MainHint", "DeviceName", "AlarmText"
+>             };
+>             KeyBox.SelectedIndex = 0;
+>         }
+>
+>         // 核心：GetString(key) 按 key 读取，CultureInfo 为空时使用当前 UI 语言
+>         private void OnReadResource(object sender, RoutedEventArgs e)
+>         {
+>             if (KeyBox.SelectedItem is string key)
+>             {
+>                 string value = _manager.GetString(key);
+>                 ResultBox.AppendText($"{key} = {value}\n");
+>             }
+>         }
+>     }
+> }
 > ```
 > 
 

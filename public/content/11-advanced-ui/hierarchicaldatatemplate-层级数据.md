@@ -25,9 +25,141 @@ parent: 11.2 数据模板高级应用
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **工厂设备树演示：用两个 HierarchicalDataTemplate 绑定「站点 → 产线 → 设备」三层数据，叶子层用普通 DataTemplate 并配 DataTrigger 显示运行状态圆点：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         xmlns:local="clr-namespace:HmiDemo"
+>         Title="HierarchicalDataTemplate - 设备树" Height="460" Width="420"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="工厂设备树（站点 → 产线 → 设备）"
+>                    Foreground="#58A6FF" FontSize="14" FontWeight="Bold"/>
+>         <Grid.Resources>
+>             <!-- 站点层：节点文字显示站点名，展开后显示 Lines 集合 -->
+>             <HierarchicalDataTemplate DataType="{x:Type local:Site}" ItemsSource="{Binding Lines}">
+>                 <TextBlock Text="{Binding Name}" Foreground="#58A6FF" FontWeight="Bold"/>
+>             </HierarchicalDataTemplate>
+>             <!-- 产线层：节点文字显示产线名，展开后显示 Devices 集合 -->
+>             <HierarchicalDataTemplate DataType="{x:Type local:Line}" ItemsSource="{Binding Devices}">
+>                 <TextBlock Text="{Binding Name}" Foreground="#8B949E"/>
+>             </HierarchicalDataTemplate>
+>             <!-- 设备层：叶子节点，用普通 DataTemplate；圆点颜色随运行状态变化 -->
+>             <DataTemplate DataType="{x:Type local:Device}">
+>                 <StackPanel Orientation="Horizontal">
+>                     <Ellipse Width="8" Height="8" VerticalAlignment="Center" Margin="0,0,6,0">
+>                         <Ellipse.Style>
+>                             <Style TargetType="Ellipse">
+>                                 <Setter Property="Fill" Value="#DA3633"/>
+>                                 <Style.Triggers>
+>                                     <DataTrigger Binding="{Binding IsRunning}" Value="True">
+>                                         <Setter Property="Fill" Value="#238636"/>
+>                                     </DataTrigger>
+>                                 </Style.Triggers>
+>                             </Style>
+>                         </Ellipse.Style>
+>                     </Ellipse>
+>                     <TextBlock Text="{Binding Name}" Foreground="#8B949E"/>
+>                 </StackPanel>
+>             </DataTemplate>
+>         </Grid.Resources>
+>         <TreeView x:Name="DeviceTree" Grid.Row="1" Margin="0,12,0,0"
+>                   Background="#161B22" BorderBrush="#21262D" Foreground="#8B949E"/>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码与数据模型：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Collections.Generic;
+> using System.Windows;
+> using System.Windows.Controls;
+>
+> namespace HmiDemo
+> {
+>     // 站点 → 产线 → 设备 三层数据模型
+>     public class Site
+>     {
+>         public string Name { get; set; }
+>         public List<Line> Lines { get; set; }
+>     }
+>
+>     public class Line
+>     {
+>         public string Name { get; set; }
+>         public List<Device> Devices { get; set; }
+>     }
+>
+>     public class Device
+>     {
+>         public string Name { get; set; }
+>         public bool IsRunning { get; set; }
+>     }
+>
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             DeviceTree.ItemsSource = BuildTree();
+>         }
+>
+>         // 构造三层树形数据：工厂站点、下属产线、产线下设备
+>         private static List<Site> BuildTree()
+>         {
+>             return new List<Site>
+>             {
+>                 new Site
+>                 {
+>                     Name = "华东工厂",
+>                     Lines = new List<Line>
+>                     {
+>                         new Line
+>                         {
+>                             Name = "一号车间",
+>                             Devices = new List<Device>
+>                             {
+>                                 new Device { Name = "1# 注塑机", IsRunning = true },
+>                                 new Device { Name = "2# 注塑机", IsRunning = false },
+>                                 new Device { Name = "3# 注塑机", IsRunning = true },
+>                             }
+>                         },
+>                         new Line
+>                         {
+>                             Name = "二号车间",
+>                             Devices = new List<Device>
+>                             {
+>                                 new Device { Name = "4# 注塑机", IsRunning = true },
+>                             }
+>                         }
+>                     }
+>                 },
+>                 new Site
+>                 {
+>                     Name = "华南工厂",
+>                     Lines = new List<Line>
+>                     {
+>                         new Line
+>                         {
+>                             Name = "三号车间",
+>                             Devices = new List<Device>
+>                             {
+>                                 new Device { Name = "5# 注塑机", IsRunning = false },
+>                             }
+>                         }
+>                     }
+>                 }
+>             };
+>         }
+>     }
+> }
 > ```
 > 
 

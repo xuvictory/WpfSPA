@@ -25,9 +25,111 @@ parent: 11.1 自定义控件深度开发
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **实时温度曲线演示：自定义 TrendChart 控件重写 OnRender，用 DrawingContext 绘制网格与折线，点击按钮追加数据点并调用 InvalidateVisual 触发重绘：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         xmlns:local="clr-namespace:HmiDemo"
+>         Title="控件重绘 - 实时温度曲线" Height="420" Width="480"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="采集温度曲线（OnRender + DrawingContext 自绘）"
+>                    Foreground="#58A6FF" FontSize="14" FontWeight="Bold"/>
+>         <!-- 自定义自绘控件：所有画面都由 OnRender 画出 -->
+>         <local:TrendChart x:Name="Chart" Grid.Row="1" Margin="0,12,0,0"/>
+>         <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,12,0,0">
+>             <Button Content="追加一个数据点" Click="OnAddPoint" Margin="0,0,10,0"
+>                     Padding="10,6" Background="#21262D" Foreground="White"/>
+>             <Button Content="清空曲线" Click="OnClear" Padding="10,6"
+>                     Background="#21262D" Foreground="White"/>
+>         </StackPanel>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码与自定义自绘控件：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Collections.Generic;
+> using System.Windows;
+> using System.Windows.Controls;
+> using System.Windows.Media;
+>
+> namespace HmiDemo
+> {
+>     // 自绘控件：重写 OnRender，用 DrawingContext 一次性绘制网格和折线
+>     public class TrendChart : FrameworkElement
+>     {
+>         private readonly List<double> _points = new List<double>();
+>         private readonly Random _random = new Random();
+>
+>         // 追加数据并请求重绘（自绘惯用法：改数据 → InvalidateVisual）
+>         public void AddPoint()
+>         {
+>             _points.Add(60 + _random.NextDouble() * 40); // 模拟 60~100℃ 温度
+>             if (_points.Count > 60) _points.RemoveAt(0); // 滚动窗口，只保留最近 60 个点
+>             InvalidateVisual();
+>         }
+>
+>         public void Clear()
+>         {
+>             _points.Clear();
+>             InvalidateVisual();
+>         }
+>
+>         // 渲染入口：WPF 在需要重绘时自动调用，把全部画面画进 DrawingContext
+>         protected override void OnRender(DrawingContext dc)
+>         {
+>             var bg = new SolidColorBrush(Color.FromRgb(0x16, 0x1B, 0x22));
+>             var gridPen = new Pen(new SolidColorBrush(Color.FromRgb(0x21, 0x26, 0x2D)), 1);
+>             var linePen = new Pen(new SolidColorBrush(Color.FromRgb(0x58, 0xA6, 0xFF)), 2);
+>
+>             // 背景 + 水平网格线（每格 25% 高度）
+>             dc.DrawRectangle(bg, null, new Rect(0, 0, ActualWidth, ActualHeight));
+>             for (int i = 0; i <= 4; i++)
+>             {
+>                 double y = ActualHeight * i / 4;
+>                 dc.DrawLine(gridPen, new Point(0, y), new Point(ActualWidth, y));
+>             }
+>
+>             // 把温度值映射为坐标并连成折线
+>             if (_points.Count > 1)
+>             {
+>                 double step = ActualWidth / Math.Max(_points.Count - 1, 1);
+>                 for (int i = 1; i < _points.Count; i++)
+>                 {
+>                     var p1 = new Point(step * (i - 1), MapY(_points[i - 1]));
+>                     var p2 = new Point(step * i, MapY(_points[i]));
+>                     dc.DrawLine(linePen, p1, p2);
+>                 }
+>             }
+>         }
+>
+>         // 温度 60~100℃ 线性映射到控件高度
+>         private double MapY(double v) => ActualHeight - (v - 60) / 40 * ActualHeight;
+>     }
+>
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>             // 启动时预置几个数据点，让曲线一打开就有内容
+>             for (int i = 0; i < 10; i++) Chart.AddPoint();
+>         }
+>
+>         private void OnAddPoint(object sender, RoutedEventArgs e) => Chart.AddPoint();
+>         private void OnClear(object sender, RoutedEventArgs e) => Chart.Clear();
+>     }
+> }
 > ```
 > 
 

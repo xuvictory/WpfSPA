@@ -25,9 +25,101 @@ parent: 11.10 触控与手势
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **触控面板拖移演示：给方块设置 IsManipulationEnabled，订阅 ManipulationStarting / ManipulationDelta / ManipulationCompleted，用 TranslateTransform 实现手指拖动（注意：Canvas.Left 在非 Canvas 容器中不生效，故用变换实现）：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="Manipulation 事件 - 触控拖移" Height="440" Width="520"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="触控拖移：在方块上按住并拖动（Manipulation 事件）"
+>                    Foreground="#58A6FF" FontSize="14" FontWeight="Bold" TextWrapping="Wrap"/>
+>         <!-- 触控区域 -->
+>         <Border Grid.Row="1" Margin="0,12,0,0" Background="#161B22"
+>                 BorderBrush="#21262D" BorderThickness="1" CornerRadius="6" ClipToBounds="True">
+>             <Grid>
+>                 <!-- 可拖动的设备图标方块：IsManipulationEnabled 是触控手势的前提 -->
+>                 <Border x:Name="DeviceBlock" Width="110" Height="70"
+>                         Background="#1F3A5F" BorderBrush="#58A6FF" BorderThickness="1"
+>                         CornerRadius="8" HorizontalAlignment="Left" VerticalAlignment="Top"
+>                         RenderTransformOrigin="0.5,0.5"
+>                         IsManipulationEnabled="True"
+>                         ManipulationStarting="OnManipStarting"
+>                         ManipulationDelta="OnManipDelta"
+>                         ManipulationCompleted="OnManipCompleted">
+>                     <Border.RenderTransform>
+>                         <!-- 用变换记录位置：Canvas.Left/Top 只在 Canvas 里有效 -->
+>                         <TranslateTransform x:Name="BlockMove"/>
+>                     </Border.RenderTransform>
+>                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+>                         <TextBlock Text="1# 泵" Foreground="White" FontSize="16"
+>                                    FontWeight="Bold" HorizontalAlignment="Center"/>
+>                         <TextBlock Text="拖动我" Foreground="#8B949E" FontSize="11"
+>                                    HorizontalAlignment="Center"/>
+>                     </StackPanel>
+>                 </Border>
+>             </Grid>
+>         </Border>
+>         <TextBlock x:Name="StatusText" Grid.Row="2" Foreground="#8B949E" Margin="0,10,0,0"/>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using System.Windows.Controls;
+> using System.Windows.Input;
+> using System.Windows.Media;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>         }
+>
+>         // 手势开始：把当前位移量作为累加的起始基准，避免跳变
+>         private void OnManipStarting(object sender, ManipulationStartingEventArgs e)
+>         {
+>             e.ManipulationContainer = this;
+>             e.Handled = true;
+>         }
+>
+>         // 手势进行中：把累计位移写入 TranslateTransform，实现跟随手指移动
+>         private void OnManipDelta(object sender, ManipulationDeltaEventArgs e)
+>         {
+>             BlockMove.X += e.DeltaManipulation.Translation.X;
+>             BlockMove.Y += e.DeltaManipulation.Translation.Y;
+>
+>             // 边界约束：把方块限制在触控区域内
+>             double maxX = ((FrameworkElement)((Border)sender).Parent).ActualWidth - ((Border)sender).ActualWidth;
+>             double maxY = ((FrameworkElement)((Border)sender).Parent).ActualHeight - ((Border)sender).ActualHeight;
+>             BlockMove.X = System.Math.Max(0, System.Math.Min(BlockMove.X, maxX));
+>             BlockMove.Y = System.Math.Max(0, System.Math.Min(BlockMove.Y, maxY));
+>
+>             StatusText.Text = $"位置：({BlockMove.X:F0}, {BlockMove.Y:F0})";
+>             e.Handled = true;
+>         }
+>
+>         // 手势结束
+>         private void OnManipCompleted(object sender, ManipulationCompletedEventArgs e)
+>         {
+>             StatusText.Text = $"拖移结束，落点：({BlockMove.X:F0}, {BlockMove.Y:F0})";
+>             e.Handled = true;
+>         }
+>     }
+> }
 > ```
 > 
 

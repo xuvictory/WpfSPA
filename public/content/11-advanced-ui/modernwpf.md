@@ -25,9 +25,93 @@ parent: 11.7 第三方 UI 控件库
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **ModernWPF 风格化上位机演示：NuGet 安装 ModernWpf 后，App.xaml 合并其主题资源，控件自动获得 WinUI 风格的深色外观，无需逐个改样式：**
+>
+> **说明：先通过 NuGet 安装 `Install-Package ModernWpf`。**
+>
+> **App.xaml：**
+> ```xml
+> <Application x:Class="HmiDemo.App"
+>              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>              StartupUri="MainWindow.xaml">
+>     <Application.Resources>
+>         <ResourceDictionary>
+>             <ResourceDictionary.MergedDictionaries>
+>                 <!-- ModernWpf 暗色主题：合并后所有原生控件自动换装 -->
+>                 <ResourceDictionary Source="pack://application:,,,/ModernWpf;component/Theme/Dark.xaml"/>
+>                 <ResourceDictionary Source="pack://application:,,,/ModernWpf;component/Theme/Controls.xaml"/>
+>             </ResourceDictionary.MergedDictionaries>
+>         </ResourceDictionary>
+>     </Application.Resources>
+> </Application>
+> ```
+>
+> **MainWindow.xaml —— 原生控件自动获得 Modern 风格：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="ModernWPF 上位机界面" Height="420" Width="520"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="ModernWPF 控件库（NuGet：ModernWpf，自动替换原生控件外观）"
+>                    Foreground="#58A6FF" FontSize="14" FontWeight="Bold" TextWrapping="Wrap"/>
+>         <Grid Grid.Row="1" Margin="0,12,0,0">
+>             <Grid.ColumnDefinitions>
+>                 <ColumnDefinition Width="*"/>
+>                 <ColumnDefinition Width="*"/>
+>             </Grid.ColumnDefinitions>
+>             <StackPanel Margin="0,0,6,0">
+>                 <TextBlock Text="设备参数" Foreground="#8B949E" Margin="0,0,0,8"/>
+>                 <TextBox Text="注塑机 3# " Margin="0,0,0,10" Padding="8"/>
+>                 <ComboBox SelectedIndex="0" Margin="0,0,0,10" Padding="8">
+>                     <ComboBoxItem Content="自动模式"/>
+>                     <ComboBoxItem Content="手动模式"/>
+>                 </ComboBox>
+>                 <CheckBox Content="启用实时监控" IsChecked="True" Margin="0,0,0,10"/>
+>                 <ToggleButton Content="报警静音" Margin="0,0,0,10" Padding="8"/>
+>             </StackPanel>
+>             <Border Grid.Column="1" Background="#161B22" BorderBrush="#21262D"
+>                     BorderThickness="1" CornerRadius="6" Margin="6,0,0,0" Padding="12">
+>                 <StackPanel>
+>                     <TextBlock Text="操作日志" Foreground="#58A6FF" FontWeight="Bold"/>
+>                     <TextBox x:Name="LogBox" Margin="0,10,0,0" Height="220" IsReadOnly="True"
+>                              TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
+>                              Background="#0D1117"/>
+>                     <Button Content="写入测试日志" Click="OnWriteLog" Margin="0,12,0,0"
+>                             HorizontalAlignment="Left" Padding="12,6"/>
+>                 </StackPanel>
+>             </Border>
+>         </Grid>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>         }
+>
+>         private void OnWriteLog(object sender, RoutedEventArgs e)
+>         {
+>             LogBox.AppendText($"[{DateTime.Now:HH:mm:ss}] 测试日志写入（ModernWpf 主题下按钮为 WinUI 风格）\n");
+>         }
+>     }
+> }
 > ```
 > 
 

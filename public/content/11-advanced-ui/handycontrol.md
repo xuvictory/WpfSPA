@@ -25,9 +25,102 @@ parent: 11.7 第三方 UI 控件库
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **HandyControl 工控仪表盘演示：NuGet 安装 HandyControl 后，App.xaml 合并皮肤与主题资源，窗口用 hc: 命名空间的仪表盘（Gauge）、步骤条（StepBar）、标签（Tag）搭建设备监控看板，配合 Growl 全局消息提示：**
+>
+> **说明：先通过 NuGet 安装 `Install-Package HandyControl`。**
+>
+> **App.xaml：**
+> ```xml
+> <Application x:Class="HmiDemo.App"
+>              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>              xmlns:hc="https://handyorg.github.io/handycontrol"
+>              StartupUri="MainWindow.xaml">
+>     <Application.Resources>
+>         <ResourceDictionary>
+>             <ResourceDictionary.MergedDictionaries>
+>                 <!-- HandyControl 皮肤与主题，缺一不可 -->
+>                 <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/SkinDefault.xaml"/>
+>                 <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/Theme.xaml"/>
+>             </ResourceDictionary.MergedDictionaries>
+>         </ResourceDictionary>
+>     </Application.Resources>
+> </Application>
+> ```
+>
+> **MainWindow.xaml —— HandyControl 控件：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         xmlns:hc="https://handyorg.github.io/handycontrol"
+>         Title="HandyControl 工控看板" Height="460" Width="540"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Margin="15">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>         </Grid.RowDefinitions>
+>         <TextBlock Text="HandyControl 控件库（NuGet：HandyControl）"
+>                    Foreground="#58A6FF" FontSize="14" FontWeight="Bold"/>
+>         <Grid Grid.Row="1" Margin="0,12,0,0">
+>             <Grid.RowDefinitions>
+>                 <RowDefinition Height="*"/>
+>                 <RowDefinition Height="Auto"/>
+>             </Grid.RowDefinitions>
+>             <Grid>
+>                 <Grid.ColumnDefinitions>
+>                     <ColumnDefinition Width="*"/>
+>                     <ColumnDefinition Width="*"/>
+>                 </Grid.ColumnDefinitions>
+>                 <!-- hc:Gauge 仪表盘：实时显示温度 -->
+>                 <hc:Gauge x:Name="TempGauge" Value="76" MinValue="0" MaxValue="100"
+>                           Header="车间温度（℃）" Margin="0,0,6,0" Foreground="#58A6FF"/>
+>                 <!-- hc:ProgressBar 与状态标签 -->
+>                 <StackPanel Grid.Column="1" Margin="6,0,0,0">
+>                     <StackPanel Orientation="Horizontal" Margin="0,30,0,10">
+>                         <hc:Tag Content="在线" Background="#238636" Foreground="White"/>
+>                         <hc:Tag Content="稳定" Background="#21262D" Foreground="#8B949E" Margin="6,0,0,0"/>
+>                     </StackPanel>
+>                     <TextBlock Text="电机负载" Foreground="#8B949E" Margin="0,20,0,4"/>
+>                     <hc:ProgressBar x:Name="LoadBar" Value="62" Foreground="#238636" Height="10"/>
+>                 </StackPanel>
+>             </Grid>
+>             <!-- hc:StepBar 步骤条：展示设备启动流程 -->
+>             <StackPanel Grid.Row="1" Margin="0,16,0,0">
+>                 <TextBlock Text="设备启动流程" Foreground="#8B949E" Margin="0,0,0,6"/>
+>                 <hc:StepBar x:Name="StartStep" ItemCount="4" SelectedIndex="2" Margin="0,0,0,10"/>
+>                 <Button Content="模拟收到报警并提示" Click="OnAlarm" Padding="12,6"
+>                         HorizontalAlignment="Left" Background="#DA3633" Foreground="White"/>
+>             </StackPanel>
+>         </Grid>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System.Windows;
+> using HandyControl.Controls; // Growl 消息提示所在的命名空间
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>         }
+>
+>         // 点击报警按钮：仪表盘指向最高值，并用 Growl 弹出全局消息
+>         private void OnAlarm(object sender, RoutedEventArgs e)
+>         {
+>             TempGauge.Value = 98;
+>             LoadBar.Value = 95;
+>             Growl.Warning("1# 设备温度接近上限，请检查冷却系统！");
+>         }
+>     }
+> }
 > ```
 > 
 

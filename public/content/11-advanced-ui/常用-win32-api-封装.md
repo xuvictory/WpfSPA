@@ -25,9 +25,118 @@ parent: 11.6 WPF 与 Windows API 交互
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **常用 Win32 API 封装演示：把 P/Invoke 声明收敛到一个 NativeMethods 静态类，对外提供 置顶窗口、获取前台窗口标题、读取屏幕数量 等强类型方法，业务代码只跟友好 API 打交道：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="常用 Win32 API 封装" Height="400" Width="480"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <StackPanel Margin="15">
+>         <TextBlock Text="常用 Win32 API 封装（NativeMethods 静态类）"
+>                    Foreground="#58A6FF" FontSize="14" FontWeight="Bold"/>
+>         <TextBlock Text="把 DllImport 声明收敛封装，业务层调用友好方法" Foreground="#8B949E"
+>                    Margin="0,10,0,0" TextWrapping="Wrap"/>
+>         <StackPanel Margin="0,20,0,0">
+>             <Button Content="本窗口置顶 / 取消置顶" Padding="12,7" Margin="0,0,0,10"
+>                     HorizontalAlignment="Left" Background="#21262D" Foreground="White"
+>                     Click="OnToggleTopmost"/>
+>             <Button Content="读取前台窗口标题" Padding="12,7" Margin="0,0,0,10"
+>                     HorizontalAlignment="Left" Background="#21262D" Foreground="White"
+>                     Click="OnReadForegroundTitle"/>
+>             <Button Content="查询系统显示器数量" Padding="12,7" Margin="0,0,0,10"
+>                     HorizontalAlignment="Left" Background="#21262D" Foreground="White"
+>                     Click="OnScreenCount"/>
+>         </StackPanel>
+>         <TextBox x:Name="ResultBox" Margin="0,12,0,0" Height="90" IsReadOnly="True"
+>                  TextWrapping="Wrap" Background="#161B22" Foreground="#8B949E"
+>                  BorderBrush="#21262D"/>
+>     </StackPanel>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码与 Win32 封装类：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Runtime.InteropServices;
+> using System.Text;
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     // 统一的 Win32 API 封装类：所有 DllImport 集中在此，避免散落在业务代码中
+>     public static class NativeMethods
+>     {
+>         [DllImport("user32.dll")]
+>         private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter,
+>             int x, int y, int cx, int cy, uint flags);
+>
+>         [DllImport("user32.dll")]
+>         private static extern IntPtr GetForegroundWindow();
+>
+>         [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+>         private static extern int GetWindowText(IntPtr hWnd, StringBuilder text, int count);
+>
+>         [DllImport("user32.dll")]
+>         private static extern int GetSystemMetrics(int index);
+>
+>         private static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
+>         private static readonly IntPtr HWND_NOTOPMOST = new IntPtr(-2);
+>         private const uint SWP_NOSIZE = 0x0001;
+>         private const uint SWP_NOMOVE = 0x0002;
+>         private const int SM_CMONITORS = 80;
+>
+>         // 封装 1：置顶 / 取消置顶
+>         public static void SetTopmost(IntPtr handle, bool topmost)
+>         {
+>             SetWindowPos(handle, topmost ? HWND_TOPMOST : HWND_NOTOPMOST,
+>                 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+>         }
+>
+>         // 封装 2：获取当前前台窗口标题
+>         public static string GetForegroundTitle()
+>         {
+>             IntPtr hwnd = GetForegroundWindow();
+>             var sb = new StringBuilder(256);
+>             GetWindowText(hwnd, sb, sb.Capacity);
+>             return sb.ToString();
+>         }
+>
+>         // 封装 3：系统连接的显示器数量
+>         public static int GetMonitorCount() => GetSystemMetrics(SM_CMONITORS);
+>     }
+>
+>     public partial class MainWindow : Window
+>     {
+>         private bool _topmost;
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>         }
+>
+>         private void OnToggleTopmost(object sender, RoutedEventArgs e)
+>         {
+>             _topmost = !_topmost;
+>             // 通过 WindowInteropHelper 拿到本窗口句柄
+>             var handle = new System.Windows.Interop.WindowInteropHelper(this).Handle;
+>             NativeMethods.SetTopmost(handle, _topmost);
+>             ResultBox.AppendText($"本窗口已{( _topmost ? "置顶" : "取消置顶")}\n");
+>         }
+>
+>         private void OnReadForegroundTitle(object sender, RoutedEventArgs e)
+>         {
+>             ResultBox.AppendText($"前台窗口标题：{NativeMethods.GetForegroundTitle()}\n");
+>         }
+>
+>         private void OnScreenCount(object sender, RoutedEventArgs e)
+>         {
+>             ResultBox.AppendText($"当前系统共 {NativeMethods.GetMonitorCount()} 个显示器\n");
+>         }
+>     }
+> }
 > ```
 > 
 
