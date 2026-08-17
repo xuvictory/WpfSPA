@@ -25,9 +25,108 @@ parent: 10.4 数据可视化
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **实时曲线演示：OxyPlot 折线图，200ms 追加一个数据点，滑动窗口只保留最近 100 个点：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         xmlns:oxy="http://oxyplot.org/wpf"
+>         Title="实时曲线-OxyPlot" Height="440" Width="640"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Background="#161B22" Margin="10">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>         </Grid.RowDefinitions>
+>
+>         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="5">
+>             <Button x:Name="StartBtn" Content="开始采集" Click="OnStartClick" Padding="10,6"
+>                     Background="#238636" Foreground="White"/>
+>             <Button x:Name="StopBtn" Content="停止采集" IsEnabled="False" Click="OnStopClick"
+>                     Padding="10,6" Background="#DA3633" Foreground="White" Margin="8,0,0,0"/>
+>         </StackPanel>
+>
+>         <TextBlock x:Name="ValueText" Grid.Row="1" Margin="5" Foreground="#58A6FF"
+>                    Text="当前温度：-- ℃"/>
+>
+>         <!-- 实时曲线区域 -->
+>         <oxy:PlotView x:Name="Plot" Grid.Row="2" Margin="5" Background="#0D1117"/>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> // NuGet 依赖：Install-Package OxyPlot.Wpf
+> using System;
+> using System.Collections.Generic;
+> using System.Windows;
+> using System.Windows.Threading;
+> using OxyPlot;
+> using OxyPlot.Series;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private readonly List<DataPoint> _points = new List<DataPoint>();  // 滑动窗口数据
+>         private readonly LineSeries _line;                                 // 折线系列
+>         private readonly DispatcherTimer _timer;
+>         private readonly Random _rnd = new Random();
+>         private int _index;                                                // 采样序号
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>
+>             // 构建曲线模型：折线 + 坐标轴
+>             _line = new LineSeries
+>             {
+>                 Color = OxyColors.DeepSkyBlue,
+>                 StrokeThickness = 2,
+>                 MarkerType = MarkerType.None
+>             };
+>             var model = new PlotModel { Title = "温度实时曲线", TextColor = OxyColors.Gray };
+>             model.Axes.Add(new LinearAxis { Position = AxisPosition.Bottom, Title = "采样点" });
+>             model.Axes.Add(new LinearAxis { Position = AxisPosition.Left, Title = "温度(℃)", Minimum = 0, Maximum = 100 });
+>             model.Series.Add(_line);
+>             Plot.Model = model;
+>
+>             _timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(200) };
+>             _timer.Tick += OnTick;
+>         }
+>
+>         // 每 200ms 追加一个点，超过 100 个移除最旧的(滑动窗口)
+>         private void OnTick(object sender, EventArgs e)
+>         {
+>             _points.Add(new DataPoint(_index++, _rnd.Next(20, 60)));
+>             if (_points.Count > 100) _points.RemoveAt(0);
+>
+>             _line.Points.Clear();                       // 清空旧点
+>             foreach (var p in _points) _line.Points.Add(p);
+>             Plot.InvalidatePlot(true);                  // 请求重绘曲线
+>
+>             ValueText.Text = $"当前温度：{_points[_points.Count - 1].Y} ℃";
+>         }
+>
+>         private void OnStartClick(object sender, RoutedEventArgs e)
+>         {
+>             _timer.Start();
+>             StartBtn.IsEnabled = false;
+>             StopBtn.IsEnabled = true;
+>         }
+>
+>         private void OnStopClick(object sender, RoutedEventArgs e)
+>         {
+>             _timer.Stop();
+>             StartBtn.IsEnabled = true;
+>             StopBtn.IsEnabled = false;
+>         }
+>     }
+> }
 > ```
 > 
 

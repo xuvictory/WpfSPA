@@ -25,9 +25,132 @@ parent: 10.3 数据存储
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **关系型数据库演示：SQL Server 连接、建表、参数化插入、查询(MySQL 用法一致)：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="SQL Server 演示" Height="460" Width="580"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Background="#161B22" Margin="10">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>         </Grid.RowDefinitions>
+>
+>         <StackPanel Grid.Row="0" Margin="5">
+>             <TextBlock Text="连接字符串:" Foreground="#8B949E"/>
+>             <TextBox x:Name="ConnBox" Height="26" Margin="0,4,0,0" Background="#0D1117"
+>                      Foreground="#8B949E" BorderBrush="#21262D"
+>                      Text="Server=localhost;Database=HmiDb;User Id=sa;Password=123456;TrustServerCertificate=True;"/>
+>         </StackPanel>
+>
+>         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="5">
+>             <Button x:Name="ConnectBtn" Content="连接并建表" Click="OnConnectClick" Padding="10,6"
+>                     Background="#21262D" Foreground="White"/>
+>             <Button x:Name="InsertBtn" Content="插入一条数据" Click="OnInsertClick" Padding="10,6"
+>                     Background="#238636" Foreground="White" Margin="8,0,0,0"/>
+>             <Button x:Name="QueryBtn" Content="查询全部" Click="OnQueryClick" Padding="10,6"
+>                     Background="#21262D" Foreground="White" Margin="8,0,0,0"/>
+>         </StackPanel>
+>
+>         <TextBlock x:Name="StatusText" Grid.Row="2" Margin="5" Foreground="#58A6FF" Text="未连接数据库"/>
+>
+>         <ListBox x:Name="DataList" Grid.Row="3" Margin="5" Background="#0D1117"
+>                  Foreground="#8B949E" BorderBrush="#21262D" BorderThickness="1" FontFamily="Consolas"/>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> // NuGet 依赖：Install-Package Microsoft.Data.SqlClient
+> // MySQL 换用 MySql.Data 包，连接串形如 Server=localhost;Database=HmiDb;User=root;Password=123456;
+> using System;
+> using System.Windows;
+> using Microsoft.Data.SqlClient;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private string _conn;
+>
+>         public MainWindow() => InitializeComponent();
+>
+>         // 连接数据库并创建设备采集记录表
+>         private void OnConnectClick(object sender, RoutedEventArgs e)
+>         {
+>             _conn = ConnBox.Text.Trim();
+>             try
+>             {
+>                 using (var conn = new SqlConnection(_conn))
+>                 {
+>                     conn.Open();
+>                     using (var cmd = new SqlCommand(
+>                         @"IF OBJECT_ID('DeviceData') IS NULL
+>                           CREATE TABLE DeviceData (
+>                               Id INT IDENTITY PRIMARY KEY,
+>                               DeviceName NVARCHAR(50),
+>                               Temp FLOAT,
+>                               TimeStamp DATETIME)",
+>                         conn))
+>                     {
+>                         cmd.ExecuteNonQuery();
+>                     }
+>                 }
+>                 StatusText.Text = "连接成功，DeviceData 表已就绪";
+>             }
+>             catch (Exception ex)
+>             {
+>                 StatusText.Text = "连接失败：" + ex.Message;
+>             }
+>         }
+>
+>         // 插入：必须用参数化查询，防止 SQL 注入
+>         private void OnInsertClick(object sender, RoutedEventArgs e)
+>         {
+>             if (_conn == null) { StatusText.Text = "请先连接数据库"; return; }
+>             using (var conn = new SqlConnection(_conn))
+>             {
+>                 conn.Open();
+>                 using (var cmd = new SqlCommand(
+>                     "INSERT INTO DeviceData (DeviceName, Temp, TimeStamp) VALUES (@n, @t, @ts)", conn))
+>                 {
+>                     cmd.Parameters.AddWithValue("@n", "水泵1");
+>                     cmd.Parameters.AddWithValue("@t", new Random().Next(30, 60));
+>                     cmd.Parameters.AddWithValue("@ts", DateTime.Now);
+>                     cmd.ExecuteNonQuery();
+>                 }
+>             }
+>             StatusText.Text = "已插入 1 条记录";
+>         }
+>
+>         // 查询：读取结果集并展示
+>         private void OnQueryClick(object sender, RoutedEventArgs e)
+>         {
+>             if (_conn == null) { StatusText.Text = "请先连接数据库"; return; }
+>             DataList.Items.Clear();
+>             using (var conn = new SqlConnection(_conn))
+>             {
+>                 conn.Open();
+>                 using (var cmd = new SqlCommand(
+>                     "SELECT Id, DeviceName, Temp, TimeStamp FROM DeviceData", conn))
+>                 using (var reader = cmd.ExecuteReader())
+>                 {
+>                     while (reader.Read())
+>                         DataList.Items.Add($"#{reader["Id"]}  {reader["DeviceName"]}" +
+>                                            $"  温度 {reader["Temp"]}℃  {reader["TimeStamp"]}");
+>                 }
+>             }
+>             StatusText.Text = "查询完成";
+>         }
+>     }
+> }
 > ```
 > 
 

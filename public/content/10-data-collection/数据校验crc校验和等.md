@@ -25,9 +25,117 @@ parent: 10.2 实时数据处理
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **数据校验演示：CRC16-Modbus 与简单校验和计算，翻转 1 位模拟误码验证校验能力：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="数据校验(CRC)" Height="440" Width="540"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Background="#161B22" Margin="10">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>         </Grid.RowDefinitions>
+>
+>         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="5">
+>             <TextBlock Text="数据(十六进制):" Foreground="#8B949E" VerticalAlignment="Center"/>
+>             <TextBox x:Name="HexBox" Width="270" Height="26" VerticalContentAlignment="Center"
+>                      Background="#0D1117" Foreground="#8B949E" BorderBrush="#21262D"
+>                      Text="01 03 00 00 00 02"/>
+>         </StackPanel>
+>
+>         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="5">
+>             <Button x:Name="CrcBtn" Content="计算 CRC16" Click="OnCrcClick" Padding="10,6"
+>                     Background="#238636" Foreground="White"/>
+>             <Button x:Name="TaintBtn" Content="模拟数据损坏(翻转1位)" Click="OnTaintClick" Padding="10,6"
+>                     Background="#DA3633" Foreground="White" Margin="8,0,0,0"/>
+>         </StackPanel>
+>
+>         <TextBlock x:Name="CrcResult" Grid.Row="2" Margin="5" Foreground="#58A6FF" Text="CRC16：--"/>
+>         <ListBox x:Name="VerifyList" Grid.Row="3" Margin="5" Background="#0D1117"
+>                  Foreground="#8B949E" BorderBrush="#21262D" BorderThickness="1" FontFamily="Consolas"/>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Linq;
+> using System.Windows;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnCrcClick(object sender, RoutedEventArgs e)
+>         {
+>             try
+>             {
+>                 byte[] data = ParseHex(HexBox.Text.Trim());
+>                 ushort crc = Crc16(data);
+>                 byte sum = Checksum(data);
+>                 CrcResult.Text = $"CRC16(Modbus)：0x{crc:X4} | 校验和：0x{sum:X2}";
+>                 VerifyList.Items.Insert(0,
+>                     $"数据 {BitConverter.ToString(data)} → CRC=0x{crc:X4} 校验和=0x{sum:X2}");
+>             }
+>             catch (Exception ex)
+>             {
+>                 VerifyList.Items.Insert(0, "解析失败：" + ex.Message);
+>             }
+>         }
+>
+>         // 翻转数据第 2 字节的最低位，模拟传输过程中的位误码
+>         private void OnTaintClick(object sender, RoutedEventArgs e)
+>         {
+>             try
+>             {
+>                 byte[] data = ParseHex(HexBox.Text.Trim());
+>                 data[1] ^= 0x01;
+>                 ushort crc = Crc16(data);
+>                 VerifyList.Items.Insert(0,
+>                     $"!!! 数据被篡改 {BitConverter.ToString(data)} → CRC=0x{crc:X4}（与原始不一致，校验失败）");
+>             }
+>             catch (Exception ex)
+>             {
+>                 VerifyList.Items.Insert(0, "解析失败：" + ex.Message);
+>             }
+>         }
+>
+>         // 简单校验和：所有字节累加后取低 8 位(实现简单，检错能力弱)
+>         private byte Checksum(byte[] data)
+>         {
+>             byte sum = 0;
+>             foreach (byte b in data) sum += b;
+>             return sum;
+>         }
+>
+>         // CRC16-Modbus：逐位法实现，检错能力强，Modbus 协议标准校验
+>         private ushort Crc16(byte[] data)
+>         {
+>             ushort crc = 0xFFFF;
+>             foreach (byte b in data)
+>             {
+>                 crc ^= b;
+>                 for (int i = 0; i < 8; i++)
+>                     crc = (crc & 1) != 0 ? (ushort)((crc >> 1) ^ 0xA001) : (ushort)(crc >> 1);
+>             }
+>             return crc;
+>         }
+>
+>         // 将 "01 03 00" 形式的十六进制文本解析为字节数组
+>         private byte[] ParseHex(string text)
+>             => text.Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries)
+>                    .Select(s => Convert.ToByte(s, 16)).ToArray();
+>     }
+> }
 > ```
 > 
 

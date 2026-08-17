@@ -25,9 +25,135 @@ parent: 10.3 数据存储
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **SQLite 演示：单文件数据库建表、插入、查询、删除(无需安装数据库服务)：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="SQLite 演示" Height="440" Width="500"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Background="#161B22" Margin="10">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>
+>         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="5">
+>             <Button x:Name="CreateBtn" Content="创建数据库并建表" Click="OnCreateClick" Padding="10,6"
+>                     Background="#21262D" Foreground="White"/>
+>             <Button x:Name="InsertBtn" Content="插入数据" Click="OnInsertClick" Padding="10,6"
+>                     Background="#238636" Foreground="White" Margin="8,0,0,0"/>
+>             <Button x:Name="QueryBtn" Content="查询" Click="OnQueryClick" Padding="10,6"
+>                     Background="#21262D" Foreground="White" Margin="8,0,0,0"/>
+>             <Button x:Name="DeleteBtn" Content="删除最后一条" Click="OnDeleteClick" Padding="10,6"
+>                     Background="#DA3633" Foreground="White" Margin="8,0,0,0"/>
+>         </StackPanel>
+>
+>         <TextBlock x:Name="StatusText" Grid.Row="1" Margin="5" Foreground="#58A6FF" Text="未创建数据库"/>
+>
+>         <ListBox x:Name="DataList" Grid.Row="2" Margin="5" Background="#0D1117"
+>                  Foreground="#8B949E" BorderBrush="#21262D" BorderThickness="1" FontFamily="Consolas"/>
+>
+>         <TextBlock x:Name="DbPathText" Grid.Row="3" Margin="5" Foreground="#8B949E" Text="数据库文件：--"/>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> // NuGet 依赖：Install-Package Microsoft.Data.Sqlite
+> using System;
+> using System.Windows;
+> using Microsoft.Data.Sqlite;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private const string DbFile = "hmi.db";   // 数据库就是一个文件
+>         private string _connStr = $"Data Source={DbFile}";
+>
+>         public MainWindow() => InitializeComponent();
+>
+>         // 建库建表：文件不存在时自动创建
+>         private void OnCreateClick(object sender, RoutedEventArgs e)
+>         {
+>             using (var conn = new SqliteConnection(_connStr))
+>             {
+>                 conn.Open();
+>                 using (var cmd = conn.CreateCommand())
+>                 {
+>                     cmd.CommandText = @"CREATE TABLE IF NOT EXISTS DeviceData (
+>                                             Id INTEGER PRIMARY KEY AUTOINCREMENT,
+>                                             DeviceName TEXT,
+>                                             Temp REAL,
+>                                             TimeStamp TEXT)";
+>                     cmd.ExecuteNonQuery();
+>                 }
+>             }
+>             DbPathText.Text = "数据库文件：" + AppDomain.CurrentDomain.BaseDirectory + DbFile;
+>             StatusText.Text = "数据库与 DeviceData 表已就绪";
+>         }
+>
+>         private void OnInsertClick(object sender, RoutedEventArgs e)
+>         {
+>             using (var conn = new SqliteConnection(_connStr))
+>             {
+>                 conn.Open();
+>                 using (var cmd = conn.CreateCommand())
+>                 {
+>                     // 参数化写入，防注入且能复用
+>                     cmd.CommandText = "INSERT INTO DeviceData (DeviceName, Temp, TimeStamp) " +
+>                                       "VALUES ($name, $temp, $ts)";
+>                     cmd.Parameters.AddWithValue("$name", "电机" + new Random().Next(1, 5));
+>                     cmd.Parameters.AddWithValue("$temp", new Random().Next(30, 70));
+>                     cmd.Parameters.AddWithValue("$ts", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+>                     cmd.ExecuteNonQuery();
+>                 }
+>             }
+>             StatusText.Text = "已插入 1 条记录";
+>             OnQueryClick(sender, e);   // 插入后自动刷新列表
+>         }
+>
+>         private void OnQueryClick(object sender, RoutedEventArgs e)
+>         {
+>             DataList.Items.Clear();
+>             using (var conn = new SqliteConnection(_connStr))
+>             {
+>                 conn.Open();
+>                 using (var cmd = conn.CreateCommand())
+>                 {
+>                     cmd.CommandText = "SELECT Id, DeviceName, Temp, TimeStamp FROM DeviceData ORDER BY Id";
+>                     using (var reader = cmd.ExecuteReader())
+>                         while (reader.Read())
+>                             DataList.Items.Add($"#{reader["Id"]}  {reader["DeviceName"]}" +
+>                                                $"  温度 {reader["Temp"]}℃  {reader["TimeStamp"]}");
+>                 }
+>             }
+>             StatusText.Text = $"共 {DataList.Items.Count} 条记录";
+>         }
+>
+>         private void OnDeleteClick(object sender, RoutedEventArgs e)
+>         {
+>             using (var conn = new SqliteConnection(_connStr))
+>             {
+>                 conn.Open();
+>                 using (var cmd = conn.CreateCommand())
+>                 {
+>                     // 删除最新一条(按 Id 最大)
+>                     cmd.CommandText = "DELETE FROM DeviceData WHERE Id = (SELECT MAX(Id) FROM DeviceData)";
+>                     cmd.ExecuteNonQuery();
+>                 }
+>             }
+>             StatusText.Text = "已删除最后一条";
+>             OnQueryClick(sender, e);
+>         }
+>     }
+> }
 > ```
 > 
 

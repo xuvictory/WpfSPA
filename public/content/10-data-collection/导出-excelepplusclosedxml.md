@@ -25,9 +25,102 @@ parent: 10.5 数据导入导出
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **Excel 导出演示：基于 ClosedXML 生成 .xlsx 报表(EPPlus 用法类似，均需 NuGet 安装)：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="导出 Excel" Height="400" Width="480"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Background="#161B22" Margin="10">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>         </Grid.RowDefinitions>
+>
+>         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="5">
+>             <Button x:Name="GenBtn" Content="生成 20 条演示数据" Click="OnGenClick" Padding="10,6"
+>                     Background="#21262D" Foreground="White"/>
+>             <Button x:Name="ExportBtn" Content="导出 Excel..." Click="OnExportClick" Padding="10,6"
+>                     Background="#238636" Foreground="White" Margin="8,0,0,0"/>
+>         </StackPanel>
+>
+>         <TextBlock x:Name="InfoText" Grid.Row="1" Margin="5" Foreground="#58A6FF"
+>                    Text="ClosedXML 库生成 .xlsx（EPPlus 用法类似）"/>
+>
+>         <ListBox x:Name="DataList" Grid.Row="2" Margin="5" Background="#0D1117"
+>                  Foreground="#8B949E" BorderBrush="#21262D" BorderThickness="1" FontFamily="Consolas"/>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> // NuGet 依赖：Install-Package ClosedXML
+> // 若用 EPPlus：Install-Package EPPlus
+> using System;
+> using System.Collections.Generic;
+> using System.Windows;
+> using ClosedXML.Excel;
+> using Microsoft.Win32;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private List<(DateTime Time, string Device, double Temp)> _data =
+>             new List<(DateTime, string, double)>();
+>
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnGenClick(object sender, RoutedEventArgs e)
+>         {
+>             _data.Clear();
+>             var rnd = new Random();
+>             for (int i = 0; i < 20; i++)
+>                 _data.Add((DateTime.Now.AddMinutes(-i), "设备" + (i % 3 + 1), rnd.Next(20, 80)));
+>             DataList.Items.Clear();
+>             foreach (var d in _data)
+>                 DataList.Items.Add($"{d.Time:HH:mm}  {d.Device}  {d.Temp}℃");
+>             InfoText.Text = $"已生成 {_data.Count} 条记录";
+>         }
+>
+>         private void OnExportClick(object sender, RoutedEventArgs e)
+>         {
+>             if (_data.Count == 0) { InfoText.Text = "请先生成数据"; return; }
+>
+>             var dlg = new SaveFileDialog
+>             {
+>                 Filter = "Excel 文件 (*.xlsx)|*.xlsx",
+>                 FileName = $"报表_{DateTime.Now:yyyyMMdd}.xlsx"
+>             };
+>             if (dlg.ShowDialog() != true) return;
+>
+>             using (var wb = new XLWorkbook())                 // 创建工作簿
+>             {
+>                 var ws = wb.Worksheets.Add("采集数据");       // 工作表
+>                 ws.Cell(1, 1).Value = "时间";                 // 表头
+>                 ws.Cell(1, 2).Value = "设备";
+>                 ws.Cell(1, 3).Value = "温度(℃)";
+>
+>                 int row = 2;
+>                 foreach (var d in _data)                     // 数据行
+>                 {
+>                     ws.Cell(row, 1).Value = d.Time;
+>                     ws.Cell(row, 2).Value = d.Device;
+>                     ws.Cell(row, 3).Value = d.Temp;
+>                     row++;
+>                 }
+>                 ws.Columns().AdjustToContents();             // 自适应列宽
+>                 wb.SaveAs(dlg.FileName);
+>             }
+>             InfoText.Text = $"已导出 → {dlg.FileName}";
+>         }
+>     }
+> }
 > ```
 > 
 

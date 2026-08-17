@@ -25,9 +25,94 @@ parent: 10.5 数据导入导出
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **CSV 导出演示：采集记录生成后通过保存对话框导出为 UTF-8 CSV(Excel 可直接打开)：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="导出 CSV" Height="440" Width="520"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Background="#161B22" Margin="10">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>
+>         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="5">
+>             <Button x:Name="GenBtn" Content="生成演示数据" Click="OnGenClick" Padding="10,6"
+>                     Background="#21262D" Foreground="White"/>
+>             <Button x:Name="ExportBtn" Content="导出 CSV..." Click="OnExportClick" Padding="10,6"
+>                     Background="#238636" Foreground="White" Margin="8,0,0,0"/>
+>         </StackPanel>
+>
+>         <TextBlock x:Name="InfoText" Grid.Row="1" Margin="5" Foreground="#58A6FF"
+>                    Text="采集 10 条记录，导出为 UTF-8 编码 CSV"/>
+>
+>         <ListBox x:Name="DataList" Grid.Row="2" Margin="5" Background="#0D1117"
+>                  Foreground="#8B949E" BorderBrush="#21262D" BorderThickness="1" FontFamily="Consolas"/>
+>
+>         <TextBlock x:Name="StatusText" Grid.Row="3" Margin="5" Foreground="#8B949E" Text="未导出"/>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Collections.Generic;
+> using System.IO;
+> using System.Text;
+> using System.Windows;
+> using Microsoft.Win32;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         // 内存中的采集记录
+>         private List<(DateTime Time, string Device, double Temp)> _data =
+>             new List<(DateTime, string, double)>();
+>
+>         public MainWindow() => InitializeComponent();
+>
+>         private void OnGenClick(object sender, RoutedEventArgs e)
+>         {
+>             _data.Clear();
+>             var rnd = new Random();
+>             for (int i = 0; i < 10; i++)
+>                 _data.Add((DateTime.Now.AddSeconds(-i * 5), "设备" + (i % 3 + 1), rnd.Next(20, 80)));
+>             DataList.Items.Clear();
+>             foreach (var d in _data)
+>                 DataList.Items.Add($"{d.Time:HH:mm:ss}  {d.Device}  {d.Temp}℃");
+>             InfoText.Text = $"已生成 {_data.Count} 条记录";
+>         }
+>
+>         private void OnExportClick(object sender, RoutedEventArgs e)
+>         {
+>             if (_data.Count == 0) { StatusText.Text = "请先生成数据"; return; }
+>
+>             var dlg = new SaveFileDialog
+>             {
+>                 Filter = "CSV 文件 (*.csv)|*.csv",
+>                 FileName = $"数据导出_{DateTime.Now:yyyyMMdd_HHmmss}.csv"
+>             };
+>             if (dlg.ShowDialog() != true) return;
+>
+>             var sb = new StringBuilder();
+>             sb.AppendLine("时间,设备,温度");                    // 表头
+>             foreach (var d in _data)
+>                 sb.AppendLine($"{d.Time:yyyy-MM-dd HH:mm:ss},{d.Device},{d.Temp:F1}");
+>
+>             // 带 BOM 的 UTF-8：Excel 打开中文不乱码
+>             File.WriteAllText(dlg.FileName, sb.ToString(), new UTF8Encoding(true));
+>             StatusText.Text = $"已导出 {_data.Count} 条 → {dlg.FileName}";
+>         }
+>     }
+> }
 > ```
 > 
 

@@ -25,9 +25,150 @@ parent: 10.3 数据存储
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **本地文件存储演示：设备记录分别以 JSON / XML / CSV / 二进制四种格式落盘并回读：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         Title="本地文件存储" Height="440" Width="560"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Background="#161B22" Margin="10">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>             <RowDefinition Height="Auto"/>
+>         </Grid.RowDefinitions>
+>
+>         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="5">
+>             <Button x:Name="SaveJsonBtn" Content="保存 JSON" Click="OnSaveJson" Padding="10,6"
+>                     Background="#21262D" Foreground="White"/>
+>             <Button x:Name="SaveXmlBtn" Content="保存 XML" Click="OnSaveXml" Padding="10,6"
+>                     Background="#21262D" Foreground="White" Margin="6,0,0,0"/>
+>             <Button x:Name="SaveCsvBtn" Content="保存 CSV" Click="OnSaveCsv" Padding="10,6"
+>                     Background="#21262D" Foreground="White" Margin="6,0,0,0"/>
+>             <Button x:Name="SaveBinBtn" Content="保存二进制" Click="OnSaveBin" Padding="10,6"
+>                     Background="#21262D" Foreground="White" Margin="6,0,0,0"/>
+>         </StackPanel>
+>
+>         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="5">
+>             <Button x:Name="LoadBtn" Content="加载全部文件" Click="OnLoadClick" Padding="10,6"
+>                     Background="#238636" Foreground="White"/>
+>             <TextBlock x:Name="PathText" VerticalAlignment="Center" Margin="10,0,0,0"
+>                        Foreground="#8B949E" Text="保存目录：程序运行目录"/>
+>         </StackPanel>
+>
+>         <ListBox x:Name="FileList" Grid.Row="2" Margin="5" Background="#0D1117"
+>                  Foreground="#8B949E" BorderBrush="#21262D" BorderThickness="1" FontFamily="Consolas"/>
+>
+>         <TextBlock x:Name="StatText" Grid.Row="3" Margin="5" Foreground="#8B949E"
+>                    Text="尚未保存任何数据"/>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> using System;
+> using System.Collections.Generic;
+> using System.IO;
+> using System.Linq;
+> using System.Text.Json;
+> using System.Windows;
+> using System.Xml.Linq;
+>
+> namespace HmiDemo
+> {
+>     // 演示用设备记录模型
+>     public class DeviceRecord
+>     {
+>         public string Name { get; set; }
+>         public double Temp { get; set; }
+>         public bool Running { get; set; }
+>     }
+>
+>     public partial class MainWindow : Window
+>     {
+>         private readonly List<DeviceRecord> _records = new List<DeviceRecord>
+>         {
+>             new DeviceRecord { Name = "水泵1", Temp = 45.6, Running = true },
+>             new DeviceRecord { Name = "电机2", Temp = 62.1, Running = false },
+>             new DeviceRecord { Name = "加热器3", Temp = 88.4, Running = true }
+>         };
+>
+>         public MainWindow() => InitializeComponent();
+>
+>         // JSON：结构化、跨平台，适合配置与数据交换
+>         private void OnSaveJson(object sender, RoutedEventArgs e)
+>         {
+>             File.WriteAllText("records.json",
+>                 JsonSerializer.Serialize(_records, new JsonSerializerOptions { WriteIndented = true }));
+>             FileList.Items.Insert(0, "已保存 records.json：");
+>             FileList.Items.Add(File.ReadAllText("records.json"));
+>         }
+>
+>         // XML：带层级结构，老系统与配置文件兼容性好
+>         private void OnSaveXml(object sender, RoutedEventArgs e)
+>         {
+>             XDocument doc = new XDocument(new XElement("Records",
+>                 _records.Select(r => new XElement("Device",
+>                     new XAttribute("Name", r.Name),
+>                     new XAttribute("Temp", r.Temp),
+>                     new XAttribute("Running", r.Running)))));
+>             doc.Save("records.xml");
+>             FileList.Items.Insert(0, "已保存 records.xml：");
+>             FileList.Items.Add(doc.ToString());
+>         }
+>
+>         // CSV：表格型数据，可直接用 Excel 打开查看
+>         private void OnSaveCsv(object sender, RoutedEventArgs e)
+>         {
+>             var lines = new List<string> { "Name,Temp,Running" };
+>             lines.AddRange(_records.Select(r => $"{r.Name},{r.Temp},{r.Running}"));
+>             File.WriteAllLines("records.csv", lines);
+>             FileList.Items.Insert(0, "已保存 records.csv：");
+>             FileList.Items.Add(string.Join(Environment.NewLine, lines));
+>         }
+>
+>         // 二进制：体积小、读写快，适合高频采集数据的落盘
+>         private void OnSaveBin(object sender, RoutedEventArgs e)
+>         {
+>             using (var fs = new FileStream("records.bin", FileMode.Create))
+>             using (var bw = new BinaryWriter(fs))
+>             {
+>                 bw.Write(_records.Count);
+>                 foreach (var r in _records)
+>                 {
+>                     bw.Write(r.Name);
+>                     bw.Write(r.Temp);
+>                     bw.Write(r.Running);
+>                 }
+>             }
+>             FileList.Items.Insert(0, "已保存 records.bin（二进制，不可直接查看，读取速度快）");
+>         }
+>
+>         // 加载：从二进制文件回读，验证数据完整性
+>         private void OnLoadClick(object sender, RoutedEventArgs e)
+>         {
+>             if (!File.Exists("records.bin"))
+>             {
+>                 FileList.Items.Insert(0, "请先点击保存按钮再加载");
+>                 return;
+>             }
+>             using (var fs = new FileStream("records.bin", FileMode.Open))
+>             using (var br = new BinaryReader(fs))
+>             {
+>                 int count = br.ReadInt32();
+>                 for (int i = 0; i < count; i++)
+>                     FileList.Items.Insert(0,
+>                         $"回读[{i}] {br.ReadString()} 温度={br.ReadDouble():F1} 运行={br.ReadBoolean()}");
+>             }
+>             StatText.Text = "已从二进制文件回读数据成功";
+>         }
+>     }
+> }
 > ```
 > 
 

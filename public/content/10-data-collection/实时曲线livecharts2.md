@@ -25,9 +25,106 @@ parent: 10.4 数据可视化
 > - **实战检验**：用一个小项目或练习来验证你真的理解了
 
 > [!example] 完整示例
+> **实时曲线演示：LiveCharts2 折线图，200ms 追加一个采样点，滑动窗口只保留最近 60 个点：**
+>
+> **MainWindow.xaml：**
+> ```xml
+> <Window x:Class="HmiDemo.MainWindow"
+>         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+>         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>         xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
+>         Title="实时曲线-LiveCharts2" Height="440" Width="640"
+>         WindowStartupLocation="CenterScreen" Background="#0D1117">
+>     <Grid Background="#161B22" Margin="10">
+>         <Grid.RowDefinitions>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="Auto"/>
+>             <RowDefinition Height="*"/>
+>         </Grid.RowDefinitions>
+>
+>         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="5">
+>             <Button x:Name="StartBtn" Content="开始采集" Click="OnStartClick" Padding="10,6"
+>                     Background="#238636" Foreground="White"/>
+>             <Button x:Name="StopBtn" Content="停止采集" IsEnabled="False" Click="OnStopClick"
+>                     Padding="10,6" Background="#DA3633" Foreground="White" Margin="8,0,0,0"/>
+>         </StackPanel>
+>
+>         <TextBlock x:Name="ValueText" Grid.Row="1" Margin="5" Foreground="#58A6FF"
+>                    Text="当前温度：-- ℃"/>
+>
+>         <!-- 实时曲线区域 -->
+>         <lvc:CartesianChart x:Name="Chart" Grid.Row="2" Margin="5"/>
+>     </Grid>
+> </Window>
+> ```
+>
+> **MainWindow.xaml.cs —— 后台代码：**
 > ```csharp
-> // 📝 待补充实际示例代码
-> // 请根据本节知识点编写一个能运行的 Demo
+> // NuGet 依赖：Install-Package LiveChartsCore.SkiaSharpView.WPF
+> using System;
+> using System.Collections.Generic;
+> using System.Linq;
+> using System.Windows;
+> using System.Windows.Threading;
+> using LiveChartsCore;
+> using LiveChartsCore.SkiaSharpView;
+> using LiveChartsCore.SkiaSharpView.Painting;
+> using SkiaSharp;
+>
+> namespace HmiDemo
+> {
+>     public partial class MainWindow : Window
+>     {
+>         private readonly List<double> _values = new List<double>();  // 滑动窗口数据
+>         private LineSeries<double> _series;                          // 折线系列
+>         private readonly DispatcherTimer _timer;
+>         private readonly Random _rnd = new Random();
+>
+>         public MainWindow()
+>         {
+>             InitializeComponent();
+>
+>             // 配置折线样式：强调蓝、无填充、不画数据点
+>             _series = new LineSeries<double>
+>             {
+>                 Stroke = new SolidColorPaint(SKColors.DeepSkyBlue) { StrokeThickness = 2 },
+>                 Fill = null,
+>                 GeometrySize = 0
+>             };
+>             Chart.Series = new ISeries[] { _series };
+>             Chart.XAxes = new[] { new Axis { Name = "采样点" } };
+>             Chart.YAxes = new[] { new Axis { Name = "温度(℃)", MinLimit = 0, MaxLimit = 100 } };
+>
+>             _timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(200) };
+>             _timer.Tick += OnTick;
+>         }
+>
+>         // 每 200ms 追加一个采样点，超过 60 个移除最旧的(滑动窗口)
+>         private void OnTick(object sender, EventArgs e)
+>         {
+>             _values.Add(_rnd.Next(20, 60));
+>             if (_values.Count > 60) _values.RemoveAt(0);
+>
+>             _series.Values = _values.ToArray();   // 更新数据源
+>             Chart.Update();                       // 手动刷新曲线
+>             ValueText.Text = $"当前温度：{_values[_values.Count - 1]} ℃";
+>         }
+>
+>         private void OnStartClick(object sender, RoutedEventArgs e)
+>         {
+>             _timer.Start();
+>             StartBtn.IsEnabled = false;
+>             StopBtn.IsEnabled = true;
+>         }
+>
+>         private void OnStopClick(object sender, RoutedEventArgs e)
+>         {
+>             _timer.Stop();
+>             StartBtn.IsEnabled = true;
+>             StopBtn.IsEnabled = false;
+>         }
+>     }
+> }
 > ```
 > 
 
